@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 760" role="img" aria-label="Schwert">
+<defs>
+<linearGradient id="steelL" x1="0" x2="1"><stop offset="0" stop-color="#6d8098"/><stop offset="1" stop-color="#e9f3fb"/></linearGradient>
+<linearGradient id="steelR" x1="0" x2="1"><stop offset="0" stop-color="#b9cbdb"/><stop offset="1" stop-color="#4f6078"/></linearGradient>
+<linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffefac"/><stop offset=".45" stop-color="#d09a35"/><stop offset=".75" stop-color="#8f5e1c"/><stop offset="1" stop-color="#f2cc72"/></linearGradient>
+<linearGradient id="grip" x1="0" x2="1"><stop offset="0" stop-color="#2a1a4d"/><stop offset=".5" stop-color="#5a3aa6"/><stop offset="1" stop-color="#22143f"/></linearGradient>
+<radialGradient id="gem" cx=".4" cy=".35" r=".7"><stop offset="0" stop-color="#d7fff2"/><stop offset=".5" stop-color="#2fe0ad"/><stop offset="1" stop-color="#0b6b58"/></radialGradient>
+</defs>
+<g stroke="#101522" stroke-width="5" stroke-linejoin="round" stroke-linecap="round">
+<path d="M80 8 L46 88 L52 540 H80 Z" fill="url(#steelL)"/>
+<path d="M80 8 L114 88 L108 540 H80 Z" fill="url(#steelR)"/>
+<path d="M72 100 V520 H88 V100 L80 74 Z" fill="#2f3e57" stroke-width="3"/>
+<path d="M60 150 l6 16 -6 16 M100 230 l-6 16 6 16 M60 320 l6 16 -6 16 M100 410 l-6 16 6 16" fill="none" stroke="#8ea3b8" stroke-width="3"/>
+<path d="M6 532 Q18 556 44 556 L60 546 H100 L116 556 Q142 556 154 532 Q158 570 124 584 L100 586 L80 602 L60 586 L36 584 Q2 570 6 532 Z" fill="url(#gold)"/>
+<circle cx="80" cy="568" r="15" fill="url(#gem)"/>
+<path d="M64 600 H96 L100 690 H60 Z" fill="url(#grip)"/>
+<path d="M62 622 L98 634 M61 646 L99 658 M60 670 L100 682" fill="none" stroke="#d09a35" stroke-width="4"/>
+<path d="M56 690 H104 L112 708 L80 752 L48 708 Z" fill="url(#gold)"/>
+<circle cx="80" cy="714" r="10" fill="url(#gem)"/>
+</g>
+</svg>

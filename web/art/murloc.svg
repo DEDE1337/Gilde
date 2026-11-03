@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 600" role="img" aria-label="Murloc mit offenem Maul und Schwert">
+<defs>
+<radialGradient id="skin" cx=".42" cy=".3" r=".8"><stop offset="0" stop-color="#7fe0a6"/><stop offset=".5" stop-color="#2fae86"/><stop offset="1" stop-color="#0f5f62"/></radialGradient>
+<linearGradient id="belly" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4e7a4"/><stop offset="1" stop-color="#c9a95a"/></linearGradient>
+<linearGradient id="fin" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb13d"/><stop offset="1" stop-color="#d4381f"/></linearGradient>
+<radialGradient id="eye" cx=".42" cy=".38" r=".62"><stop offset="0" stop-color="#fffbc4"/><stop offset=".55" stop-color="#ffd52a"/><stop offset="1" stop-color="#d97a0c"/></radialGradient>
+<linearGradient id="steel" x1="0" x2="1"><stop offset="0" stop-color="#7f93a8"/><stop offset=".5" stop-color="#f2f8ff"/><stop offset="1" stop-color="#6d8197"/></linearGradient>
+<linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe9a0"/><stop offset=".5" stop-color="#c98f2c"/><stop offset="1" stop-color="#7a4f16"/></linearGradient>
+</defs>
+<g stroke="#07252c" stroke-width="7" stroke-linejoin="round" stroke-linecap="round">
+<g transform="rotate(16 430 300)">
+<path d="M416 40 L436 6 L456 40 L454 268 H418 Z" fill="url(#steel)"/>
+<path d="M436 30 V262" stroke="#8ea3b8" stroke-width="4"/>
+<path d="M376 268 Q436 292 496 268 L490 296 Q436 312 382 296 Z" fill="url(#gold)"/>
+<rect x="423" y="298" width="26" height="62" rx="6" fill="#5b3a1d"/>
+<circle cx="436" cy="372" r="17" fill="url(#gold)"/>
+</g>
+<path d="M170 500 Q130 540 90 556 L150 566 L132 590 L196 572 L214 590 L228 540 Z" fill="url(#skin)"/>
+<path d="M340 500 Q384 540 424 556 L364 566 L382 590 L318 572 L300 590 L286 540 Z" fill="url(#skin)"/>
+<path d="M150 330 C120 420 150 540 256 548 C362 540 392 420 362 330 Z" fill="url(#skin)"/>
+<path d="M196 386 C184 456 208 520 256 524 C304 520 328 456 316 386 Z" fill="url(#belly)"/>
+<path d="M210 424 Q256 438 302 424 M204 462 Q256 476 308 462 M216 496 Q256 508 296 496" fill="none" stroke="#a5843f" stroke-width="5"/>
+<path d="M150 360 C96 362 62 318 58 266 L30 262 L50 240 L28 218 L66 224 L72 192 L100 222 C100 262 122 296 168 306 Z" fill="url(#skin)"/>
+<path d="M360 372 C402 378 420 356 428 330 L452 342 L446 312 L474 298 L438 288 L430 262 L402 286 C396 306 382 318 350 316 Z" fill="url(#skin)"/>
+<path d="M256 26 L286 70 L322 24 L338 84 L392 56 L382 118 L446 110 L410 170 Q256 110 102 170 L66 110 L130 118 L120 56 L174 84 L190 24 L226 70 Z" fill="url(#fin)"/>
+<path d="M92 214 L24 188 L50 236 L14 262 L70 268 L58 310 L118 280 Z" fill="url(#fin)"/>
+<path d="M420 214 L488 188 L462 236 L498 262 L442 268 L454 310 L394 280 Z" fill="url(#fin)"/>
+<path d="M96 240 C88 136 170 96 256 96 C342 96 424 136 416 240 C412 330 346 388 256 388 C166 388 100 330 96 240 Z" fill="url(#skin)"/>
+<path d="M122 244 C150 226 362 226 390 244 C392 318 330 366 256 366 C182 366 120 318 122 244 Z" fill="#4b0f19"/>
+<path d="M170 342 C200 306 312 306 342 342 C318 360 288 366 256 366 C224 366 194 360 170 342 Z" fill="#e8596e"/>
+<path d="M256 318 V352" fill="none" stroke="#a82f47" stroke-width="5"/>
+<g fill="#fff8e3" stroke-width="5">
+<path d="M126 246 L152 238 L146 286 Z"/><path d="M158 236 L190 232 L176 280 Z"/><path d="M196 231 L228 229 L212 274 Z"/><path d="M234 228 L270 228 L252 276 Z"/><path d="M276 229 L308 231 L294 274 Z"/><path d="M314 232 L346 236 L330 280 Z"/><path d="M352 238 L386 246 L364 286 Z"/>
+<path d="M186 348 L200 318 L214 356 Z"/><path d="M226 360 L240 330 L254 364 Z"/><path d="M262 364 L276 330 L290 360 Z"/><path d="M302 356 L316 318 L330 348 Z"/>
+</g>
+<circle cx="176" cy="156" r="56" fill="url(#eye)"/>
+<circle cx="336" cy="156" r="56" fill="url(#eye)"/>
+<ellipse cx="186" cy="162" rx="13" ry="30" fill="#14100a" stroke="none"/>
+<ellipse cx="326" cy="162" rx="13" ry="30" fill="#14100a" stroke="none"/>
+<circle cx="160" cy="132" r="10" fill="#fff" stroke="none"/><circle cx="320" cy="132" r="10" fill="#fff" stroke="none"/>
+<path d="M112 116 Q172 76 234 128" fill="none" stroke-width="13"/>
+<path d="M400 116 Q340 76 278 128" fill="none" stroke-width="13"/>
+</g>
+</svg>

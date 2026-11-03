@@ -1,0 +1,16 @@
+{
+  "name": "modcheck-website",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "start": "node start.mjs",
+    "dev": "node start.mjs",
+    "build": "node scripts/build-export.mjs",
+    "test": "node --test tests/",
+    "create-admin": "node scripts/create-admin.mjs"
+  }
+}

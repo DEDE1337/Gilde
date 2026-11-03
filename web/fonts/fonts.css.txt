@@ -1,0 +1,4 @@
+@font-face{font-family:'Grenze Gotisch';font-weight:600 900;font-style:normal;font-display:swap;src:url(fonts/grenze-gotisch-600-800-900.woff2) format('woff2')}
+@font-face{font-family:'Barlow Semi Condensed';font-weight:500;font-style:normal;font-display:swap;src:url(fonts/barlow-semi-condensed-500.woff2) format('woff2')}
+@font-face{font-family:'Barlow Semi Condensed';font-weight:600;font-style:normal;font-display:swap;src:url(fonts/barlow-semi-condensed-600.woff2) format('woff2')}
+@font-face{font-family:'Barlow Semi Condensed';font-weight:700;font-style:normal;font-display:swap;src:url(fonts/barlow-semi-condensed-700.woff2) format('woff2')}

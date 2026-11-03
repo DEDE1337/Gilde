@@ -1,0 +1,12 @@
+{
+  "source": "https://nether.wowhead.com/forever/de/data/talents-classic?dv=29&db=1793399207",
+  "calculator": "https://www.wowhead.com/forever/de/talent-calc/warrior",
+  "snapshot": "2026-11-02",
+  "version": "World of Warcraft: Forever (classicplus)",
+  "locale": "deDE",
+  "talents": 465,
+  "localizationFallbackCount": 9,
+  "trees": 27,
+  "assets": 396,
+  "notes": "Exact source ranks, row/column positions, requiredPoints and talent dependencies. No substitution from other game versions."
+}
