@@ -19,10 +19,16 @@ async function readBody(req,limit){const chunks=[];let size=0;for await(const c 
 export function createPlatform({db,env,uploadDir}){
  registerAccountRoutes(db);registerRaidRoutes(db);registerGearRoutes(db,env);registerBonusRoutes(db);registerPollRoutes(db);
  const forum=registerForumRoutes(db),progress=registerProgressRoutes(db,env,forum);
+ let ipDebug=()=>({});
  const secure=process.env.MODCHECK_HTTPS==='1';
  const cookie=(token,age)=>`mc_session=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${age}${secure?'; Secure':''}`;
  const send=(res,status,data,headers={})=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff',...headers});res.end(JSON.stringify(data))};
- const ipOf=req=>(process.env.MODCHECK_TRUST_PROXY==='1'&&(req.headers['cf-connecting-ip']||String(req.headers['x-forwarded-for']||'').split(',')[0].trim()))||req.socket.remoteAddress||'?';
+ // MODCHECK_TRUST_PROXY: unset = ignore proxy headers; "1" or "cloudflare" = Cloudflare tunnel (cf-connecting-ip);
+ // "proxy" = a single hosting proxy such as Railway (x-real-ip, else the last x-forwarded-for entry, which that proxy appended itself).
+ // Never use "1" without Cloudflare in front: any visitor could then forge cf-connecting-ip and dodge the login limits.
+ const forwardedList=req=>String(req.headers['x-forwarded-for']||'').split(',').map(s=>s.trim()).filter(Boolean);
+ const ipOf=req=>{const mode=process.env.MODCHECK_TRUST_PROXY,list=forwardedList(req);const pick=mode==='proxy'?req.headers['x-real-ip']||list.at(-1):(mode==='1'||mode==='cloudflare')?req.headers['cf-connecting-ip']||list[0]:null;return String(pick||req.socket.remoteAddress||'?').slice(0,64)};
+ ipDebug=req=>({seenAs:ipOf(req),mode:process.env.MODCHECK_TRUST_PROXY||'aus',socket:req.socket.remoteAddress||'?',headers:Object.fromEntries(['x-real-ip','x-forwarded-for','x-forwarded-proto','cf-connecting-ip'].map(h=>[h,req.headers[h]||null]))});
  async function upload(req,res,user,ip){
   if(!user)fail(401,'Bitte melde dich an.');rateLimit('upload:'+user.id,20,3600e3);
   const bytes=await readBody(req,MAX_UPLOAD),mime=IMAGE_TYPES.find(([,test])=>test(bytes))?.[0];
@@ -42,6 +48,7 @@ export function createPlatform({db,env,uploadDir}){
    if(url.pathname==='/api/uploads'&&req.method==='POST')return await upload(req,res,user,ip);
    const file=url.pathname.match(/^\/uploads\/([a-f0-9-]{36})$/);if(file&&req.method==='GET')return await serveUpload(res,file[1],user);
    if(!user&&!OPEN_API.has(url.pathname))fail(401,'Bitte melde dich an.');
+   if(req.method==='GET'&&url.pathname==='/api/admin/client-ip'){checkAccess(user,'admin');return send(res,200,ipDebug(req))}
    const match=findRoute(req.method,url.pathname);if(!match)fail(404,'Unbekannte Adresse.');
    checkAccess(user,match.route.access);
    let body={};

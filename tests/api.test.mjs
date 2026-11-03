@@ -425,3 +425,42 @@ test('Unsichtbare Konten: nicht in Mitgliederliste, Rangliste und Umfrage-Zählu
  await ok('Admin','PUT','/api/admin/users/'+adminId,{hidden:false});
  assert.equal((await ok('Mitglied','GET','/api/members')).members.some(m=>m.username==='Admin'),true);
 });
+
+test('Proxy-Modi: gefälschte Header werden nur im passenden Modus beachtet',async()=>{
+ const seen=async headers=>{const r=await realFetch(base+'/api/admin/client-ip',{headers:{Cookie:jars.Admin,...headers}});assert.equal(r.status,200);return(await r.json()).seenAs};
+ const forged={'cf-connecting-ip':'6.6.6.6','x-real-ip':'7.7.7.7','x-forwarded-for':'8.8.8.8, 9.9.9.9'};
+ const old=process.env.MODCHECK_TRUST_PROXY;
+ try{
+  delete process.env.MODCHECK_TRUST_PROXY;assert.equal(await seen(forged),'127.0.0.1');
+  process.env.MODCHECK_TRUST_PROXY='proxy';assert.equal(await seen(forged),'7.7.7.7');
+  assert.equal(await seen({'cf-connecting-ip':'6.6.6.6','x-forwarded-for':'8.8.8.8, 9.9.9.9'}),'9.9.9.9');
+  assert.equal(await seen({'cf-connecting-ip':'6.6.6.6'}),'127.0.0.1');
+  process.env.MODCHECK_TRUST_PROXY='cloudflare';assert.equal(await seen(forged),'6.6.6.6');
+ }finally{if(old===undefined)delete process.env.MODCHECK_TRUST_PROXY;else process.env.MODCHECK_TRUST_PROXY=old}
+ await denied(403,'Mitglied','GET','/api/admin/client-ip');await denied(401,'gast','GET','/api/admin/client-ip');
+});
+
+test('Erster Start ohne Shell: Admin aus Umgebungsvariable, Passwort nur im Log, nur einmal',async()=>{
+ const {spawnSync}=await import('node:child_process');const {mkdtempSync}=await import('node:fs');
+ const data=mkdtempSync(path.join(tmpdir(),'modcheck-boot-')),root=path.resolve(import.meta.dirname,'..');
+ const run=env=>spawnSync(process.execPath,['--input-type=module','-e',`const {sqlite}=await import(${JSON.stringify(new URL('../start.mjs',import.meta.url).href)});console.log('USERS='+JSON.stringify(sqlite.prepare('SELECT username,role,status FROM users').all()));process.exit(0)`],{cwd:root,encoding:'utf8',env:{...process.env,MODCHECK_DATA:data,MODCHECK_TEST_MODE:'1',...env}});
+ try{
+  const first=run({MODCHECK_BOOTSTRAP_ADMIN:'Erstadmin'});
+  assert.match(first.stdout,/Administrator "Erstadmin" angelegt\. Einmaliges Passwort: \S{12,}/);
+  assert.match(first.stdout,/USERS=\[\{"username":"Erstadmin","role":"admin","status":"active"\}\]/);
+  const second=run({MODCHECK_BOOTSTRAP_ADMIN:'Zweitadmin'});
+  assert.doesNotMatch(second.stdout,/Einmaliges Passwort/);assert.match(second.stdout,/USERS=\[\{"username":"Erstadmin"/);assert.doesNotMatch(second.stdout,/Zweitadmin/);
+  const bad=run({MODCHECK_BOOTSTRAP_ADMIN:'x y'});assert.doesNotMatch(bad.stdout,/Einmaliges Passwort/);
+ }finally{try{rmSync(data,{recursive:true,force:true})}catch{}}
+});
+
+test('Einstellungen ohne Dateizugriff: Discord, Domain und Impressum aus Umgebungsvariablen',async()=>{
+ const {configureDiscord}=await import('../server/discord.js');const {mkdtempSync}=await import('node:fs');
+ const empty=mkdtempSync(path.join(tmpdir(),'modcheck-env-'));
+ const keep={w:process.env.MODCHECK_DISCORD_WEBHOOKS,d:process.env.MODCHECK_DOMAIN};
+ try{
+  process.env.MODCHECK_DISCORD_WEBHOOKS=JSON.stringify({raids:'https://discord.com/api/webhooks/5/abc-DEF_123',allgemein:'kein-webhook'});
+  assert.deepEqual(configureDiscord(empty),['raids']);
+  assert.deepEqual(configureDiscord(dir).sort(),['offiziere','raids','umfragen']); // the file wins over the variable
+ }finally{for(const [k,v] of [['MODCHECK_DISCORD_WEBHOOKS',keep.w],['MODCHECK_DOMAIN',keep.d]]){if(v===undefined)delete process.env[k];else process.env[k]=v}configureDiscord(dir);try{rmSync(empty,{recursive:true,force:true})}catch{}}
+});

@@ -6,7 +6,8 @@ import {DatabaseSync} from 'node:sqlite';
 import {handleGuildEvents} from './worker/events.js';
 import {handleWowheadData,refreshWowheadData,fetchWowheadIcon,parseTalentSeed} from './worker/wowhead.js';
 import {createPlatform} from './server/index.js';
-import {can} from './server/core.js';
+import {can,hashPassword,id as newId,now as nowIso} from './server/core.js';
+import {randomBytes} from 'node:crypto';
 import {configureDiscord} from './server/discord.js';
 const root=path.dirname(fileURLToPath(import.meta.url));const web=path.join(root,'web');
 const dataDir=process.env.MODCHECK_DATA?path.resolve(process.env.MODCHECK_DATA):path.join(root,'data');
@@ -21,19 +22,30 @@ for(const name of (await readdir(path.join(root,'drizzle'))).filter(n=>n.endsWit
   sqlite.exec('BEGIN');try{sqlite.exec(sql);if(rebuild&&sqlite.prepare('PRAGMA foreign_key_check').all().length)throw new Error(name+': Fremdschlüssel nach dem Umbau verletzt');sqlite.prepare('INSERT INTO modcheck_migrations(name) VALUES (?)').run(name);sqlite.exec('COMMIT')}catch(e){sqlite.exec('ROLLBACK');throw e}finally{if(rebuild)sqlite.exec('PRAGMA foreign_keys=ON')}
  }
 }
+// Hosting without a shell (Railway): MODCHECK_BOOTSTRAP_ADMIN=<name> creates the first administrator once, while no active admin exists.
+// The one-time password is printed to the log only; it is never read from the environment.
+{const wanted=process.env.MODCHECK_BOOTSTRAP_ADMIN;if(wanted&&!sqlite.prepare("SELECT 1 FROM users WHERE role='admin' AND status='active'").get()){
+ if(!/^[\p{L}\p{N}_-]{3,24}$/u.test(wanted))console.warn('MODCHECK_BOOTSTRAP_ADMIN: Name braucht 3 bis 24 Buchstaben, Zahlen, _ oder -. Es wurde kein Administrator angelegt.');
+ else{const password=randomBytes(12).toString('base64url'),hash=hashPassword(password),existing=sqlite.prepare('SELECT id FROM users WHERE username=?').get(wanted);
+  if(existing)sqlite.prepare("UPDATE users SET password_hash=?,role='admin',status='active',guild_rank='Gildenmeister' WHERE id=?").run(hash,existing.id);
+  else sqlite.prepare("INSERT INTO users(id,username,password_hash,role,status,guild_rank,created_at) VALUES (?,?,?,'admin','active','Gildenmeister',?)").run(newId(),wanted,hash,nowIso());
+  console.log(`
+*** Administrator "${wanted}" angelegt. Einmaliges Passwort: ${password}
+*** Jetzt anmelden, das Passwort unter Einstellungen ändern und die Variable MODCHECK_BOOTSTRAP_ADMIN löschen.
+`)}}}
 const DB={prepare(sql){const statement=sqlite.prepare(sql);let args=[];return{bind(...values){args=values;return this},async all(){return{results:statement.all(...args)}},async run(){const r=statement.run(...args);return{meta:{changes:Number(r.changes)}}}}}};
 const dataEnv={DB,refreshLimit:1000,seedCatalog:async()=>JSON.parse(await readFile(path.join(web,'seed-catalog.json'),'utf8')),seedTalents:async()=>parseTalentSeed(await readFile(path.join(web,'forever-talents.js'),'utf8')),seedAbilities:async()=>JSON.parse(await readFile(path.join(web,'seed-abilities.json'),'utf8'))};
 const backgroundTasks={waitUntil(){}};
 const platform=createPlatform({db:sqlite,env:dataEnv,uploadDir:path.join(dataDir,'uploads')});
 const refreshAll=async()=>{await refreshWowheadData(dataEnv,dataEnv.refreshLimit);await platform.progress.refreshNews();platform.progress.detectChanges()};
 const discordChannels=configureDiscord(dataDir);
-const analyticsToken=(await readFile(path.join(dataDir,'cf-analytics-token.txt'),'utf8').catch(()=>'')).trim();
+const analyticsToken=(await readFile(path.join(dataDir,'cf-analytics-token.txt'),'utf8').catch(()=>process.env.MODCHECK_CF_ANALYTICS_TOKEN||'')).trim();
 const analyticsTag=/^[a-f0-9]{32}$/.test(analyticsToken)?`<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"${analyticsToken}"}'></script>`:'';
 if(analyticsToken&&!analyticsTag)console.warn('cf-analytics-token.txt enthält keinen gültigen Schlüssel, die Analyse bleibt aus.');
 const escHtml=s=>s.replace(/[&<>"']/g,c=>`&#${c.charCodeAt(0)};`);
 const analyticsNote='<h3>Besucherstatistik</h3><p>Wir zählen Seitenaufrufe mit Cloudflare Web Analytics. Das Messskript setzt keine Cookies und erstellt keine Profile über mehrere Seiten hinweg. Cloudflare erhält dabei deine IP-Adresse, die aufgerufene Seite, Browser- und Ladezeitangaben und wertet sie nur zusammengefasst für uns aus. Grundlage ist unser berechtigtes Interesse zu sehen, ob die Seite genutzt wird und schnell lädt (Art. 6 Abs. 1 lit. f DSGVO). Werbeblocker unterdrücken das Skript häufig, das ist in Ordnung.</p>';
 async function legalPage(bytes){
- const text=(await readFile(path.join(dataDir,'impressum.txt'),'utf8').catch(()=>'')).trim();
+ const text=(await readFile(path.join(dataDir,'impressum.txt'),'utf8').catch(()=>(process.env.MODCHECK_IMPRESSUM||'').replace(/\\n/g,'\n'))).trim();
  const impressum=text?`<p>${text.split(/\r?\n/).map(l=>escHtml(l.trim())).join('<br>')}</p>`:'<p>Privates, nicht-kommerzielles Projekt für einen geschlossenen Kreis von Gildenmitgliedern, kein geschäftsmäßiges Angebot.</p>';
  return Buffer.from(bytes.toString('utf8').replace('<!--IMPRESSUM-->',impressum).replace('<!--ANALYTICS-->',analyticsTag?analyticsNote:''))
 }

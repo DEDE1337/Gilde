@@ -1,0 +1,15 @@
+.git
+.gitignore
+.claude
+data
+build
+node_modules
+*.zip
+*.bat
+tests
+docs
+source-data
+CLAUDE.md
+README_STARTEN.txt
+.env
+.env.*

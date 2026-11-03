@@ -9,8 +9,9 @@ const queues={};
 
 export function configureDiscord(dataDir){
  hooks={};site='';
- try{const raw=JSON.parse(readFileSync(path.join(dataDir,'discord-webhooks.json'),'utf8'));for(const c of DISCORD_CHANNELS){const u=String(raw[c]||'').trim();if(HOOK.test(u))hooks[c]=u;else if(u)console.warn(`discord-webhooks.json: „${c}“ ist keine Discord-Webhook-Adresse und wird ignoriert.`)}}catch(e){if(e.code!=='ENOENT')console.warn('discord-webhooks.json konnte nicht gelesen werden:',e.message)}
- try{const d=readFileSync(path.join(dataDir,'domain.txt'),'utf8').trim().replace(/^https?:\/\//,'').replace(/\/.*$/,'');if(d)site='https://'+d}catch{}
+ // File first; on hosts without file access the same JSON can come from MODCHECK_DISCORD_WEBHOOKS.
+ try{const raw=JSON.parse((()=>{try{return readFileSync(path.join(dataDir,'discord-webhooks.json'),'utf8')}catch(e){if(e.code==='ENOENT'&&process.env.MODCHECK_DISCORD_WEBHOOKS)return process.env.MODCHECK_DISCORD_WEBHOOKS;throw e}})());for(const c of DISCORD_CHANNELS){const u=String(raw[c]||'').trim();if(HOOK.test(u))hooks[c]=u;else if(u)console.warn(`discord-webhooks.json: „${c}“ ist keine Discord-Webhook-Adresse und wird ignoriert.`)}}catch(e){if(e.code!=='ENOENT')console.warn('discord-webhooks.json konnte nicht gelesen werden:',e.message)}
+ try{const d=(()=>{try{return readFileSync(path.join(dataDir,'domain.txt'),'utf8')}catch{return process.env.MODCHECK_DOMAIN||''}})().trim().replace(/^https?:\/\//,'').replace(/\/.*$/,'');if(d)site='https://'+d}catch{}
  return Object.keys(hooks)
 }
 export const berlinTime=iso=>new Intl.DateTimeFormat('de-DE',{timeZone:'Europe/Berlin',weekday:'short',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}).format(new Date(iso))+' Uhr';
