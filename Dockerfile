@@ -13,8 +13,8 @@ ENV NODE_ENV=production \
     MODCHECK_HTTPS=1 \
     MODCHECK_TRUST_PROXY=proxy
 
+# No VOLUME instruction: Railway rejects it. The volume is attached in the Railway dashboard (mount path /data).
 RUN mkdir -p /data
-VOLUME ["/data"]
 EXPOSE 3000
 
 CMD ["node", "start.mjs"]
