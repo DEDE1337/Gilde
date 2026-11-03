@@ -87,6 +87,6 @@ const server=http.createServer(async(req,res)=>{
  }catch(error){console.error(error.message);if(!res.headersSent)res.writeHead(500,{'Content-Type':'application/json'});res.end(JSON.stringify({error:'Die Anfrage konnte nicht verarbeitet werden.'}))}
 });
 const host=process.env.HOST||'127.0.0.1';
-if(process.env.MODCHECK_TEST_MODE!=='1')server.listen(port,host,()=>{console.log('\nModCheck ist bereit: http://'+host+':'+port+'/\nZum Beenden Strg+C drücken.\n');refreshAll();setInterval(refreshAll,3600*1000).unref();if(discordChannels.length){console.log('Discord verbunden: '+discordChannels.join(', '));setInterval(()=>{try{platform.remindRaids()}catch(e){console.warn(e.message)}},300e3).unref();setInterval(()=>platform.syncPolls().catch(e=>console.warn(e.message)),120e3).unref()}});
+if(process.env.MODCHECK_TEST_MODE!=='1')server.listen(port,host,()=>{console.log('\nModCheck ist bereit: http://'+host+':'+port+'/\nZum Beenden Strg+C drücken.\n');refreshAll();setInterval(refreshAll,3600*1000).unref();if(discordChannels.length){console.log('Discord verbunden: '+discordChannels.join(', '));setInterval(()=>{try{platform.remindRaids()}catch(e){console.warn(e.message)}},300e3).unref();setInterval(()=>platform.syncPolls().catch(e=>console.warn(e.message)),120e3).unref();if(process.env.MODCHECK_DISCORD_BOT_TOKEN){console.log('Discord-Bot: Registrierungen lassen sich per Emoji entscheiden.');setInterval(()=>platform.syncApprovals().catch(e=>console.warn(e.message)),15e3).unref()}}});
 
 export {server,sqlite,DB};

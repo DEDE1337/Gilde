@@ -13,10 +13,12 @@ const realFetch=globalThis.fetch;
 const item=id=>({name:'Item '+id,quality:3,icon:'inv_sword_05',tooltip:`<table><tr><td>Gegenstandsstufe <!--ilvl-->30<span><!--stat7-->+5 Ausdauer</span><!--rlvl-->25</td></tr></table>`});
 const spell={name:'Leinenverband',icon:'inv_misc_bandage_15',tooltip:'<table><tr><td>Reagenzien:<br /><div class="indent q1"><a href="/forever/de/item=2589/leinenstoff">Leinenstoff</a></div><br /><span class="q1"><a href="/forever/de/item=1251/leinenverband">Leinenverband</a></span> (2)<br>Benötigt <a href="/forever/de/skill=2942/erste-hilfe" class="q1">Erste Hilfe</a> (1)</td></tr></table>'};
 const rss=`<rss><channel><item><title>Class Tuning for WoW: Forever</title><link>https://www.wowhead.com/news=1/tuning</link><description>Text</description><guid isPermaLink="false">https://www.wowhead.com/news=1</guid><pubDate>Mon, 02 Nov 2026 14:38:53 -0600</pubDate></item></channel></rss>`;
-const discordPosts=[];
+const discordPosts=[];let discordIds=0;
 const discordPollVotes={};
-function discordHook(u,init){const m=u.match(/messages\/(\d+)$/);if(m)return Response.json({id:m[1],poll:{answers:[{answer_id:1},{answer_id:2},{answer_id:3}],results:{answer_counts:Object.entries(discordPollVotes).map(([id,count])=>({id:+id,count,me_voted:false}))}}});const body=JSON.parse(init.body);discordPosts.push({channel:u.split('?')[0].split('/').pop(),...body});return u.includes('wait=true')?Response.json({id:'424242'}):new Response(null,{status:204})}
-const stub=async(url,init)=>{const u=String(url);if(u.startsWith('https://discord.com/api/webhooks/'))return discordHook(u,init);if(u.startsWith('http://127.0.0.1'))return realFetch(url,init);let m;if(m=u.match(/tooltip\/item\/(\d+)/))return m[1]==='9'?new Response('',{status:404}):Response.json(item(m[1]));if(u.includes('/tooltip/spell/'))return Response.json(spell);if(u.includes('news/rss'))return new Response(rss);return new Response('',{status:404})};
+function discordHook(u,init){const m=u.match(/messages\/(\d+)$/);if(m)return Response.json({id:m[1],poll:{answers:[{answer_id:1},{answer_id:2},{answer_id:3}],results:{answer_counts:Object.entries(discordPollVotes).map(([id,count])=>({id:+id,count,me_voted:false}))}}});const body=JSON.parse(init.body);discordPosts.push({channel:u.split('?')[0].split('/').pop(),...body});return u.includes('wait=true')?Response.json({id:String(424242+discordIds++),channel_id:'777'}):new Response(null,{status:204})}
+const botCalls=[],botReactors={};
+function botApi(u,init){const m=u.match(/messages\/(\d+)\/reactions\/([^/?]+)(\/@me)?/);if(!m)return new Response('',{status:404});const emoji=decodeURIComponent(m[2]);if(init?.method==='PUT'){botCalls.push(emoji);return new Response(null,{status:204})}return Response.json((botReactors[emoji]||[]).map(id=>({id,bot:false})).concat([{id:'1',bot:true}]))}
+const stub=async(url,init)=>{const u=String(url);if(u.startsWith('https://discord.com/api/v10/'))return botApi(u,init);if(u.startsWith('https://discord.com/api/webhooks/'))return discordHook(u,init);if(u.startsWith('http://127.0.0.1'))return realFetch(url,init);let m;if(m=u.match(/tooltip\/item\/(\d+)/))return m[1]==='9'?new Response('',{status:404}):Response.json(item(m[1]));if(u.includes('/tooltip/spell/'))return Response.json(spell);if(u.includes('news/rss'))return new Response(rss);return new Response('',{status:404})};
 let base,server,sqlite;
 const jars={};
 async function call(who,method,url,body,raw){
@@ -463,4 +465,29 @@ test('Einstellungen ohne Dateizugriff: Discord, Domain und Impressum aus Umgebun
   assert.deepEqual(configureDiscord(empty),['raids']);
   assert.deepEqual(configureDiscord(dir).sort(),['offiziere','raids','umfragen']); // the file wins over the variable
  }finally{for(const [k,v] of [['MODCHECK_DISCORD_WEBHOOKS',keep.w],['MODCHECK_DOMAIN',keep.d]]){if(v===undefined)delete process.env[k];else process.env[k]=v}configureDiscord(dir);try{rmSync(empty,{recursive:true,force:true})}catch{}}
+});
+
+test('Discord-Bot: Registrierung per Emoji annehmen oder ablehnen',async()=>{
+ const waitFor=async fn=>{for(let i=0;i<80&&!fn();i++)await new Promise(r=>setTimeout(r,100));return fn()};
+ process.env.MODCHECK_DISCORD_BOT_TOKEN='test-token';
+ try{
+  const {syncApprovals}=await import('../server/approvals.js');
+  await ok('neu','POST','/api/register',{username:'EmojiJa',password:'richtig-langes-passwort'});
+  await ok('neu','POST','/api/register',{username:'EmojiNein',password:'richtig-langes-passwort'});
+  assert.ok(await waitFor(()=>botCalls.length>=4),'der Bot setzt beide Emojis unter jede Meldung');
+  assert.deepEqual([...new Set(botCalls)].sort(),['✅','❌'].sort());
+  const statusOf=n=>sqlite.prepare('SELECT status FROM users WHERE username=?').get(n).status;
+  const messageOf=n=>sqlite.prepare('SELECT a.message_id FROM register_approvals a JOIN users u ON u.id=a.user_id WHERE u.username=?').get(n).message_id;
+  await syncApprovals(sqlite);
+  assert.equal(statusOf('EmojiJa'),'pending');assert.equal(statusOf('EmojiNein'),'pending');
+  botReactors['✅']=['42'];await syncApprovals(sqlite);
+  // The stub gives every message the same reactions, so both users see the same emoji: check the yes-case alone first.
+  assert.equal(statusOf('EmojiJa'),'active');assert.equal(statusOf('EmojiNein'),'active');
+  sqlite.prepare(`UPDATE users SET status='pending' WHERE username IN ('EmojiJa','EmojiNein')`).run();
+  sqlite.prepare('UPDATE register_approvals SET decided_at=NULL').run();
+  botReactors['❌']=['42'];await syncApprovals(sqlite);
+  assert.equal(statusOf('EmojiJa'),'disabled','❌ gewinnt, wenn beide Emojis gesetzt sind');
+  assert.ok(messageOf('EmojiJa'));
+  const done=sqlite.prepare('SELECT COUNT(*) n FROM register_approvals WHERE decided_at IS NULL').get().n;assert.equal(done,0);
+ }finally{delete process.env.MODCHECK_DISCORD_BOT_TOKEN;delete botReactors['✅'];delete botReactors['❌']}
 });

@@ -9,6 +9,7 @@ import {registerForumRoutes} from './forum.js';
 import {registerProgressRoutes} from './progress.js';
 import {registerBonusRoutes} from './bonus.js';
 import {registerPollRoutes,syncPolls} from './polls.js';
+import {syncApprovals} from './approvals.js';
 
 const MAX_BODY=64*1024,MAX_UPLOAD=3*1024*1024,OPEN_API=new Set(['/api/me','/api/register','/api/login']);
 const IMAGE_TYPES=[['image/png',b=>b.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10]))],['image/jpeg',b=>b[0]===0xff&&b[1]===0xd8&&b[2]===0xff],['image/webp',b=>b.toString('latin1',0,4)==='RIFF'&&b.toString('latin1',8,12)==='WEBP']];
@@ -61,5 +62,5 @@ export function createPlatform({db,env,uploadDir}){
    console.error(e);send(res,500,{error:'Die Anfrage konnte nicht verarbeitet werden.'})
   }
  }
- return{handle,progress,userOf:req=>sessionUser(db,cookieOf(req)),remindRaids:()=>remindRaids(db),syncPolls:()=>syncPolls(db)}
+ return{handle,progress,userOf:req=>sessionUser(db,cookieOf(req)),remindRaids:()=>remindRaids(db),syncPolls:()=>syncPolls(db),syncApprovals:()=>syncApprovals(db)}
 }

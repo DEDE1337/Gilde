@@ -23,11 +23,22 @@ Ohne Volume ist die Datenbank bei jedem Deploy weg: Konten, Raids, Forum, Gold, 
 | `MODCHECK_DOMAIN` | `modcheck.de` | Link in den Discord-Meldungen |
 | `MODCHECK_DISCORD_WEBHOOKS` | der Inhalt von `data/discord-webhooks.json` als eine Zeile | Meldungen und Umfragen in Discord |
 
-Optional: `MODCHECK_IMPRESSUM` (Zeilen mit `\n` trennen) und `MODCHECK_CF_ANALYTICS_TOKEN`.
+Optional: `MODCHECK_DISCORD_BOT_TOKEN` (Freischalten per Emoji, siehe unten), `MODCHECK_IMPRESSUM` (Zeilen mit `\n` trennen) und `MODCHECK_CF_ANALYTICS_TOKEN`.
 
 Schon im Dockerfile gesetzt, nichts zu tun: `HOST`, `MODCHECK_DATA=/data`, `MODCHECK_HTTPS=1`, `MODCHECK_TRUST_PROXY=proxy`. Den Port setzt Railway selbst.
 
 Die Webhook-Adressen sind geheim, wer sie hat, kann in deine Discord-Kanäle schreiben. Sie gehören in die Railway-Variablen und nie ins Repository.
+
+## Registrierungen per Emoji freischalten (optional)
+
+Jede neue Registrierung erscheint in `#offiziere` mit ✅ und ❌. Die erste Reaktion eines Offiziers entscheidet, die Seite prüft alle 15 Sekunden. Bei beiden Emojis gilt ❌. Eine Ablehnung sperrt das Konto nur, auf der Seite lässt es sich wieder freischalten. Ohne Bot-Token bleibt es bei der normalen Meldung ohne Emojis.
+
+Webhooks können nicht reagieren, deshalb braucht es einen eigenen Bot:
+
+1. Im Discord Developer Portal eine Anwendung anlegen, unter **Bot** den Token erzeugen (nur dort sichtbar).
+2. Den Bot per **OAuth2 → URL Generator** (Scope `bot`) auf den Server einladen.
+3. Im Kanal `#offiziere` dem Bot diese Rechte geben: Kanal ansehen, Nachrichtenverlauf lesen, Reaktionen hinzufügen. Der Kanal muss privat bleiben: Wer dort reagieren kann, darf entscheiden.
+4. In Railway die Variable `MODCHECK_DISCORD_BOT_TOKEN` mit dem Token setzen. Der Token gehört nie ins Repository.
 
 ## 4. Domain
 

@@ -1,5 +1,6 @@
 /* Accounts, members, characters and the planner data stored per character. */
-import {discord,berlinTime} from './discord.js';
+import {discord,berlinTime,botReady} from './discord.js';
+import {requestApproval} from './approvals.js';
 import {route,fail,text,int,oneOf,now,id,hashPassword,verifyPassword,createSession,dropSession,rateLimit,failuresBlocked,recordFailure,characterOwned,publicCharacter,appearance,notify,CLASSES,RACES,SLOTS,PERMISSIONS,can} from './core.js';
 
 const me=user=>user&&{id:user.id,username:user.username,role:user.role,guildRank:user.guild_rank,permissions:user.permissions,mainCharacterId:user.main_character_id,dashboard:JSON.parse(user.dashboard_json||'{}'),legacyPublic:!!user.legacy_public};
@@ -15,7 +16,9 @@ export function registerAccountRoutes(db){
   if(db.prepare(`SELECT COUNT(*) n FROM users WHERE status='pending'`).get().n>=30)fail(429,'Gerade warten zu viele Konten auf Freischaltung. Bitte melde dich bei der Gildenleitung.');
   db.prepare('INSERT INTO users(id,username,password_hash,created_at) VALUES (?,?,?,?)').run(id(),username,hashPassword(password),now());
   for(const a of db.prepare(`SELECT id FROM users WHERE role='admin' AND status='active'`).all())notify(db,a.id,`Neue Registrierung: ${username}`,'members','register:'+username);
-  discord('offiziere',{title:'Neue Registrierung',text:`**${username}** wartet auf Freischaltung.\nGilde → Mitglieder → Benutzer verwalten`,color:0x5b8def});
+  const created=db.prepare('SELECT id FROM users WHERE username=?').get(username);
+  if(botReady())requestApproval(db,{id:created.id,username}).catch(e=>console.warn('Freischaltung per Emoji:',e.message));
+  else discord('offiziere',{title:'Neue Registrierung',text:`**${username}** wartet auf Freischaltung.\nGilde → Mitglieder → Benutzer verwalten`,color:0x5b8def});
   return{ok:true,message:'Konto angelegt. Ein Offizier muss es noch freischalten.'}
  });
  route('POST','/api/login','public',({body,ip,setSession})=>{

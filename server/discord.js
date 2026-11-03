@@ -27,6 +27,41 @@ export function discord(channel,{title,text='',color=0xffb347}){
  })
 }
 
+// One embed through the webhook, waiting for Discord's answer so the message can be edited or reacted to later. Returns {channelId,messageId} or null.
+export async function discordPost(channel,{title,text='',color=0xffb347}){
+ const url=hooks[channel];if(!url)return null;
+ const embed={title:String(title).slice(0,256),description:String(text).slice(0,2000),color,footer:{text:'ModCheck'},timestamp:new Date().toISOString(),...(site?{url:site}:{})};
+ try{
+  const r=await fetch(url+'?wait=true',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:'ModCheck',embeds:[embed],allowed_mentions:{parse:[]}}),signal:AbortSignal.timeout(10000)});
+  if(!r.ok){console.warn(`Discord ${channel}: ${r.status}`);return null}
+  const m=await r.json();return m.id&&m.channel_id?{channelId:m.channel_id,messageId:m.id}:null
+ }catch(e){console.warn(`Discord ${channel}: ${e.message}`);return null}
+}
+export async function discordEdit(channel,messageId,{title,text='',color=0xffb347}){
+ const url=hooks[channel];if(!url||!/^\d+$/.test(messageId))return;
+ try{await fetch(`${url}/messages/${messageId}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({embeds:[{title:String(title).slice(0,256),description:String(text).slice(0,2000),color,footer:{text:'ModCheck'},timestamp:new Date().toISOString()}],allowed_mentions:{parse:[]}}),signal:AbortSignal.timeout(10000)})}catch(e){console.warn(`Discord ${channel}: ${e.message}`)}
+}
+// Reactions cannot be added or read through a webhook, so approving by emoji needs a bot token (MODCHECK_DISCORD_BOT_TOKEN).
+export const botReady=()=>!!process.env.MODCHECK_DISCORD_BOT_TOKEN;
+async function bot(method,path){
+ try{
+  const r=await fetch('https://discord.com/api/v10'+path,{method,headers:{Authorization:'Bot '+process.env.MODCHECK_DISCORD_BOT_TOKEN,'User-Agent':'ModCheck (guild site, 1.0)'},signal:AbortSignal.timeout(10000)});
+  if(!r.ok){console.warn(`Discord-Bot ${method} ${path.split('?')[0]}: ${r.status}`);return null}
+  return r.status===204?true:await r.json()
+ }catch(e){console.warn('Discord-Bot:',e.message);return null}
+}
+export async function botReact(channelId,messageId,emoji){
+ if(!/^\d+$/.test(channelId)||!/^\d+$/.test(messageId))return false;
+ const ok=await bot('PUT',`/channels/${channelId}/messages/${messageId}/reactions/${encodeURIComponent(emoji)}/@me`);
+ await new Promise(r=>setTimeout(r,400));return !!ok
+}
+// Ids of the people (not bots) who reacted with this emoji, or null when Discord could not be asked.
+export async function botReactors(channelId,messageId,emoji){
+ if(!/^\d+$/.test(channelId)||!/^\d+$/.test(messageId))return null;
+ const list=await bot('GET',`/channels/${channelId}/messages/${messageId}/reactions/${encodeURIComponent(emoji)}?limit=25`);
+ return Array.isArray(list)?list.filter(u=>!u.bot).map(u=>u.id):null
+}
+
 // Native Discord poll in #umfragen (falls back to #allgemein). Returns "channel:messageId" so counts can be read back later, or null.
 export async function discordPoll({question,options,hours,multi}){
  const channel=hooks.umfragen?'umfragen':hooks.allgemein?'allgemein':null;if(!channel)return null;
