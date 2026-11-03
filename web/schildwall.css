@@ -479,4 +479,4 @@ html.cs-open,html.cs-open body{overflow:hidden}
 @media(max-width:900px){.cs{grid-template-columns:1fr;grid-template-rows:auto minmax(280px,42vh) auto auto auto;grid-template-areas:"top" "stage" "left" "right" "bottom";overflow:auto}.cs[data-mode=select] .cs-left{display:none}.cs-panel{margin:10px 16px}.cs-bottom{grid-template-columns:1fr;justify-items:center}.cs-side,.cs-side.right{justify-content:center}.cs-name{flex-direction:column;width:100%}.cs-name input{width:100%}.cs-enter{min-width:0;width:100%}.char-face span{display:none}}
 @media(prefers-reduced-motion:reduce){.cs{animation:none}}
 .cs-name input{width:170px}
-@media(max-width:900px){.cs-name input{width:100%}}
+@media(max-width:900px){.cs-name input{width:100%}.cs-panel{overflow:visible;min-height:auto}.cs-status{top:auto;bottom:74px}.cs-plate{bottom:4px}}
