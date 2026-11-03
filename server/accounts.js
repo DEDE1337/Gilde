@@ -1,6 +1,7 @@
 /* Accounts, members, characters and the planner data stored per character. */
 import {discord,berlinTime,botReady} from './discord.js';
 import {requestApproval} from './approvals.js';
+import {grantStartGold,START_GOLD} from './gold.js';
 import {route,fail,text,int,oneOf,now,id,hashPassword,verifyPassword,createSession,dropSession,rateLimit,failuresBlocked,recordFailure,characterOwned,publicCharacter,appearance,notify,CLASSES,RACES,SLOTS,PERMISSIONS,can} from './core.js';
 
 const me=user=>user&&{id:user.id,username:user.username,role:user.role,guildRank:user.guild_rank,permissions:user.permissions,mainCharacterId:user.main_character_id,dashboard:JSON.parse(user.dashboard_json||'{}'),legacyPublic:!!user.legacy_public};
@@ -77,7 +78,8 @@ export function registerAccountRoutes(db){
  route('POST','/api/characters','member',({user,body})=>{
   const c=characterFields(body);if(db.prepare('SELECT 1 FROM characters WHERE name=? AND surname=?').get(c.name,c.surname))fail(409,`${c.name} ${c.surname} gibt es schon. Vor- und Nachname müssen zusammen einmalig sein.`);
   const cid=id();db.prepare('INSERT INTO characters(id,user_id,name,surname,class_id,race,level,spec,gender,appearance_json,created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)').run(cid,user.id,c.name,c.surname,c.classId,c.race,c.level,c.spec,c.gender,JSON.stringify(c.appearance),now());
-  if(!user.main_character_id)db.prepare('UPDATE users SET main_character_id=? WHERE id=?').run(cid,user.id);return{id:cid}
+  if(!user.main_character_id)db.prepare('UPDATE users SET main_character_id=? WHERE id=?').run(cid,user.id);
+  return{id:cid,startGold:grantStartGold(db,user.id)?START_GOLD:0}
  });
  route('PUT','/api/characters/:id','member',({user,params,body})=>{
   const old=characterOwned(db,user,params.id),c=characterFields(body,old);

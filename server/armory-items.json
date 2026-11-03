@@ -1,0 +1,4483 @@
+{
+ "source": "Wowhead Classic-Tooltips (nether.wowhead.com), abgerufen 2026-11-03",
+ "items": {
+  "873": {
+   "id": 873,
+   "name": "Stab des Jordan",
+   "quality": "epic",
+   "icon": "inv_staff_13",
+   "itemLevel": 40,
+   "requiredLevel": 35,
+   "slot": "twohand",
+   "type": "Stab",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 11,
+    "spi": 11,
+    "armor": 0,
+    "dps": 40.41,
+    "crit": 0,
+    "spell": 26,
+    "heal": 26
+   },
+   "unique": false,
+   "game": {
+    "leben": 0,
+    "angriff": 91,
+    "verteidigung": 0,
+    "krit": 0.5
+   },
+   "value": 555
+  },
+  "942": {
+   "id": 942,
+   "name": "Band der Eiseskälte",
+   "quality": "epic",
+   "icon": "inv_jewelry_ring_07",
+   "itemLevel": 52,
+   "requiredLevel": 47,
+   "slot": "ring",
+   "type": "",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 0,
+    "angriff": 17,
+    "verteidigung": 0,
+    "krit": 1.4
+   },
+   "value": 825
+  },
+  "943": {
+   "id": 943,
+   "name": "Stab des Aufsehers",
+   "quality": "epic",
+   "icon": "inv_staff_29",
+   "itemLevel": 48,
+   "requiredLevel": 43,
+   "slot": "twohand",
+   "type": "Stab",
+   "classes": null,
+   "stats": {
+    "sta": 11,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 260,
+    "dps": 46.46,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 110,
+    "angriff": 85,
+    "verteidigung": 10,
+    "krit": 0.6
+   },
+   "value": 730
+  },
+  "1121": {
+   "id": 1121,
+   "name": "Füße des Luchses",
+   "quality": "rare",
+   "icon": "inv_boots_wolf",
+   "itemLevel": 24,
+   "requiredLevel": 19,
+   "slot": "feet",
+   "type": "Leder",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 3,
+    "agi": 8,
+    "int": 0,
+    "spi": 0,
+    "armor": 63,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 60,
+    "angriff": 7,
+    "verteidigung": 7,
+    "krit": 0.3
+   },
+   "value": 130
+  },
+  "1156": {
+   "id": 1156,
+   "name": "Reich mit Juwelen besetzter Ring",
+   "quality": "rare",
+   "icon": "inv_jewelry_ring_09",
+   "itemLevel": 22,
+   "requiredLevel": 17,
+   "slot": "ring",
+   "type": "",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 2,
+    "int": 6,
+    "spi": 0,
+    "armor": 0,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": true,
+   "game": {
+    "leben": 0,
+    "angriff": 8,
+    "verteidigung": 0,
+    "krit": 0.5
+   },
+   "value": 115
+  },
+  "1443": {
+   "id": 1443,
+   "name": "Juwelenbesetztes Amulett von Cainwyn",
+   "quality": "epic",
+   "icon": "inv_jewelry_amulet_01",
+   "itemLevel": 60,
+   "requiredLevel": 55,
+   "slot": "neck",
+   "type": "",
+   "classes": null,
+   "stats": {
+    "sta": 8,
+    "str": 0,
+    "agi": 0,
+    "int": 18,
+    "spi": 10,
+    "armor": 0,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 80,
+    "angriff": 25,
+    "verteidigung": 0,
+    "krit": 1.6
+   },
+   "value": 1020
+  },
+  "1980": {
+   "id": 1980,
+   "name": "Unterweltband",
+   "quality": "epic",
+   "icon": "inv_jewelry_ring_15",
+   "itemLevel": 43,
+   "requiredLevel": 38,
+   "slot": "ring",
+   "type": "",
+   "classes": null,
+   "stats": {
+    "sta": 10,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 6,
+    "armor": 0,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 100,
+    "angriff": 14,
+    "verteidigung": 0,
+    "krit": 1.1
+   },
+   "value": 620
+  },
+  "2041": {
+   "id": 2041,
+   "name": "Tunika von Westfall",
+   "quality": "rare",
+   "icon": "inv_chest_leather_07",
+   "itemLevel": 24,
+   "requiredLevel": 0,
+   "slot": "chest",
+   "type": "Leder",
+   "classes": null,
+   "stats": {
+    "sta": 5,
+    "str": 0,
+    "agi": 11,
+    "int": 0,
+    "spi": 0,
+    "armor": 92,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 110,
+    "angriff": 6,
+    "verteidigung": 8,
+    "krit": 0.4
+   },
+   "value": 130
+  },
+  "2042": {
+   "id": 2042,
+   "name": "Stab von Westfall",
+   "quality": "rare",
+   "icon": "inv_staff_10",
+   "itemLevel": 24,
+   "requiredLevel": 0,
+   "slot": "twohand",
+   "type": "Stab",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 5,
+    "spi": 11,
+    "armor": 0,
+    "dps": 20.5,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 0,
+    "angriff": 37,
+    "verteidigung": 0,
+    "krit": 0.3
+   },
+   "value": 130
+  },
+  "2099": {
+   "id": 2099,
+   "name": "Zwergische Handkanone",
+   "quality": "epic",
+   "icon": "inv_weapon_rifle_09",
+   "itemLevel": 58,
+   "requiredLevel": 53,
+   "slot": "ranged",
+   "type": "Schusswaffe",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 32.76,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 0,
+    "angriff": 61,
+    "verteidigung": 0,
+    "krit": 0.8
+   },
+   "value": 970
+  },
+  "2164": {
+   "id": 2164,
+   "name": "Darmreißer",
+   "quality": "epic",
+   "icon": "inv_sword_13",
+   "itemLevel": 45,
+   "requiredLevel": 40,
+   "slot": "onehand",
+   "type": "Dolch",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 33.89,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 0,
+    "angriff": 55,
+    "verteidigung": 0,
+    "krit": 0.6
+   },
+   "value": 665
+  },
+  "2825": {
+   "id": 2825,
+   "name": "Bogen der Sengpfeile",
+   "quality": "epic",
+   "icon": "inv_weapon_bow_09",
+   "itemLevel": 42,
+   "requiredLevel": 37,
+   "slot": "ranged",
+   "type": "Bogen",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 25,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 0,
+    "angriff": 45,
+    "verteidigung": 0,
+    "krit": 0.6
+   },
+   "value": 600
+  },
+  "2915": {
+   "id": 2915,
+   "name": "Taraneisbrecher",
+   "quality": "epic",
+   "icon": "inv_hammer_02",
+   "itemLevel": 52,
+   "requiredLevel": 47,
+   "slot": "twohand",
+   "type": "Streitkolben",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 49.57,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 0,
+    "angriff": 91,
+    "verteidigung": 0,
+    "krit": 0.7
+   },
+   "value": 825
+  },
+  "3481": {
+   "id": 3481,
+   "name": "Bronzene Schultern mit Versilberung",
+   "quality": "uncommon",
+   "icon": "inv_shoulder_09",
+   "itemLevel": 25,
+   "requiredLevel": 20,
+   "slot": "shoulders",
+   "type": "Kette",
+   "classes": null,
+   "stats": {
+    "sta": 3,
+    "str": 3,
+    "agi": 0,
+    "int": 0,
+    "spi": 3,
+    "armor": 137,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 80,
+    "angriff": 3,
+    "verteidigung": 9,
+    "krit": 0
+   },
+   "value": 75
+  },
+  "3482": {
+   "id": 3482,
+   "name": "Bronzene Stiefel mit Versilberung",
+   "quality": "uncommon",
+   "icon": "inv_boots_01",
+   "itemLevel": 26,
+   "requiredLevel": 21,
+   "slot": "feet",
+   "type": "Kette",
+   "classes": null,
+   "stats": {
+    "sta": 4,
+    "str": 4,
+    "agi": 0,
+    "int": 0,
+    "spi": 3,
+    "armor": 128,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 92,
+    "angriff": 4,
+    "verteidigung": 9,
+    "krit": 0
+   },
+   "value": 80
+  },
+  "3483": {
+   "id": 3483,
+   "name": "Bronzene Stulpen mit Versilberung",
+   "quality": "uncommon",
+   "icon": "inv_gauntlets_05",
+   "itemLevel": 27,
+   "requiredLevel": 22,
+   "slot": "hands",
+   "type": "Kette",
+   "classes": null,
+   "stats": {
+    "sta": 4,
+    "str": 4,
+    "agi": 0,
+    "int": 0,
+    "spi": 3,
+    "armor": 118,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 94,
+    "angriff": 4,
+    "verteidigung": 9,
+    "krit": 0
+   },
+   "value": 85
+  },
+  "3484": {
+   "id": 3484,
+   "name": "Grüne Eisenstiefel",
+   "quality": "uncommon",
+   "icon": "inv_boots_01",
+   "itemLevel": 29,
+   "requiredLevel": 24,
+   "slot": "feet",
+   "type": "Kette",
+   "classes": null,
+   "stats": {
+    "sta": 7,
+    "str": 3,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 134,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 128,
+    "angriff": 3,
+    "verteidigung": 10,
+    "krit": 0
+   },
+   "value": 95
+  },
+  "3485": {
+   "id": 3485,
+   "name": "Grüne Eisenstulpen",
+   "quality": "uncommon",
+   "icon": "inv_gauntlets_05",
+   "itemLevel": 30,
+   "requiredLevel": 25,
+   "slot": "hands",
+   "type": "Kette",
+   "classes": null,
+   "stats": {
+    "sta": 6,
+    "str": 5,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 124,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 120,
+    "angriff": 5,
+    "verteidigung": 9,
+    "krit": 0
+   },
+   "value": 100
+  },
+  "3487": {
+   "id": 3487,
+   "name": "Schweres Kupferbreitschwert",
+   "quality": "uncommon",
+   "icon": "inv_sword_14",
+   "itemLevel": 19,
+   "requiredLevel": 14,
+   "slot": "twohand",
+   "type": "Schwert",
+   "classes": null,
+   "stats": {
+    "sta": 6,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 12.59,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 60,
+    "angriff": 22,
+    "verteidigung": 0,
+    "krit": 0.2
+   },
+   "value": 50
+  },
+  "3491": {
+   "id": 3491,
+   "name": "Schwerer bronzener Streitkolben",
+   "quality": "uncommon",
+   "icon": "inv_mace_08",
+   "itemLevel": 25,
+   "requiredLevel": 20,
+   "slot": "mainhand",
+   "type": "Streitkolben",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 4,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 12.86,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 0,
+    "angriff": 24,
+    "verteidigung": 0,
+    "krit": 0.2
+   },
+   "value": 75
+  },
+  "3492": {
+   "id": 3492,
+   "name": "Mächtiger Eisenhammer",
+   "quality": "uncommon",
+   "icon": "inv_hammer_04",
+   "itemLevel": 30,
+   "requiredLevel": 25,
+   "slot": "mainhand",
+   "type": "Streitkolben",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 5,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 15.54,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 0,
+    "angriff": 30,
+    "verteidigung": 0,
+    "krit": 0.3
+   },
+   "value": 100
+  },
+  "4243": {
+   "id": 4243,
+   "name": "Feine Ledertunika",
+   "quality": "uncommon",
+   "icon": "inv_chest_leather_09",
+   "itemLevel": 17,
+   "requiredLevel": 12,
+   "slot": "chest",
+   "type": "Leder",
+   "classes": null,
+   "stats": {
+    "sta": 3,
+    "str": 0,
+    "agi": 4,
+    "int": 0,
+    "spi": 0,
+    "armor": 73,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 64,
+    "angriff": 2,
+    "verteidigung": 5,
+    "krit": 0.1
+   },
+   "value": 40
+  },
+  "5191": {
+   "id": 5191,
+   "name": "Grausamer Widerhaken",
+   "quality": "rare",
+   "icon": "inv_sword_24",
+   "itemLevel": 24,
+   "requiredLevel": 19,
+   "slot": "onehand",
+   "type": "Schwert",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 15.54,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 0,
+    "angriff": 25,
+    "verteidigung": 0,
+    "krit": 0.3
+   },
+   "value": 130
+  },
+  "5193": {
+   "id": 5193,
+   "name": "Cape der Bruderschaft",
+   "quality": "rare",
+   "icon": "inv_misc_cape_08",
+   "itemLevel": 25,
+   "requiredLevel": 20,
+   "slot": "back",
+   "type": "",
+   "classes": null,
+   "stats": {
+    "sta": 3,
+    "str": 0,
+    "agi": 6,
+    "int": 0,
+    "spi": 0,
+    "armor": 21,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 93,
+    "angriff": 3,
+    "verteidigung": 6,
+    "krit": 0.2
+   },
+   "value": 140
+  },
+  "5443": {
+   "id": 5443,
+   "name": "Vergoldeter Rundschild",
+   "quality": "rare",
+   "icon": "inv_shield_02",
+   "itemLevel": 20,
+   "requiredLevel": 15,
+   "slot": "offhand",
+   "type": "Schild",
+   "classes": null,
+   "stats": {
+    "sta": 5,
+    "str": 0,
+    "agi": 2,
+    "int": 0,
+    "spi": 0,
+    "armor": 471,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 100,
+    "angriff": 1,
+    "verteidigung": 31,
+    "krit": 0.1
+   },
+   "value": 100
+  },
+  "6084": {
+   "id": 6084,
+   "name": "Gamaschen der Wache von Stormwind",
+   "quality": "uncommon",
+   "icon": "inv_pants_03",
+   "itemLevel": 13,
+   "requiredLevel": 0,
+   "slot": "legs",
+   "type": "Kette",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 3,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 113,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 26,
+    "angriff": 3,
+    "verteidigung": 6,
+    "krit": 0
+   },
+   "value": 30
+  },
+  "7930": {
+   "id": 7930,
+   "name": "Schwere Mithrilbrustplatte",
+   "quality": "uncommon",
+   "icon": "inv_chest_plate10",
+   "itemLevel": 46,
+   "requiredLevel": 41,
+   "slot": "chest",
+   "type": "Platte",
+   "classes": null,
+   "stats": {
+    "sta": 15,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 536,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 242,
+    "angriff": 0,
+    "verteidigung": 28,
+    "krit": 0
+   },
+   "value": 185
+  },
+  "9452": {
+   "id": 9452,
+   "name": "Hydrokrückstock",
+   "quality": "rare",
+   "icon": "inv_staff_15",
+   "itemLevel": 32,
+   "requiredLevel": 27,
+   "slot": "twohand",
+   "type": "Stab",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 21.61,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 0,
+    "angriff": 42,
+    "verteidigung": 0,
+    "krit": 0.3
+   },
+   "value": 200
+  },
+  "9454": {
+   "id": 9454,
+   "name": "Säurengänger",
+   "quality": "rare",
+   "icon": "inv_boots_05",
+   "itemLevel": 32,
+   "requiredLevel": 27,
+   "slot": "feet",
+   "type": "Stoff",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 8,
+    "spi": 4,
+    "armor": 34,
+    "dps": 0,
+    "crit": 0,
+    "spell": 5,
+    "heal": 5
+   },
+   "unique": false,
+   "game": {
+    "leben": 80,
+    "angriff": 5,
+    "verteidigung": 7,
+    "krit": 0
+   },
+   "value": 200
+  },
+  "9458": {
+   "id": 9458,
+   "name": "Thermapluggs Zentralkern",
+   "quality": "rare",
+   "icon": "inv_shield_10",
+   "itemLevel": 37,
+   "requiredLevel": 32,
+   "slot": "offhand",
+   "type": "Schild",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 3,
+    "armor": 795,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 93,
+    "angriff": 0,
+    "verteidigung": 55,
+    "krit": 0
+   },
+   "value": 250
+  },
+  "9459": {
+   "id": 9459,
+   "name": "Thermapluggs linker Arm",
+   "quality": "rare",
+   "icon": "inv_axe_03",
+   "itemLevel": 37,
+   "requiredLevel": 32,
+   "slot": "twohand",
+   "type": "Axt",
+   "classes": null,
+   "stats": {
+    "sta": 7,
+    "str": 18,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 32.59,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 70,
+    "angriff": 74,
+    "verteidigung": 0,
+    "krit": 0.4
+   },
+   "value": 250
+  },
+  "9492": {
+   "id": 9492,
+   "name": "Elektromagnetischer Gigaflux-Reaktivator",
+   "quality": "rare",
+   "icon": "inv_gizmo_01",
+   "itemLevel": 37,
+   "requiredLevel": 32,
+   "slot": "head",
+   "type": "Stoff",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 15,
+    "spi": 12,
+    "armor": 44,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 93,
+    "angriff": 5,
+    "verteidigung": 9,
+    "krit": 0
+   },
+   "value": 250
+  },
+  "10001": {
+   "id": 10001,
+   "name": "Schwarze Magiestoffrobe",
+   "quality": "uncommon",
+   "icon": "inv_chest_cloth_13",
+   "itemLevel": 42,
+   "requiredLevel": 37,
+   "slot": "chest",
+   "type": "Stoff",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 8,
+    "spi": 14,
+    "armor": 55,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 84,
+    "angriff": 2,
+    "verteidigung": 9,
+    "krit": 0
+   },
+   "value": 165
+  },
+  "10002": {
+   "id": 10002,
+   "name": "Schattenzwirnhose",
+   "quality": "uncommon",
+   "icon": "inv_pants_11",
+   "itemLevel": 42,
+   "requiredLevel": 37,
+   "slot": "legs",
+   "type": "Stoff",
+   "classes": null,
+   "stats": {
+    "sta": 6,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 48,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 144,
+    "angriff": 0,
+    "verteidigung": 8,
+    "krit": 0
+   },
+   "value": 165
+  },
+  "10004": {
+   "id": 10004,
+   "name": "Schattenzwirnrobe",
+   "quality": "uncommon",
+   "icon": "inv_chest_cloth_38",
+   "itemLevel": 43,
+   "requiredLevel": 38,
+   "slot": "chest",
+   "type": "Stoff",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 7,
+    "armor": 57,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 86,
+    "angriff": 0,
+    "verteidigung": 9,
+    "krit": 0
+   },
+   "value": 170
+  },
+  "10023": {
+   "id": 10023,
+   "name": "Schattenzwirnhandschuhe",
+   "quality": "uncommon",
+   "icon": "inv_gauntlets_09",
+   "itemLevel": 45,
+   "requiredLevel": 40,
+   "slot": "hands",
+   "type": "Stoff",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 5,
+    "spi": 0,
+    "armor": 37,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 90,
+    "angriff": 2,
+    "verteidigung": 8,
+    "krit": 0
+   },
+   "value": 180
+  },
+  "10025": {
+   "id": 10025,
+   "name": "Schattenzwirnmaske",
+   "quality": "uncommon",
+   "icon": "inv_helmet_27",
+   "itemLevel": 49,
+   "requiredLevel": 44,
+   "slot": "head",
+   "type": "Stoff",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 10,
+    "spi": 0,
+    "armor": 52,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 98,
+    "angriff": 3,
+    "verteidigung": 9,
+    "krit": 0
+   },
+   "value": 205
+  },
+  "10028": {
+   "id": 10028,
+   "name": "Schattenzwirnschultern",
+   "quality": "uncommon",
+   "icon": "inv_shoulder_25",
+   "itemLevel": 47,
+   "requiredLevel": 42,
+   "slot": "shoulders",
+   "type": "Stoff",
+   "classes": null,
+   "stats": {
+    "sta": 7,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 46,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 164,
+    "angriff": 0,
+    "verteidigung": 9,
+    "krit": 0
+   },
+   "value": 195
+  },
+  "10031": {
+   "id": 10031,
+   "name": "Schattenzwirnstiefel",
+   "quality": "uncommon",
+   "icon": "inv_boots_05",
+   "itemLevel": 48,
+   "requiredLevel": 43,
+   "slot": "feet",
+   "type": "Stoff",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 10,
+    "armor": 43,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 96,
+    "angriff": 0,
+    "verteidigung": 9,
+    "krit": 0
+   },
+   "value": 200
+  },
+  "10399": {
+   "id": 10399,
+   "name": "Geschwärzte Rüstung der Defias",
+   "quality": "rare",
+   "icon": "inv_chest_leather_08",
+   "itemLevel": 24,
+   "requiredLevel": 19,
+   "slot": "chest",
+   "type": "Leder",
+   "classes": null,
+   "stats": {
+    "sta": 11,
+    "str": 4,
+    "agi": 3,
+    "int": 0,
+    "spi": 0,
+    "armor": 92,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 170,
+    "angriff": 6,
+    "verteidigung": 8,
+    "krit": 0.1
+   },
+   "value": 130
+  },
+  "10400": {
+   "id": 10400,
+   "name": "Geschwärzte Gamaschen der Defias",
+   "quality": "uncommon",
+   "icon": "inv_pants_12",
+   "itemLevel": 18,
+   "requiredLevel": 13,
+   "slot": "legs",
+   "type": "Leder",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 3,
+    "agi": 3,
+    "int": 0,
+    "spi": 0,
+    "armor": 65,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 36,
+    "angriff": 5,
+    "verteidigung": 5,
+    "krit": 0.1
+   },
+   "value": 45
+  },
+  "10401": {
+   "id": 10401,
+   "name": "Geschwärzte Handschuhe der Defias",
+   "quality": "uncommon",
+   "icon": "inv_gauntlets_18",
+   "itemLevel": 18,
+   "requiredLevel": 13,
+   "slot": "hands",
+   "type": "Leder",
+   "classes": null,
+   "stats": {
+    "sta": 1,
+    "str": 3,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 46,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 46,
+    "angriff": 3,
+    "verteidigung": 5,
+    "krit": 0
+   },
+   "value": 45
+  },
+  "10402": {
+   "id": 10402,
+   "name": "Geschwärzte Stiefel der Defias",
+   "quality": "uncommon",
+   "icon": "inv_boots_05",
+   "itemLevel": 18,
+   "requiredLevel": 13,
+   "slot": "feet",
+   "type": "Leder",
+   "classes": null,
+   "stats": {
+    "sta": 2,
+    "str": 0,
+    "agi": 3,
+    "int": 0,
+    "spi": 0,
+    "armor": 51,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 56,
+    "angriff": 2,
+    "verteidigung": 5,
+    "krit": 0.1
+   },
+   "value": 45
+  },
+  "10403": {
+   "id": 10403,
+   "name": "Geschwärzter Gürtel der Defias",
+   "quality": "uncommon",
+   "icon": "inv_belt_26",
+   "itemLevel": 22,
+   "requiredLevel": 17,
+   "slot": "waist",
+   "type": "Leder",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 5,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 45,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 44,
+    "angriff": 5,
+    "verteidigung": 5,
+    "krit": 0
+   },
+   "value": 60
+  },
+  "11684": {
+   "id": 11684,
+   "name": "Ironfoe",
+   "quality": "epic",
+   "icon": "spell_frost_frostbrand",
+   "itemLevel": 60,
+   "requiredLevel": 55,
+   "slot": "mainhand",
+   "type": "Streitkolben",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 43.54,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": true,
+   "game": {
+    "leben": 0,
+    "angriff": 72,
+    "verteidigung": 0,
+    "krit": 0.8
+   },
+   "value": 1020
+  },
+  "11745": {
+   "id": 11745,
+   "name": "Fäuste der Phalanx",
+   "quality": "rare",
+   "icon": "inv_gauntlets_22",
+   "itemLevel": 56,
+   "requiredLevel": 51,
+   "slot": "hands",
+   "type": "Platte",
+   "classes": null,
+   "stats": {
+    "sta": 9,
+    "str": 20,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 367,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 230,
+    "angriff": 20,
+    "verteidigung": 25,
+    "krit": 0
+   },
+   "value": 460
+  },
+  "11746": {
+   "id": 11746,
+   "name": "Golemschädel-Helm",
+   "quality": "rare",
+   "icon": "inv_helmet_23",
+   "itemLevel": 56,
+   "requiredLevel": 51,
+   "slot": "head",
+   "type": "Platte",
+   "classes": null,
+   "stats": {
+    "sta": 18,
+    "str": 18,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 477,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 320,
+    "angriff": 18,
+    "verteidigung": 30,
+    "krit": 0
+   },
+   "value": 460
+  },
+  "11810": {
+   "id": 11810,
+   "name": "Macht des Willens",
+   "quality": "rare",
+   "icon": "inv_jewelry_amulet_01",
+   "itemLevel": 60,
+   "requiredLevel": 55,
+   "slot": "trinket",
+   "type": "",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": true,
+   "game": {
+    "leben": 0,
+    "angriff": 15,
+    "verteidigung": 0,
+    "krit": 1.3
+   },
+   "value": 510
+  },
+  "11815": {
+   "id": 11815,
+   "name": "Hand der Gerechtigkeit",
+   "quality": "rare",
+   "icon": "inv_jewelry_talisman_01",
+   "itemLevel": 58,
+   "requiredLevel": 53,
+   "slot": "trinket",
+   "type": "",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": true,
+   "game": {
+    "leben": 0,
+    "angriff": 15,
+    "verteidigung": 0,
+    "krit": 1.2
+   },
+   "value": 485
+  },
+  "11816": {
+   "id": 11816,
+   "name": "Zornesschmieds Streitaxt",
+   "quality": "rare",
+   "icon": "inv_weapon_halberd_06",
+   "itemLevel": 56,
+   "requiredLevel": 51,
+   "slot": "twohand",
+   "type": "Axt",
+   "classes": null,
+   "stats": {
+    "sta": 11,
+    "str": 27,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 48.08,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 110,
+    "angriff": 110,
+    "verteidigung": 0,
+    "krit": 0.6
+   },
+   "value": 460
+  },
+  "11819": {
+   "id": 11819,
+   "name": "Zweiter Wind",
+   "quality": "rare",
+   "icon": "inv_jewelry_talisman_06",
+   "itemLevel": 59,
+   "requiredLevel": 54,
+   "slot": "trinket",
+   "type": "",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 22
+   },
+   "unique": true,
+   "game": {
+    "leben": 0,
+    "angriff": 21,
+    "verteidigung": 0,
+    "krit": 1.2
+   },
+   "value": 500
+  },
+  "11820": {
+   "id": 11820,
+   "name": "Königlich dekorierte Rüstung",
+   "quality": "rare",
+   "icon": "inv_chest_plate04",
+   "itemLevel": 58,
+   "requiredLevel": 53,
+   "slot": "chest",
+   "type": "Kette",
+   "classes": null,
+   "stats": {
+    "sta": 26,
+    "str": 8,
+    "agi": 12,
+    "int": 0,
+    "spi": 0,
+    "armor": 344,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 405,
+    "angriff": 14,
+    "verteidigung": 25,
+    "krit": 0.4
+   },
+   "value": 485
+  },
+  "11923": {
+   "id": 11923,
+   "name": "Der Hammer der Anmut",
+   "quality": "rare",
+   "icon": "inv_hammer_07",
+   "itemLevel": 57,
+   "requiredLevel": 52,
+   "slot": "mainhand",
+   "type": "Streitkolben",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 37.59,
+    "crit": 0,
+    "spell": 0,
+    "heal": 31
+   },
+   "unique": false,
+   "game": {
+    "leben": 0,
+    "angriff": 68,
+    "verteidigung": 0,
+    "krit": 0.6
+   },
+   "value": 475
+  },
+  "11926": {
+   "id": 11926,
+   "name": "Brustplatte des Totschlägers",
+   "quality": "rare",
+   "icon": "inv_chest_chain_07",
+   "itemLevel": 57,
+   "requiredLevel": 52,
+   "slot": "chest",
+   "type": "Kette",
+   "classes": null,
+   "stats": {
+    "sta": 8,
+    "str": 8,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 338,
+    "dps": 0,
+    "crit": 2,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 223,
+    "angriff": 8,
+    "verteidigung": 24,
+    "krit": 2
+   },
+   "value": 475
+  },
+  "11931": {
+   "id": 11931,
+   "name": "Dreadforge-Vergelter",
+   "quality": "rare",
+   "icon": "inv_axe_22",
+   "itemLevel": 59,
+   "requiredLevel": 54,
+   "slot": "twohand",
+   "type": "Axt",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 50.54,
+    "crit": 1,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 0,
+    "angriff": 87,
+    "verteidigung": 0,
+    "krit": 1.6
+   },
+   "value": 500
+  },
+  "11932": {
+   "id": 11932,
+   "name": "Führungsstock der Weisheit",
+   "quality": "rare",
+   "icon": "inv_staff_30",
+   "itemLevel": 59,
+   "requiredLevel": 54,
+   "slot": "twohand",
+   "type": "Stab",
+   "classes": null,
+   "stats": {
+    "sta": 11,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 10,
+    "armor": 0,
+    "dps": 50.45,
+    "crit": 0,
+    "spell": 0,
+    "heal": 53
+   },
+   "unique": false,
+   "game": {
+    "leben": 110,
+    "angriff": 103,
+    "verteidigung": 0,
+    "krit": 0.6
+   },
+   "value": 500
+  },
+  "11933": {
+   "id": 11933,
+   "name": "Imperiales Juwel",
+   "quality": "rare",
+   "icon": "inv_misc_gem_sapphire_01",
+   "itemLevel": 60,
+   "requiredLevel": 55,
+   "slot": "neck",
+   "type": "",
+   "classes": null,
+   "stats": {
+    "sta": 7,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 70,
+    "angriff": 15,
+    "verteidigung": 0,
+    "krit": 1.3
+   },
+   "value": 510
+  },
+  "12405": {
+   "id": 12405,
+   "name": "Thoriumrüstung",
+   "quality": "uncommon",
+   "icon": "inv_chest_plate08",
+   "itemLevel": 50,
+   "requiredLevel": 45,
+   "slot": "chest",
+   "type": "Platte",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 480,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 100,
+    "angriff": 0,
+    "verteidigung": 27,
+    "krit": 0
+   },
+   "value": 210
+  },
+  "12410": {
+   "id": 12410,
+   "name": "Thoriumhelm",
+   "quality": "uncommon",
+   "icon": "inv_helmet_23",
+   "itemLevel": 56,
+   "requiredLevel": 51,
+   "slot": "head",
+   "type": "Platte",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 434,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 112,
+    "angriff": 0,
+    "verteidigung": 26,
+    "krit": 0
+   },
+   "value": 250
+  },
+  "12422": {
+   "id": 12422,
+   "name": "Imperiale Plattenrüstung",
+   "quality": "uncommon",
+   "icon": "inv_chest_plate10",
+   "itemLevel": 60,
+   "requiredLevel": 55,
+   "slot": "chest",
+   "type": "Platte",
+   "classes": null,
+   "stats": {
+    "sta": 17,
+    "str": 18,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 570,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 290,
+    "angriff": 18,
+    "verteidigung": 32,
+    "krit": 0
+   },
+   "value": 280
+  },
+  "12427": {
+   "id": 12427,
+   "name": "Imperialer Plattenhelm",
+   "quality": "uncommon",
+   "icon": "inv_helmet_22",
+   "itemLevel": 59,
+   "requiredLevel": 54,
+   "slot": "head",
+   "type": "Platte",
+   "classes": null,
+   "stats": {
+    "sta": 17,
+    "str": 18,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 456,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 288,
+    "angriff": 18,
+    "verteidigung": 27,
+    "krit": 0
+   },
+   "value": 270
+  },
+  "12583": {
+   "id": 12583,
+   "name": "Blackhand-Verdammnissäge",
+   "quality": "rare",
+   "icon": "inv_weapon_halberd_04",
+   "itemLevel": 63,
+   "requiredLevel": 58,
+   "slot": "twohand",
+   "type": "Stangenwaffe",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 54,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 0,
+    "angriff": 93,
+    "verteidigung": 0,
+    "krit": 0.7
+   },
+   "value": 550
+  },
+  "12590": {
+   "id": 12590,
+   "name": "Teufelsstoß",
+   "quality": "epic",
+   "icon": "inv_weapon_shortblade_25",
+   "itemLevel": 63,
+   "requiredLevel": 58,
+   "slot": "onehand",
+   "type": "Dolch",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 45.59,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 0,
+    "angriff": 76,
+    "verteidigung": 0,
+    "krit": 0.8
+   },
+   "value": 1100
+  },
+  "12592": {
+   "id": 12592,
+   "name": "Schwarzklinge von Shahram",
+   "quality": "epic",
+   "icon": "inv_sword_29",
+   "itemLevel": 63,
+   "requiredLevel": 58,
+   "slot": "twohand",
+   "type": "Schwert",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 59.43,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 0,
+    "angriff": 110,
+    "verteidigung": 0,
+    "krit": 0.8
+   },
+   "value": 1100
+  },
+  "13340": {
+   "id": 13340,
+   "name": "Cape des schwarzen Barons",
+   "quality": "rare",
+   "icon": "inv_misc_cape_20",
+   "itemLevel": 63,
+   "requiredLevel": 58,
+   "slot": "back",
+   "type": "",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 15,
+    "int": 0,
+    "spi": 0,
+    "armor": 45,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 158,
+    "angriff": 8,
+    "verteidigung": 14,
+    "krit": 0.5
+   },
+   "value": 550
+  },
+  "13344": {
+   "id": 13344,
+   "name": "Dracorianische Stulpen",
+   "quality": "rare",
+   "icon": "inv_gauntlets_31",
+   "itemLevel": 63,
+   "requiredLevel": 58,
+   "slot": "hands",
+   "type": "Kette",
+   "classes": null,
+   "stats": {
+    "sta": 10,
+    "str": 0,
+    "agi": 0,
+    "int": 11,
+    "spi": 9,
+    "armor": 231,
+    "dps": 0,
+    "crit": 0,
+    "spell": 16,
+    "heal": 16
+   },
+   "unique": false,
+   "game": {
+    "leben": 258,
+    "angriff": 13,
+    "verteidigung": 21,
+    "krit": 0
+   },
+   "value": 550
+  },
+  "13346": {
+   "id": 13346,
+   "name": "Roben des Erhabenen",
+   "quality": "rare",
+   "icon": "inv_chest_cloth_08",
+   "itemLevel": 63,
+   "requiredLevel": 58,
+   "slot": "chest",
+   "type": "Stoff",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 5,
+    "spi": 11,
+    "armor": 89,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 68
+   },
+   "unique": false,
+   "game": {
+    "leben": 158,
+    "angriff": 22,
+    "verteidigung": 15,
+    "krit": 0
+   },
+   "value": 550
+  },
+  "13348": {
+   "id": 13348,
+   "name": "Dämonenschneide",
+   "quality": "rare",
+   "icon": "inv_sword_14",
+   "itemLevel": 63,
+   "requiredLevel": 58,
+   "slot": "twohand",
+   "type": "Schwert",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 53.82,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 0,
+    "angriff": 93,
+    "verteidigung": 0,
+    "krit": 0.7
+   },
+   "value": 550
+  },
+  "13349": {
+   "id": 13349,
+   "name": "Szepter des Unheiligen",
+   "quality": "rare",
+   "icon": "inv_mace_07",
+   "itemLevel": 63,
+   "requiredLevel": 58,
+   "slot": "mainhand",
+   "type": "Streitkolben",
+   "classes": null,
+   "stats": {
+    "sta": 5,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 41.25,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 50,
+    "angriff": 65,
+    "verteidigung": 0,
+    "krit": 0.7
+   },
+   "value": 550
+  },
+  "13353": {
+   "id": 13353,
+   "name": "Buch der Toten",
+   "quality": "epic",
+   "icon": "inv_misc_book_06",
+   "itemLevel": 63,
+   "requiredLevel": 58,
+   "slot": "offhand",
+   "type": "",
+   "classes": null,
+   "stats": {
+    "sta": 8,
+    "str": 0,
+    "agi": 0,
+    "int": 15,
+    "spi": 10,
+    "armor": 0,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 282,
+    "angriff": 5,
+    "verteidigung": 15,
+    "krit": 0
+   },
+   "value": 1100
+  },
+  "13359": {
+   "id": 13359,
+   "name": "Krone der Tyrannei",
+   "quality": "rare",
+   "icon": "inv_helmet_03",
+   "itemLevel": 63,
+   "requiredLevel": 58,
+   "slot": "head",
+   "type": "Kette",
+   "classes": null,
+   "stats": {
+    "sta": 20,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 301,
+    "dps": 0,
+    "crit": 1,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 358,
+    "angriff": 0,
+    "verteidigung": 24,
+    "krit": 1
+   },
+   "value": 550
+  },
+  "13361": {
+   "id": 13361,
+   "name": "Häscher der Schädelesse",
+   "quality": "rare",
+   "icon": "inv_sword_12",
+   "itemLevel": 63,
+   "requiredLevel": 58,
+   "slot": "onehand",
+   "type": "Schwert",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 41.4,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 0,
+    "angriff": 65,
+    "verteidigung": 0,
+    "krit": 0.7
+   },
+   "value": 550
+  },
+  "13375": {
+   "id": 13375,
+   "name": "Wappen der Vergeltung",
+   "quality": "rare",
+   "icon": "inv_shield_19",
+   "itemLevel": 60,
+   "requiredLevel": 55,
+   "slot": "offhand",
+   "type": "Schild",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 2057,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 150,
+    "angriff": 0,
+    "verteidigung": 120,
+    "krit": 0
+   },
+   "value": 510
+  },
+  "13379": {
+   "id": 13379,
+   "name": "Pikkolo des Flammenfeuers",
+   "quality": "rare",
+   "icon": "inv_misc_flute_01",
+   "itemLevel": 58,
+   "requiredLevel": 53,
+   "slot": "trinket",
+   "type": "",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 0,
+    "angriff": 15,
+    "verteidigung": 0,
+    "krit": 1.2
+   },
+   "value": 485
+  },
+  "13380": {
+   "id": 13380,
+   "name": "Willeys tragbare Haubitze",
+   "quality": "rare",
+   "icon": "inv_weapon_rifle_07",
+   "itemLevel": 61,
+   "requiredLevel": 56,
+   "slot": "ranged",
+   "type": "Schusswaffe",
+   "classes": null,
+   "stats": {
+    "sta": 9,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 31.21,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 90,
+    "angriff": 54,
+    "verteidigung": 0,
+    "krit": 0.6
+   },
+   "value": 525
+  },
+  "13382": {
+   "id": 13382,
+   "name": "Kanonenkugelläufer",
+   "quality": "rare",
+   "icon": "inv_misc_bomb_04",
+   "itemLevel": 61,
+   "requiredLevel": 56,
+   "slot": "trinket",
+   "type": "",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 0,
+    "angriff": 15,
+    "verteidigung": 0,
+    "krit": 1.3
+   },
+   "value": 525
+  },
+  "13394": {
+   "id": 13394,
+   "name": "Skuls kalte Umarmung",
+   "quality": "rare",
+   "icon": "inv_chest_chain_15",
+   "itemLevel": 59,
+   "requiredLevel": 54,
+   "slot": "chest",
+   "type": "Platte",
+   "classes": null,
+   "stats": {
+    "sta": 20,
+    "str": 19,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 617,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 348,
+    "angriff": 19,
+    "verteidigung": 36,
+    "krit": 0
+   },
+   "value": 500
+  },
+  "13397": {
+   "id": 13397,
+   "name": "Steinhautgargoylecape",
+   "quality": "rare",
+   "icon": "inv_misc_cape_19",
+   "itemLevel": 61,
+   "requiredLevel": 56,
+   "slot": "back",
+   "type": "",
+   "classes": null,
+   "stats": {
+    "sta": 14,
+    "str": 7,
+    "agi": 8,
+    "int": 0,
+    "spi": 0,
+    "armor": 43,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 293,
+    "angriff": 11,
+    "verteidigung": 13,
+    "krit": 0.3
+   },
+   "value": 525
+  },
+  "13398": {
+   "id": 13398,
+   "name": "Stiefel des Schrillers",
+   "quality": "rare",
+   "icon": "inv_boots_08",
+   "itemLevel": 62,
+   "requiredLevel": 57,
+   "slot": "feet",
+   "type": "Leder",
+   "classes": null,
+   "stats": {
+    "sta": 10,
+    "str": 0,
+    "agi": 0,
+    "int": 10,
+    "spi": 10,
+    "armor": 120,
+    "dps": 0,
+    "crit": 0,
+    "spell": 12,
+    "heal": 12
+   },
+   "unique": false,
+   "game": {
+    "leben": 255,
+    "angriff": 10,
+    "verteidigung": 16,
+    "krit": 0
+   },
+   "value": 535
+  },
+  "13404": {
+   "id": 13404,
+   "name": "Maske des Unverziehenen",
+   "quality": "rare",
+   "icon": "inv_misc_bandana_01",
+   "itemLevel": 57,
+   "requiredLevel": 52,
+   "slot": "head",
+   "type": "Leder",
+   "classes": null,
+   "stats": {
+    "sta": 12,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 132,
+    "dps": 0,
+    "crit": 1,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 263,
+    "angriff": 0,
+    "verteidigung": 16,
+    "krit": 1
+   },
+   "value": 475
+  },
+  "13505": {
+   "id": 13505,
+   "name": "Runenklinge von Baron Rivendare",
+   "quality": "epic",
+   "icon": "inv_sword_17",
+   "itemLevel": 63,
+   "requiredLevel": 58,
+   "slot": "twohand",
+   "type": "Schwert",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 59.44,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 0,
+    "angriff": 110,
+    "verteidigung": 0,
+    "krit": 0.8
+   },
+   "value": 1100
+  },
+  "14042": {
+   "id": 14042,
+   "name": "Aschenstoffweste",
+   "quality": "uncommon",
+   "icon": "inv_chest_cloth_07",
+   "itemLevel": 52,
+   "requiredLevel": 47,
+   "slot": "chest",
+   "type": "Stoff",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 11,
+    "armor": 68,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 104,
+    "angriff": 0,
+    "verteidigung": 11,
+    "krit": 0
+   },
+   "value": 225
+  },
+  "14045": {
+   "id": 14045,
+   "name": "Aschenstoffhose",
+   "quality": "uncommon",
+   "icon": "inv_pants_06",
+   "itemLevel": 56,
+   "requiredLevel": 51,
+   "slot": "legs",
+   "type": "Stoff",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 12,
+    "spi": 0,
+    "armor": 63,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 112,
+    "angriff": 4,
+    "verteidigung": 11,
+    "krit": 0
+   },
+   "value": 250
+  },
+  "14106": {
+   "id": 14106,
+   "name": "Teufelsstoffrobe",
+   "quality": "uncommon",
+   "icon": "inv_chest_cloth_09",
+   "itemLevel": 61,
+   "requiredLevel": 56,
+   "slot": "chest",
+   "type": "Stoff",
+   "classes": null,
+   "stats": {
+    "sta": 7,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 79,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 192,
+    "angriff": 0,
+    "verteidigung": 12,
+    "krit": 0
+   },
+   "value": 285
+  },
+  "15053": {
+   "id": 15053,
+   "name": "Vulkanische Brustplatte",
+   "quality": "uncommon",
+   "icon": "inv_chest_leather_07",
+   "itemLevel": 57,
+   "requiredLevel": 52,
+   "slot": "chest",
+   "type": "Leder",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 268,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 114,
+    "angriff": 0,
+    "verteidigung": 19,
+    "krit": 0
+   },
+   "value": 260
+  },
+  "15054": {
+   "id": 15054,
+   "name": "Vulkanische Gamaschen",
+   "quality": "uncommon",
+   "icon": "inv_pants_06",
+   "itemLevel": 54,
+   "requiredLevel": 49,
+   "slot": "legs",
+   "type": "Leder",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 204,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 108,
+    "angriff": 0,
+    "verteidigung": 16,
+    "krit": 0
+   },
+   "value": 240
+  },
+  "15055": {
+   "id": 15055,
+   "name": "Vulkanische Schultern",
+   "quality": "uncommon",
+   "icon": "inv_shoulder_13",
+   "itemLevel": 61,
+   "requiredLevel": 56,
+   "slot": "shoulders",
+   "type": "Leder",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 167,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 122,
+    "angriff": 0,
+    "verteidigung": 16,
+    "krit": 0
+   },
+   "value": 285
+  },
+  "15085": {
+   "id": 15085,
+   "name": "Tückische Lederrüstung",
+   "quality": "uncommon",
+   "icon": "inv_chest_plate06",
+   "itemLevel": 61,
+   "requiredLevel": 56,
+   "slot": "chest",
+   "type": "Leder",
+   "classes": null,
+   "stats": {
+    "sta": 7,
+    "str": 0,
+    "agi": 25,
+    "int": 0,
+    "spi": 0,
+    "armor": 156,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 192,
+    "angriff": 13,
+    "verteidigung": 15,
+    "krit": 0.8
+   },
+   "value": 285
+  },
+  "15090": {
+   "id": 15090,
+   "name": "Runenverzierte Lederrüstung",
+   "quality": "uncommon",
+   "icon": "inv_chest_leather_07",
+   "itemLevel": 62,
+   "requiredLevel": 57,
+   "slot": "chest",
+   "type": "Leder",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 21,
+    "spi": 13,
+    "armor": 158,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 124,
+    "angriff": 6,
+    "verteidigung": 16,
+    "krit": 0
+   },
+   "value": 295
+  },
+  "16922": {
+   "id": 16922,
+   "name": "Gamaschen der Erhabenheit",
+   "quality": "epic",
+   "icon": "inv_pants_08",
+   "itemLevel": 76,
+   "requiredLevel": 60,
+   "slot": "legs",
+   "type": "Stoff",
+   "classes": [
+    "PriesterBenötigt Stufe 60"
+   ],
+   "stats": {
+    "sta": 16,
+    "str": 0,
+    "agi": 0,
+    "int": 21,
+    "spi": 21,
+    "armor": 101,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 46
+   },
+   "unique": false,
+   "game": {
+    "leben": 403,
+    "angriff": 20,
+    "verteidigung": 22,
+    "krit": 0
+   },
+   "value": 1460
+  },
+  "17063": {
+   "id": 17063,
+   "name": "Band von Accuria",
+   "quality": "epic",
+   "icon": "inv_jewelry_ring_15",
+   "itemLevel": 78,
+   "requiredLevel": 60,
+   "slot": "ring",
+   "type": "",
+   "classes": null,
+   "stats": {
+    "sta": 10,
+    "str": 0,
+    "agi": 16,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": true,
+   "game": {
+    "leben": 100,
+    "angriff": 33,
+    "verteidigung": 0,
+    "krit": 2.6
+   },
+   "value": 1515
+  },
+  "17068": {
+   "id": 17068,
+   "name": "Todesbringer",
+   "quality": "epic",
+   "icon": "inv_axe_09",
+   "itemLevel": 75,
+   "requiredLevel": 60,
+   "slot": "onehand",
+   "type": "Axt",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 56.38,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 0,
+    "angriff": 92,
+    "verteidigung": 0,
+    "krit": 1
+   },
+   "value": 1430
+  },
+  "17075": {
+   "id": 17075,
+   "name": "Vis'kag der Blutvergießer",
+   "quality": "epic",
+   "icon": "inv_sword_18",
+   "itemLevel": 74,
+   "requiredLevel": 60,
+   "slot": "onehand",
+   "type": "Schwert",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 55.19,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": true,
+   "game": {
+    "leben": 0,
+    "angriff": 91,
+    "verteidigung": 0,
+    "krit": 1
+   },
+   "value": 1400
+  },
+  "17076": {
+   "id": 17076,
+   "name": "Knochenhäschers Schneide",
+   "quality": "epic",
+   "icon": "inv_sword_12",
+   "itemLevel": 77,
+   "requiredLevel": 60,
+   "slot": "twohand",
+   "type": "Schwert",
+   "classes": null,
+   "stats": {
+    "sta": 16,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 700,
+    "dps": 75.88,
+    "crit": 1,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 160,
+    "angriff": 137,
+    "verteidigung": 28,
+    "krit": 2
+   },
+   "value": 1485
+  },
+  "17103": {
+   "id": 17103,
+   "name": "Magierklinge des Azurlieds",
+   "quality": "epic",
+   "icon": "inv_sword_39",
+   "itemLevel": 71,
+   "requiredLevel": 60,
+   "slot": "mainhand",
+   "type": "Schwert",
+   "classes": null,
+   "stats": {
+    "sta": 7,
+    "str": 0,
+    "agi": 0,
+    "int": 12,
+    "spi": 0,
+    "armor": 0,
+    "dps": 42.5,
+    "crit": 1,
+    "spell": 40,
+    "heal": 40
+   },
+   "unique": false,
+   "game": {
+    "leben": 70,
+    "angriff": 104,
+    "verteidigung": 0,
+    "krit": 1.9
+   },
+   "value": 1315
+  },
+  "17104": {
+   "id": 17104,
+   "name": "Rückgratschnitter",
+   "quality": "epic",
+   "icon": "inv_axe_09",
+   "itemLevel": 76,
+   "requiredLevel": 60,
+   "slot": "twohand",
+   "type": "Axt",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 74.71,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 0,
+    "angriff": 136,
+    "verteidigung": 0,
+    "krit": 1
+   },
+   "value": 1460
+  },
+  "17106": {
+   "id": 17106,
+   "name": "Malistar-Verteidiger",
+   "quality": "epic",
+   "icon": "inv_shield_08",
+   "itemLevel": 75,
+   "requiredLevel": 60,
+   "slot": "offhand",
+   "type": "Schild",
+   "classes": null,
+   "stats": {
+    "sta": 9,
+    "str": 0,
+    "agi": 0,
+    "int": 12,
+    "spi": 0,
+    "armor": 2822,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 330,
+    "angriff": 4,
+    "verteidigung": 173,
+    "krit": 0
+   },
+   "value": 1430
+  },
+  "17182": {
+   "id": 17182,
+   "name": "Sulfuras, Hand von Ragnaros",
+   "quality": "legendary",
+   "icon": "inv_hammer_unique_sulfuras",
+   "itemLevel": 80,
+   "requiredLevel": 60,
+   "slot": "twohand",
+   "type": "Streitkolben",
+   "classes": null,
+   "stats": {
+    "sta": 12,
+    "str": 12,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 80.41,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": true,
+   "game": {
+    "leben": 120,
+    "angriff": 251,
+    "verteidigung": 0,
+    "krit": 1.5
+   },
+   "value": 4295
+  },
+  "17204": {
+   "id": 17204,
+   "name": "Auge von Sulfuras",
+   "quality": "legendary",
+   "icon": "inv_misc_gem_pearl_05",
+   "itemLevel": 60,
+   "requiredLevel": 0,
+   "slot": null,
+   "type": "",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 0,
+    "angriff": 0,
+    "verteidigung": 0,
+    "krit": 0
+   },
+   "value": 2790
+  },
+  "18404": {
+   "id": 18404,
+   "name": "Zahn Onyxias",
+   "quality": "epic",
+   "icon": "inv_jewelry_necklace_09",
+   "itemLevel": 74,
+   "requiredLevel": 0,
+   "slot": "neck",
+   "type": "",
+   "classes": null,
+   "stats": {
+    "sta": 9,
+    "str": 0,
+    "agi": 12,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 0,
+    "crit": 1,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 90,
+    "angriff": 30,
+    "verteidigung": 0,
+    "krit": 3.4
+   },
+   "value": 1400
+  },
+  "18563": {
+   "id": 18563,
+   "name": "Fesseln des Windsuchers",
+   "quality": "legendary",
+   "icon": "spell_ice_lament",
+   "itemLevel": 70,
+   "requiredLevel": 0,
+   "slot": null,
+   "type": "",
+   "classes": [
+    "Krieger",
+    "Paladin",
+    "Jäger",
+    "Schurke\"Die linke Hälfte von Donneraans ewigem Gefängnis\""
+   ],
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": true,
+   "game": {
+    "leben": 0,
+    "angriff": 0,
+    "verteidigung": 0,
+    "krit": 0
+   },
+   "value": 3515
+  },
+  "18564": {
+   "id": 18564,
+   "name": "Fesseln des Windsuchers",
+   "quality": "legendary",
+   "icon": "spell_ice_lament",
+   "itemLevel": 70,
+   "requiredLevel": 0,
+   "slot": null,
+   "type": "",
+   "classes": [
+    "Krieger",
+    "Paladin",
+    "Jäger",
+    "Schurke\"Die rechte Hälfte von Donneraans ewigem Gefängnis\""
+   ],
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": true,
+   "game": {
+    "leben": 0,
+    "angriff": 0,
+    "verteidigung": 0,
+    "krit": 0
+   },
+   "value": 3515
+  },
+  "18608": {
+   "id": 18608,
+   "name": "Segnung",
+   "quality": "epic",
+   "icon": "inv_staff_30",
+   "itemLevel": 75,
+   "requiredLevel": 60,
+   "slot": "twohand",
+   "type": "Stab",
+   "classes": [
+    "PriesterBenötigt Stufe 60"
+   ],
+   "stats": {
+    "sta": 10,
+    "str": 0,
+    "agi": 0,
+    "int": 31,
+    "spi": 12,
+    "armor": 0,
+    "dps": 59.33,
+    "crit": 0,
+    "spell": 0,
+    "heal": 106
+   },
+   "unique": true,
+   "game": {
+    "leben": 100,
+    "angriff": 160,
+    "verteidigung": 0,
+    "krit": 1
+   },
+   "value": 1430
+  },
+  "18609": {
+   "id": 18609,
+   "name": "Bannfluch",
+   "quality": "epic",
+   "icon": "inv_staff_12",
+   "itemLevel": 75,
+   "requiredLevel": 60,
+   "slot": "twohand",
+   "type": "Stab",
+   "classes": [
+    "PriesterBenötigt Stufe 60"
+   ],
+   "stats": {
+    "sta": 22,
+    "str": 0,
+    "agi": 0,
+    "int": 31,
+    "spi": 0,
+    "armor": 0,
+    "dps": 59.33,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": true,
+   "game": {
+    "leben": 220,
+    "angriff": 129,
+    "verteidigung": 0,
+    "krit": 1
+   },
+   "value": 1430
+  },
+  "18813": {
+   "id": 18813,
+   "name": "Ring der Bindung",
+   "quality": "epic",
+   "icon": "inv_jewelry_ring_13",
+   "itemLevel": 73,
+   "requiredLevel": 60,
+   "slot": "ring",
+   "type": "",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 60,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": true,
+   "game": {
+    "leben": 0,
+    "angriff": 23,
+    "verteidigung": 2,
+    "krit": 1.9
+   },
+   "value": 1370
+  },
+  "18814": {
+   "id": 18814,
+   "name": "Halsschmuck des Feuerlords",
+   "quality": "epic",
+   "icon": "inv_jewelry_amulet_05",
+   "itemLevel": 78,
+   "requiredLevel": 60,
+   "slot": "neck",
+   "type": "",
+   "classes": null,
+   "stats": {
+    "sta": 7,
+    "str": 0,
+    "agi": 0,
+    "int": 7,
+    "spi": 0,
+    "armor": 0,
+    "dps": 0,
+    "crit": 0,
+    "spell": 34,
+    "heal": 34
+   },
+   "unique": false,
+   "game": {
+    "leben": 70,
+    "angriff": 47,
+    "verteidigung": 0,
+    "krit": 2.1
+   },
+   "value": 1515
+  },
+  "18820": {
+   "id": 18820,
+   "name": "Talisman der ephemeren Macht",
+   "quality": "epic",
+   "icon": "inv_misc_stonetablet_11",
+   "itemLevel": 66,
+   "requiredLevel": 60,
+   "slot": "trinket",
+   "type": "",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": true,
+   "game": {
+    "leben": 0,
+    "angriff": 21,
+    "verteidigung": 0,
+    "krit": 1.8
+   },
+   "value": 1180
+  },
+  "18821": {
+   "id": 18821,
+   "name": "Ring des rasanten Schlags",
+   "quality": "epic",
+   "icon": "inv_jewelry_ring_07",
+   "itemLevel": 67,
+   "requiredLevel": 60,
+   "slot": "ring",
+   "type": "",
+   "classes": null,
+   "stats": {
+    "sta": 8,
+    "str": 5,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 0,
+    "crit": 1,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": true,
+   "game": {
+    "leben": 80,
+    "angriff": 26,
+    "verteidigung": 0,
+    "krit": 2.8
+   },
+   "value": 1205
+  },
+  "18832": {
+   "id": 18832,
+   "name": "Unbarmherzige Klinge",
+   "quality": "epic",
+   "icon": "inv_sword_15",
+   "itemLevel": 70,
+   "requiredLevel": 60,
+   "slot": "onehand",
+   "type": "Schwert",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 9,
+    "agi": 9,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 51.6,
+    "crit": 1,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": true,
+   "game": {
+    "leben": 0,
+    "angriff": 99,
+    "verteidigung": 0,
+    "krit": 2.2
+   },
+   "value": 1290
+  },
+  "18842": {
+   "id": 18842,
+   "name": "Stab der Dominanz",
+   "quality": "epic",
+   "icon": "inv_staff_13",
+   "itemLevel": 70,
+   "requiredLevel": 60,
+   "slot": "twohand",
+   "type": "Stab",
+   "classes": null,
+   "stats": {
+    "sta": 16,
+    "str": 0,
+    "agi": 0,
+    "int": 37,
+    "spi": 14,
+    "armor": 0,
+    "dps": 57.07,
+    "crit": 1,
+    "spell": 40,
+    "heal": 40
+   },
+   "unique": false,
+   "game": {
+    "leben": 160,
+    "angriff": 148,
+    "verteidigung": 0,
+    "krit": 1.9
+   },
+   "value": 1290
+  },
+  "19019": {
+   "id": 19019,
+   "name": "Donnerzorn, Gesegnete Klinge des Windsuchers",
+   "quality": "legendary",
+   "icon": "inv_sword_39",
+   "itemLevel": 80,
+   "requiredLevel": 60,
+   "slot": "onehand",
+   "type": "Schwert",
+   "classes": null,
+   "stats": {
+    "sta": 8,
+    "str": 0,
+    "agi": 5,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 53.95,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": true,
+   "game": {
+    "leben": 80,
+    "angriff": 180,
+    "verteidigung": 0,
+    "krit": 1.6
+   },
+   "value": 4295
+  },
+  "19137": {
+   "id": 19137,
+   "name": "Gurt des Ansturms",
+   "quality": "epic",
+   "icon": "inv_belt_29",
+   "itemLevel": 78,
+   "requiredLevel": 60,
+   "slot": "waist",
+   "type": "Platte",
+   "classes": null,
+   "stats": {
+    "sta": 11,
+    "str": 31,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 494,
+    "dps": 0,
+    "crit": 1,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 360,
+    "angriff": 31,
+    "verteidigung": 38,
+    "krit": 1
+   },
+   "value": 1515
+  },
+  "19351": {
+   "id": 19351,
+   "name": "Maladath, Runenverzierte Klinge des schwarzen Drachenschwarms",
+   "quality": "epic",
+   "icon": "inv_sword_49",
+   "itemLevel": 75,
+   "requiredLevel": 60,
+   "slot": "onehand",
+   "type": "Schwert",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 56.36,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": true,
+   "game": {
+    "leben": 0,
+    "angriff": 92,
+    "verteidigung": 0,
+    "krit": 1
+   },
+   "value": 1430
+  },
+  "19352": {
+   "id": 19352,
+   "name": "Chromatisch gehärtetes Schwert",
+   "quality": "epic",
+   "icon": "inv_sword_51",
+   "itemLevel": 77,
+   "requiredLevel": 60,
+   "slot": "onehand",
+   "type": "Schwert",
+   "classes": null,
+   "stats": {
+    "sta": 7,
+    "str": 14,
+    "agi": 14,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 58.46,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": true,
+   "game": {
+    "leben": 70,
+    "angriff": 116,
+    "verteidigung": 0,
+    "krit": 1.5
+   },
+   "value": 1485
+  },
+  "19353": {
+   "id": 19353,
+   "name": "Drachenkrallenbeil",
+   "quality": "epic",
+   "icon": "inv_axe_10",
+   "itemLevel": 75,
+   "requiredLevel": 60,
+   "slot": "twohand",
+   "type": "Axt",
+   "classes": null,
+   "stats": {
+    "sta": 17,
+    "str": 22,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 73.38,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 170,
+    "angriff": 155,
+    "verteidigung": 0,
+    "krit": 1
+   },
+   "value": 1430
+  },
+  "19356": {
+   "id": 19356,
+   "name": "Stab der Schattenflamme",
+   "quality": "epic",
+   "icon": "inv_staff_06",
+   "itemLevel": 81,
+   "requiredLevel": 60,
+   "slot": "twohand",
+   "type": "Stab",
+   "classes": null,
+   "stats": {
+    "sta": 24,
+    "str": 0,
+    "agi": 0,
+    "int": 29,
+    "spi": 18,
+    "armor": 0,
+    "dps": 60.94,
+    "crit": 2,
+    "spell": 84,
+    "heal": 84
+   },
+   "unique": false,
+   "game": {
+    "leben": 240,
+    "angriff": 185,
+    "verteidigung": 0,
+    "krit": 3.1
+   },
+   "value": 1605
+  },
+  "19363": {
+   "id": 19363,
+   "name": "Crul'shorukh, Schneide des Chaos",
+   "quality": "epic",
+   "icon": "inv_axe_12",
+   "itemLevel": 81,
+   "requiredLevel": 60,
+   "slot": "onehand",
+   "type": "Axt",
+   "classes": null,
+   "stats": {
+    "sta": 13,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 62.83,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": true,
+   "game": {
+    "leben": 130,
+    "angriff": 102,
+    "verteidigung": 0,
+    "krit": 1.1
+   },
+   "value": 1605
+  },
+  "19364": {
+   "id": 19364,
+   "name": "Ashkandi, Großschwert der Bruderschaft",
+   "quality": "epic",
+   "icon": "inv_sword_50",
+   "itemLevel": 81,
+   "requiredLevel": 60,
+   "slot": "twohand",
+   "type": "Schwert",
+   "classes": null,
+   "stats": {
+    "sta": 33,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 81.86,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 330,
+    "angriff": 147,
+    "verteidigung": 0,
+    "krit": 1.1
+   },
+   "value": 1605
+  },
+  "21134": {
+   "id": 21134,
+   "name": "Dunkle Schneide des Irrsinns",
+   "quality": "epic",
+   "icon": "inv_axe_24",
+   "itemLevel": 84,
+   "requiredLevel": 60,
+   "slot": "twohand",
+   "type": "Axt",
+   "classes": null,
+   "stats": {
+    "sta": 25,
+    "str": 35,
+    "agi": 19,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 86.57,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": true,
+   "game": {
+    "leben": 250,
+    "angriff": 198,
+    "verteidigung": 0,
+    "krit": 1.8
+   },
+   "value": 1695
+  },
+  "22589": {
+   "id": 22589,
+   "name": "Atiesh, Hohestab des Wächters",
+   "quality": "legendary",
+   "icon": "inv_staff_medivh",
+   "itemLevel": 90,
+   "requiredLevel": 60,
+   "slot": "twohand",
+   "type": "Stab",
+   "classes": [
+    "MagierBenötigt Stufe 60"
+   ],
+   "stats": {
+    "sta": 31,
+    "str": 0,
+    "agi": 0,
+    "int": 32,
+    "spi": 24,
+    "armor": 0,
+    "dps": 64.31,
+    "crit": 2,
+    "spell": 150,
+    "heal": 150
+   },
+   "unique": false,
+   "game": {
+    "leben": 310,
+    "angriff": 342,
+    "verteidigung": 0,
+    "krit": 3.7
+   },
+   "value": 5125
+  },
+  "22630": {
+   "id": 22630,
+   "name": "Atiesh, Hohestab des Wächters",
+   "quality": "legendary",
+   "icon": "inv_staff_medivh",
+   "itemLevel": 90,
+   "requiredLevel": 60,
+   "slot": "twohand",
+   "type": "Stab",
+   "classes": [
+    "HexenmeisterBenötigt Stufe 60"
+   ],
+   "stats": {
+    "sta": 30,
+    "str": 0,
+    "agi": 0,
+    "int": 29,
+    "spi": 0,
+    "armor": 0,
+    "dps": 64.31,
+    "crit": 2,
+    "spell": 150,
+    "heal": 150
+   },
+   "unique": false,
+   "game": {
+    "leben": 300,
+    "angriff": 341,
+    "verteidigung": 0,
+    "krit": 3.7
+   },
+   "value": 5125
+  },
+  "22691": {
+   "id": 22691,
+   "name": "Verderbter Aschenbringer",
+   "quality": "epic",
+   "icon": "inv_sword_2h_ashbringercorrupt",
+   "itemLevel": 86,
+   "requiredLevel": 60,
+   "slot": "twohand",
+   "type": "Schwert",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 90,
+    "crit": 2,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": true,
+   "game": {
+    "leben": 0,
+    "angriff": 159,
+    "verteidigung": 0,
+    "krit": 3.1
+   },
+   "value": 1755
+  },
+  "22798": {
+   "id": 22798,
+   "name": "Macht von Menethil",
+   "quality": "epic",
+   "icon": "inv_mace_25",
+   "itemLevel": 89,
+   "requiredLevel": 60,
+   "slot": "twohand",
+   "type": "Streitkolben",
+   "classes": null,
+   "stats": {
+    "sta": 46,
+    "str": 20,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 95.26,
+    "crit": 2,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 460,
+    "angriff": 186,
+    "verteidigung": 0,
+    "krit": 3.2
+   },
+   "value": 1845
+  },
+  "22954": {
+   "id": 22954,
+   "name": "Kuss der Spinne",
+   "quality": "epic",
+   "icon": "inv_trinket_naxxramas04",
+   "itemLevel": 85,
+   "requiredLevel": 60,
+   "slot": "trinket",
+   "type": "",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 0,
+    "crit": 1,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": true,
+   "game": {
+    "leben": 0,
+    "angriff": 27,
+    "verteidigung": 0,
+    "krit": 3.3
+   },
+   "value": 1725
+  }
+ },
+ "chests": [
+  {
+   "id": "stormwind",
+   "name": "Schatztruhe von Sturmwind",
+   "price": 100,
+   "icon": "inv_box_01",
+   "odds": {
+    "uncommon": 50,
+    "rare": 30,
+    "epic": 17,
+    "legendary": 3
+   },
+   "items": {
+    "uncommon": [
+     {
+      "id": 6084,
+      "weight": 10
+     },
+     {
+      "id": 10400,
+      "weight": 10
+     },
+     {
+      "id": 10401,
+      "weight": 10
+     },
+     {
+      "id": 10402,
+      "weight": 10
+     },
+     {
+      "id": 10403,
+      "weight": 10
+     },
+     {
+      "id": 4243,
+      "weight": 10
+     }
+    ],
+    "rare": [
+     {
+      "id": 2041,
+      "weight": 10
+     },
+     {
+      "id": 2042,
+      "weight": 10
+     },
+     {
+      "id": 1121,
+      "weight": 10
+     },
+     {
+      "id": 10399,
+      "weight": 10
+     },
+     {
+      "id": 5191,
+      "weight": 10
+     },
+     {
+      "id": 5193,
+      "weight": 10
+     },
+     {
+      "id": 5443,
+      "weight": 10
+     }
+    ],
+    "epic": [
+     {
+      "id": 873,
+      "weight": 10
+     },
+     {
+      "id": 2164,
+      "weight": 10
+     },
+     {
+      "id": 2825,
+      "weight": 10
+     },
+     {
+      "id": 1980,
+      "weight": 10
+     }
+    ],
+    "legendary": [
+     {
+      "id": 18563,
+      "weight": 1
+     }
+    ]
+   }
+  },
+  {
+   "id": "ironforge",
+   "name": "Schatztruhe von Ironforge",
+   "price": 250,
+   "icon": "inv_box_02",
+   "odds": {
+    "uncommon": 40,
+    "rare": 35,
+    "epic": 20,
+    "legendary": 5
+   },
+   "items": {
+    "uncommon": [
+     {
+      "id": 3481,
+      "weight": 10
+     },
+     {
+      "id": 3482,
+      "weight": 10
+     },
+     {
+      "id": 3483,
+      "weight": 10
+     },
+     {
+      "id": 3484,
+      "weight": 10
+     },
+     {
+      "id": 3485,
+      "weight": 10
+     },
+     {
+      "id": 3491,
+      "weight": 10
+     },
+     {
+      "id": 3492,
+      "weight": 10
+     }
+    ],
+    "rare": [
+     {
+      "id": 9492,
+      "weight": 10
+     },
+     {
+      "id": 9454,
+      "weight": 10
+     },
+     {
+      "id": 9452,
+      "weight": 10
+     },
+     {
+      "id": 9458,
+      "weight": 10
+     },
+     {
+      "id": 9459,
+      "weight": 10
+     },
+     {
+      "id": 11745,
+      "weight": 10
+     },
+     {
+      "id": 11746,
+      "weight": 10
+     }
+    ],
+    "epic": [
+     {
+      "id": 2099,
+      "weight": 10
+     },
+     {
+      "id": 11684,
+      "weight": 10
+     },
+     {
+      "id": 942,
+      "weight": 10
+     },
+     {
+      "id": 2915,
+      "weight": 10
+     },
+     {
+      "id": 943,
+      "weight": 10
+     }
+    ],
+    "legendary": [
+     {
+      "id": 18564,
+      "weight": 1
+     }
+    ]
+   }
+  },
+  {
+   "id": "stratholme",
+   "name": "Schatztruhe von Stratholme",
+   "price": 500,
+   "icon": "inv_box_03",
+   "odds": {
+    "uncommon": 30,
+    "rare": 35,
+    "epic": 27,
+    "legendary": 8
+   },
+   "items": {
+    "uncommon": [
+     {
+      "id": 10002,
+      "weight": 10
+     },
+     {
+      "id": 10004,
+      "weight": 10
+     },
+     {
+      "id": 10023,
+      "weight": 10
+     },
+     {
+      "id": 10025,
+      "weight": 10
+     },
+     {
+      "id": 10028,
+      "weight": 10
+     },
+     {
+      "id": 10031,
+      "weight": 10
+     }
+    ],
+    "rare": [
+     {
+      "id": 13348,
+      "weight": 10
+     },
+     {
+      "id": 13349,
+      "weight": 10
+     },
+     {
+      "id": 13340,
+      "weight": 10
+     },
+     {
+      "id": 13346,
+      "weight": 10
+     },
+     {
+      "id": 13344,
+      "weight": 10
+     },
+     {
+      "id": 13361,
+      "weight": 10
+     },
+     {
+      "id": 13359,
+      "weight": 10
+     },
+     {
+      "id": 13375,
+      "weight": 10
+     },
+     {
+      "id": 13394,
+      "weight": 10
+     },
+     {
+      "id": 13404,
+      "weight": 10
+     }
+    ],
+    "epic": [
+     {
+      "id": 13505,
+      "weight": 4
+     },
+     {
+      "id": 13353,
+      "weight": 10
+     },
+     {
+      "id": 12590,
+      "weight": 10
+     },
+     {
+      "id": 12592,
+      "weight": 6
+     },
+     {
+      "id": 1443,
+      "weight": 10
+     }
+    ],
+    "legendary": [
+     {
+      "id": 22630,
+      "weight": 1
+     }
+    ]
+   }
+  },
+  {
+   "id": "moltencore",
+   "name": "Schatztruhe von Molten Core",
+   "price": 1000,
+   "icon": "inv_box_04",
+   "odds": {
+    "uncommon": 15,
+    "rare": 30,
+    "epic": 43,
+    "legendary": 12
+   },
+   "items": {
+    "uncommon": [
+     {
+      "id": 15053,
+      "weight": 10
+     },
+     {
+      "id": 15054,
+      "weight": 10
+     },
+     {
+      "id": 15055,
+      "weight": 10
+     },
+     {
+      "id": 14042,
+      "weight": 10
+     },
+     {
+      "id": 14045,
+      "weight": 10
+     }
+    ],
+    "rare": [
+     {
+      "id": 11923,
+      "weight": 10
+     },
+     {
+      "id": 11926,
+      "weight": 10
+     },
+     {
+      "id": 11931,
+      "weight": 10
+     },
+     {
+      "id": 11932,
+      "weight": 10
+     },
+     {
+      "id": 11933,
+      "weight": 10
+     },
+     {
+      "id": 11810,
+      "weight": 10
+     },
+     {
+      "id": 11819,
+      "weight": 10
+     },
+     {
+      "id": 11816,
+      "weight": 10
+     },
+     {
+      "id": 11820,
+      "weight": 10
+     }
+    ],
+    "epic": [
+     {
+      "id": 17076,
+      "weight": 6
+     },
+     {
+      "id": 17103,
+      "weight": 10
+     },
+     {
+      "id": 17104,
+      "weight": 10
+     },
+     {
+      "id": 17063,
+      "weight": 10
+     },
+     {
+      "id": 18814,
+      "weight": 10
+     },
+     {
+      "id": 18820,
+      "weight": 10
+     },
+     {
+      "id": 18821,
+      "weight": 10
+     },
+     {
+      "id": 18832,
+      "weight": 10
+     },
+     {
+      "id": 18842,
+      "weight": 10
+     },
+     {
+      "id": 17106,
+      "weight": 10
+     },
+     {
+      "id": 16922,
+      "weight": 10
+     },
+     {
+      "id": 19137,
+      "weight": 10
+     }
+    ],
+    "legendary": [
+     {
+      "id": 17204,
+      "weight": 3
+     },
+     {
+      "id": 17182,
+      "weight": 1
+     }
+    ]
+   }
+  },
+  {
+   "id": "azeroth",
+   "name": "Legendäre Azeroth-Truhe",
+   "price": 2500,
+   "icon": "inv_box_birdcage_01",
+   "odds": {
+    "uncommon": 5,
+    "rare": 20,
+    "epic": 55,
+    "legendary": 20
+   },
+   "items": {
+    "uncommon": [
+     {
+      "id": 12422,
+      "weight": 10
+     },
+     {
+      "id": 12427,
+      "weight": 10
+     },
+     {
+      "id": 15090,
+      "weight": 10
+     },
+     {
+      "id": 15085,
+      "weight": 10
+     },
+     {
+      "id": 14106,
+      "weight": 10
+     }
+    ],
+    "rare": [
+     {
+      "id": 12583,
+      "weight": 10
+     },
+     {
+      "id": 11815,
+      "weight": 10
+     },
+     {
+      "id": 13382,
+      "weight": 10
+     },
+     {
+      "id": 13380,
+      "weight": 10
+     },
+     {
+      "id": 13379,
+      "weight": 10
+     },
+     {
+      "id": 13398,
+      "weight": 10
+     },
+     {
+      "id": 13397,
+      "weight": 10
+     }
+    ],
+    "epic": [
+     {
+      "id": 19364,
+      "weight": 3
+     },
+     {
+      "id": 18608,
+      "weight": 4
+     },
+     {
+      "id": 18609,
+      "weight": 4
+     },
+     {
+      "id": 19352,
+      "weight": 10
+     },
+     {
+      "id": 19351,
+      "weight": 10
+     },
+     {
+      "id": 19353,
+      "weight": 10
+     },
+     {
+      "id": 17068,
+      "weight": 10
+     },
+     {
+      "id": 17075,
+      "weight": 10
+     },
+     {
+      "id": 21134,
+      "weight": 10
+     },
+     {
+      "id": 22954,
+      "weight": 10
+     },
+     {
+      "id": 22691,
+      "weight": 3
+     },
+     {
+      "id": 22798,
+      "weight": 4
+     },
+     {
+      "id": 19363,
+      "weight": 10
+     },
+     {
+      "id": 19356,
+      "weight": 10
+     },
+     {
+      "id": 18404,
+      "weight": 10
+     },
+     {
+      "id": 18813,
+      "weight": 10
+     }
+    ],
+    "legendary": [
+     {
+      "id": 22589,
+      "weight": 3
+     },
+     {
+      "id": 19019,
+      "weight": 1
+     }
+    ]
+   }
+  }
+ ],
+ "shop": [
+  19019,
+  17182,
+  19364,
+  18608,
+  17106,
+  13375,
+  9458,
+  5443,
+  17063,
+  18821,
+  1156,
+  18820,
+  11810,
+  11815,
+  12405,
+  12410,
+  15085,
+  14106,
+  10001,
+  7930,
+  3492,
+  3487,
+  13361,
+  11923,
+  17076,
+  18832,
+  2042,
+  5193
+ ]
+}

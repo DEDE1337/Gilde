@@ -89,7 +89,8 @@ function csNameInput(el,field){const v=el.value.replace(/[^\p{L}]/gu,'').slice(0
 const csCreateChar=act(async e=>{
  e.preventDefault();const d=cs.draft;if(d.name.length<2||d.surname.length<2)return toast('Vor- und Nachname brauchen je 2 bis 12 Buchstaben. Das ist neu in Forever.');
  const appearance=Object.fromEntries(Object.entries(d.appearance).filter(([o])=>cs.options.some(x=>x.Id===+o)));
- const{id}=await api('/api/characters','POST',{name:d.name,surname:d.surname,race:d.race,classId:d.classId,level:1,gender:d.gender,appearance});
+ const{id,startGold}=await api('/api/characters','POST',{name:d.name,surname:d.surname,race:d.race,classId:d.classId,level:1,gender:d.gender,appearance});
+ if(startGold)setTimeout(()=>toast(`Willkommen! ${startGold.toLocaleString('de-DE')} Startgold liegen in der Waffenkammer bereit.`),600);
  cs.chars=(await api('/api/characters')).characters;cs.sel=id;cs.mode='select';csDispose();csRender();await loadActiveCharacter();toast(`${d.name} ${d.surname} ist bereit für Azeroth!`)
 });
 

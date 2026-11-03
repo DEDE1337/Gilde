@@ -230,26 +230,28 @@ test('Tagesbonus: nur angemeldet, einmal pro Tag, Serie zählt',async()=>{
  assert.deepEqual(payout([a,b,c]).base,10);assert.equal(payout([a,b,c]).kind,'none');
  await denied(401,'gast','POST','/api/bonus/spin');await denied(401,'gast','GET','/api/bonus');
  const uid=sqlite.prepare('SELECT id FROM users WHERE username=?').get('Mitglied').id,day=n=>berlinDay(new Date(Date.now()-n*864e5));
- for(const n of [1,2,3])sqlite.prepare('INSERT INTO daily_spins VALUES (?,?,?,?,?,?)').run(uid,day(n),'["bag","bag","bag"]',10,4-n,'2026-01-01T00:00:00Z');
+ for(const n of [1,2,3])sqlite.prepare('INSERT INTO daily_spins(user_id,day,reels,reward,streak,created_at) VALUES (?,?,?,?,?,?)').run(uid,day(n),'["bag","bag","bag"]',10,4-n,'2026-01-01T00:00:00Z');
  assert.equal((await ok('Mitglied','GET','/api/bonus')).streak,3);
  const before=(await ok('Mitglied','GET','/api/bonus')).balance;
  const spin=await ok('Mitglied','POST','/api/bonus/spin');
  assert.equal(spin.streak,4);assert.equal(spin.spin.reels.length,3);assert.equal(spin.result.streakBonus,8);
- assert.equal(spin.balance,before+spin.spin.reward);
+ assert.equal(spin.balance,before+spin.spin.reward);assert.equal(spin.rollsLeft,2);
+ // Rolls two and three count, but without the streak bonus; the fourth is refused.
+ let last=spin;for(const left of [1,0]){const next=await ok('Mitglied','POST','/api/bonus/spin');assert.equal(next.result.free,false);assert.equal(next.result.streakBonus,0);assert.equal(next.rollsLeft,left);assert.equal(next.balance,last.balance+next.result.reward);last=next}
  await denied(409,'Mitglied','POST','/api/bonus/spin');
- assert.equal((await ok('Mitglied','GET','/api/bonus')).balance,spin.balance);
+ assert.equal((await ok('Mitglied','GET','/api/bonus')).balance,last.balance);
  assert.equal((await ok('Offizier','GET','/api/bonus')).streak,0);
- const first=await ok('Admin','POST','/api/bonus/spin');assert.equal(first.result.free,false);assert.equal(first.canRespin,true);
+ let first;for(let i=0;i<3;i++){first=await ok('Admin','POST','/api/bonus/spin');assert.equal(first.result.free,false)}assert.equal(first.canRespin,true);
  for(let i=0;i<3;i++){const extra=await ok('Admin','POST','/api/bonus/spin');assert.equal(extra.result.free,true);assert.equal(extra.balance,first.balance)}
  assert.equal((await ok('Offizier','GET','/api/bonus')).canRespin,false);
  sqlite.prepare('INSERT INTO user_permissions VALUES (?,?)').run(uid,'freespins');
- const free=await ok('Mitglied','POST','/api/bonus/spin');assert.equal(free.result.free,true);assert.equal(free.canRespin,true);assert.equal(free.balance,spin.balance);
+ const free=await ok('Mitglied','POST','/api/bonus/spin');assert.equal(free.result.free,true);assert.equal(free.canRespin,true);assert.equal(free.balance,last.balance);
  sqlite.prepare('DELETE FROM user_permissions WHERE user_id=? AND permission=?').run(uid,'freespins');
  await denied(409,'Mitglied','POST','/api/bonus/spin');
  await denied(401,'gast','GET','/api/rankings');
- sqlite.prepare('INSERT INTO daily_spins VALUES (?,?,?,?,?,?)').run(uid,day(20),'["bag","bag","bag"]',5000,1,'2026-01-01T00:00:00Z');
+ sqlite.prepare('INSERT INTO daily_spins(user_id,day,reels,reward,streak,created_at) VALUES (?,?,?,?,?,?)').run(uid,day(20),'["bag","bag","bag"]',5000,1,'2026-01-01T00:00:00Z');
  const top=(await ok('Offizier','GET','/api/rankings')).players.find(p=>p.username==='Mitglied');
- assert.equal(top.username,'Mitglied');assert.equal(top.own,false);assert.equal(top.streak,4);assert.equal(top.spins,5);assert.equal(top.best,5000);assert.equal(top.week,top.total-5000);assert.equal(top.character.name,'Thorin');
+ assert.equal(top.username,'Mitglied');assert.equal(top.own,false);assert.equal(top.streak,4);assert.equal(top.spins,7);assert.equal(top.best,5000);assert.equal(top.week,top.total-5000-sqlite.prepare('SELECT COALESCE(SUM(amount),0) n FROM gold_ledger WHERE user_id=?').get(uid).n);assert.equal(top.character.name,'Thorin');
  assert.equal((await ok('Mitglied','GET','/api/rankings')).players.find(p=>p.username==='Mitglied').own,true);
 });
 test('Roulette: Gold wird serverseitig verrechnet, kein Überziehen',async()=>{
@@ -283,7 +285,7 @@ test('Blackjack: Regeln, Geheimhaltung und Gold',async()=>{
  assert.equal(settleHand(['TS','9H','5D'],['TD','6C'],['KS'],10).result,'bust');assert.equal(settleHand(['TS','9H','5D'],['TD','6C'],['KS'],10).dealer.length,2);
  await denied(401,'gast','GET','/api/blackjack');await denied(401,'gast','POST','/api/blackjack/deal',{amount:1});
  const uid=sqlite.prepare('SELECT id FROM users WHERE username=?').get('Fremder').id;
- sqlite.prepare(`INSERT INTO daily_spins VALUES (?,'2026-01-01','["bag","bag","bag"]',100,1,'2026-01-01T00:00:00Z')`).run(uid);
+ sqlite.prepare(`INSERT INTO daily_spins(user_id,day,reels,reward,streak,created_at) VALUES (?,'2026-01-01','["bag","bag","bag"]',100,1,'2026-01-01T00:00:00Z')`).run(uid);
  const start=(await ok('Fremder','GET','/api/blackjack')).balance;assert.ok(start>=100);
  await denied(400,'Fremder','POST','/api/blackjack/deal',{amount:start+1});await denied(400,'Fremder','POST','/api/blackjack/deal',{amount:0});
  await denied(409,'Fremder','POST','/api/blackjack/hit');await denied(409,'Fremder','POST','/api/blackjack/stand');
@@ -490,4 +492,114 @@ test('Discord-Bot: Registrierung per Emoji annehmen oder ablehnen',async()=>{
   assert.ok(messageOf('EmojiJa'));
   const done=sqlite.prepare('SELECT COUNT(*) n FROM register_approvals WHERE decided_at IS NULL').get().n;assert.equal(done,0);
  }finally{delete process.env.MODCHECK_DISCORD_BOT_TOKEN;delete botReactors['✅'];delete botReactors['❌']}
+});
+
+test('Waffenkammer: Startgold einmal, Truhen, Shop, Ausrüstung mit Klassenregeln, keine Fremdzugriffe',async()=>{
+ const {resetRateLimits}=await import('../server/core.js');resetRateLimits();
+ const uid=await makeUser('Truhenjaeger');
+ assert.equal((await ok('Truhenjaeger','GET','/api/armory')).welcome,0,'ohne Charakter kein Startgold');
+ const created=await ok('Truhenjaeger','POST','/api/characters',{name:'Kisto',surname:'Goldhand',classId:8,race:'Gnom',level:60});
+ assert.equal(created.startGold,1500);
+ assert.equal((await ok('Truhenjaeger','POST','/api/characters',{name:'Zweito',surname:'Goldhand',classId:1,race:'Gnom',level:60})).startGold,0);
+ let a=await ok('Truhenjaeger','GET','/api/armory');assert.equal(a.welcome,0);assert.equal(a.balance,1500);assert.equal(a.character.className,'Magier');
+ const cat=await ok('Truhenjaeger','GET','/api/armory/catalog');
+ assert.equal(cat.chests.length,5);
+ for(const c of cat.chests){
+  const n=Object.values(c.items).reduce((s,p)=>s+p.length,0);assert.ok(n>=15,`${c.id}: ${n} Items`);
+  assert.equal(Object.values(c.odds).reduce((s,v)=>s+v,0),100);
+  const total=Object.values(c.items).flat().reduce((s,p)=>s+p.chance,0);assert.ok(Math.abs(total-100)<0.2,`${c.id}: ${total}`);
+  for(const [r,pool] of Object.entries(c.items))for(const p of pool)assert.equal(cat.items[p.id].quality,r)
+ }
+ assert.deepEqual(cat.chests.map(c=>c.odds.legendary),[3,5,8,12,20]);
+ // Chest: gold leaves, one item arrives.
+ const opened=await ok('Truhenjaeger','POST','/api/armory/chest',{chest:'stormwind'});
+ assert.equal(opened.balance,1400);assert.equal(opened.inventory.length,1);assert.equal(opened.inventory[0].uid,opened.won.uid);
+ assert.ok(cat.chests[0].items[opened.won.rarity].some(p=>p.id===opened.won.itemId));
+ await denied(400,'Truhenjaeger','POST','/api/armory/chest',{chest:'gibtsnicht'});
+ await denied(400,'Truhenjaeger','POST','/api/armory/chest',{chest:'azeroth'});
+ assert.equal((await ok('Truhenjaeger','GET','/api/armory')).balance,1400,'abgelehnte Truhe kostet nichts');
+ // Shop: buy, wrong class refused, sell back.
+ await denied(400,'Truhenjaeger','POST','/api/armory/buy',{itemId:5187});
+ const ring=1156,bought=await ok('Truhenjaeger','POST','/api/armory/buy',{itemId:ring});
+ assert.equal(bought.balance,1400-cat.items[ring].buy);
+ const shieldBuy=await ok('Truhenjaeger','POST','/api/armory/buy',{itemId:5443});
+ const shield=shieldBuy.inventory.find(i=>i.itemId===5443);assert.equal(shield.usable,false);
+ await denied(400,'Truhenjaeger','POST','/api/armory/equip',{uid:shield.uid});
+ const ringUid=bought.inventory.find(i=>i.itemId===ring).uid;
+ a=await ok('Truhenjaeger','POST','/api/armory/equip',{uid:ringUid});
+ assert.equal(a.inventory.find(i=>i.uid===ringUid).slot,'ring1');assert.equal(a.stats.angriff,a.base.angriff+cat.items[ring].game.angriff);
+ await denied(409,'Truhenjaeger','POST','/api/armory/sell',{uid:ringUid});
+ await denied(404,'Mitglied','POST','/api/armory/equip',{uid:ringUid});
+ await denied(404,'Mitglied','POST','/api/armory/sell',{uid:shield.uid});
+ const before=(await ok('Truhenjaeger','GET','/api/armory')).balance,sold=await ok('Truhenjaeger','POST','/api/armory/sell',{uid:shield.uid});
+ assert.equal(sold.balance,before+cat.items[5443].sell);
+ await denied(404,'Truhenjaeger','POST','/api/armory/sell',{uid:shield.uid});
+ // A two-hander goes into the main hand; start gold stays single even after repeated reads.
+ sqlite.prepare(`INSERT INTO gold_ledger(id,user_id,amount,reason,created_at) VALUES ('test-gold',?,100000,'test',?)`).run(uid,new Date().toISOString());
+ const staff=(await ok('Truhenjaeger','POST','/api/armory/buy',{itemId:2042})).inventory.find(i=>i.itemId===2042).uid;
+ a=await ok('Truhenjaeger','POST','/api/armory/equip',{uid:staff});assert.equal(a.inventory.find(i=>i.uid===staff).slot,'mainhand');
+ assert.equal(sqlite.prepare(`SELECT COUNT(*) n FROM gold_ledger WHERE user_id=? AND reason='start'`).get(uid).n,1);
+ await denied(401,'gast','GET','/api/armory');
+});
+
+test('Auktionshaus: anbieten, kaufen, zurückziehen, kein Doppelverkauf',async()=>{
+ const {resetRateLimits}=await import('../server/core.js');resetRateLimits();
+ await makeUser('Haendlerin');await char('Haendlerin','Verka',1,'Zwerg');
+ await makeUser('Kaeufer');await char('Kaeufer','Kaufo',1,'Zwerg');
+ const item=(await ok('Haendlerin','POST','/api/armory/buy',{itemId:1156})).inventory[0].uid;
+ const startSeller=(await ok('Haendlerin','GET','/api/armory')).balance,startBuyer=(await ok('Kaeufer','GET','/api/armory')).balance;
+ await denied(400,'Haendlerin','POST','/api/auctions',{uid:item,price:0});
+ const {id:auction}=await ok('Haendlerin','POST','/api/auctions',{uid:item,price:300});
+ await denied(409,'Haendlerin','POST','/api/auctions',{uid:item,price:300});
+ await denied(409,'Haendlerin','POST','/api/armory/sell',{uid:item});
+ await denied(409,'Haendlerin','POST','/api/armory/equip',{uid:item});
+ await denied(400,'Haendlerin','POST',`/api/auctions/${auction}/buy`);
+ assert.ok((await ok('Kaeufer','GET','/api/auctions')).open.some(o=>o.id===auction&&!o.own&&o.seller==='Haendlerin'));
+ await ok('Kaeufer','POST',`/api/auctions/${auction}/buy`);
+ await denied(404,'Kaeufer','POST',`/api/auctions/${auction}/buy`);
+ assert.equal((await ok('Kaeufer','GET','/api/armory')).balance,startBuyer-300);
+ assert.equal((await ok('Haendlerin','GET','/api/armory')).balance,startSeller+300);
+ assert.ok((await ok('Kaeufer','GET','/api/armory')).inventory.some(i=>i.uid===item&&!i.listed));
+ assert.ok(!(await ok('Haendlerin','GET','/api/armory')).inventory.some(i=>i.uid===item));
+ // Withdrawing puts the item back into the bag; only the seller may withdraw.
+ const {id:again}=await ok('Kaeufer','POST','/api/auctions',{uid:item,price:999999});
+ await denied(404,'Haendlerin','DELETE',`/api/auctions/${again}`);
+ await denied(400,'Haendlerin','POST',`/api/auctions/${again}/buy`);
+ await ok('Kaeufer','DELETE',`/api/auctions/${again}`);
+ assert.ok((await ok('Kaeufer','GET','/api/armory')).inventory.some(i=>i.uid===item&&!i.listed));
+});
+
+test('Duelle: Herausforderung, Züge, Zeitlimit, Sieger, Belohnung mit Obergrenze',async()=>{
+ const {resetRateLimits}=await import('../server/core.js');resetRateLimits();
+ const {resolveAction}=await import('../server/duels.js');
+ const hitter={id:'a',hp:100,max:100,angriff:100,verteidigung:0,krit:0,defending:false},target={id:'b',hp:1000,max:1000,angriff:10,verteidigung:0,krit:0,defending:false};
+ const fixed=n=>()=>n;
+ assert.equal(resolveAction(hitter,target,'attack',fixed(15)).damage,250);
+ target.defending=true;assert.equal(resolveAction(hitter,target,'attack',fixed(15)).damage,125);assert.equal(target.defending,false);
+ assert.equal(resolveAction(hitter,target,'strong',fixed(99)).miss,true);
+ assert.equal(resolveAction(hitter,target,'strong',fixed(0)).damage,Math.round(100*2.5*.85*1.7));
+ hitter.krit=5;const crit=resolveAction(hitter,target,'strong',fixed(0));assert.equal(crit.crit,true);assert.equal(crit.damage,Math.round(100*2.5*.85*1.7*1.5));
+ const a=await makeUser('Duellant');await char('Duellant','Klinge',1,'Zwerg');
+ const b=await makeUser('Gegner');await char('Gegner','Schild',1,'Zwerg');
+ await denied(400,'Duellant','POST','/api/duels',{opponentId:a});
+ const {id:duel}=await ok('Duellant','POST','/api/duels',{opponentId:b});
+ await denied(409,'Gegner','POST','/api/duels',{opponentId:a});
+ await denied(403,'Duellant','POST',`/api/duels/${duel}/accept`);
+ await denied(404,'Mitglied','GET',`/api/duels/${duel}`);
+ let d=await ok('Gegner','POST',`/api/duels/${duel}/accept`);assert.equal(d.status,'active');
+ const names={[a]:'Duellant',[b]:'Gegner'};
+ for(let i=0;i<200&&d.status==='active';i++){
+  const who=names[d.turnUser];await denied(409,who==='Duellant'?'Gegner':'Duellant','POST',`/api/duels/${duel}/action`,{action:'attack'});
+  d=await ok(who,'POST',`/api/duels/${duel}/action`,{action:i%3===2?'strong':'attack'})
+ }
+ assert.equal(d.status,'done');assert.ok([a,b].includes(d.winner));assert.equal(d.reward,25);
+ const loser=d.winner===a?b:a;assert.ok(Object.values(d.fighters).some(f=>f.hp===0&&f.id===loser));
+ // A second duel of the same pair on the same day pays nothing; missed turns attack on their own.
+ const {id:second}=await ok('Duellant','POST','/api/duels',{opponentId:b});await ok('Gegner','POST',`/api/duels/${second}/accept`);
+ for(let i=0;i<200;i++){sqlite.prepare('UPDATE duels SET turn_deadline=0 WHERE id=?').run(second);d=await ok('Duellant','GET',`/api/duels/${second}`);if(d.status!=='active')break}
+ assert.equal(d.status,'done');assert.equal(d.reward,0);
+ const list=await ok('Duellant','GET','/api/duels');
+ const me=list.ranking.find(r=>r.username==='Duellant');assert.equal(me.wins+me.losses,2);assert.ok(list.players.some(p=>p.username==='Gegner'));
+ const {id:third}=await ok('Gegner','POST','/api/duels',{opponentId:a});await ok('Duellant','POST',`/api/duels/${third}/decline`);
+ assert.equal(sqlite.prepare('SELECT status FROM duels WHERE id=?').get(third).status,'declined');
 });

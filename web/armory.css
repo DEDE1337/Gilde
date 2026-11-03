@@ -1,0 +1,206 @@
+/* Waffenkammer: chests, character window, merchant, auction house, duels. Builds on .wow-frame and the quality colours of the Spielunke. */
+.visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.ak-gold{display:inline-flex;align-items:center;gap:4px;font-weight:800;color:#ffd96a;white-space:nowrap}
+.ak-gold i{display:inline-block;width:14px;height:14px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff6c4,#f2c230 45%,#a8720c 80%);box-shadow:0 0 0 1px #5a3a05,0 1px 2px #000}
+.ak-purse,.section-head .ak-purse .ak-gold{font-size:22px}
+.ak-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.ak-row.center{justify-content:center}
+.up{color:#3cff2e}.down{color:#ff4d3a}.tt-bad{color:#ff4d3a}
+
+/* Item icons with quality frames */
+.ak-icon{position:relative;display:inline-grid;place-items:center;width:46px;height:46px;padding:0;border:2px solid var(--q);border-radius:5px;background:#05070b;box-shadow:inset 0 0 8px #000,0 0 0 1px #000;cursor:pointer;flex:none;transition:transform .12s,box-shadow .12s}
+.ak-icon img{width:100%;height:100%;border-radius:3px;display:block}
+.ak-icon:hover,.ak-icon:focus-visible{transform:translateY(-1px);box-shadow:inset 0 0 8px #000,0 0 12px var(--q)}
+.ak-icon.sm{width:34px;height:34px}
+.ak-icon.xl{width:96px;height:96px;border-width:3px;box-shadow:0 0 30px var(--q)}
+.ak-icon.q-epic,.ak-icon.q-legendary{box-shadow:inset 0 0 8px #000,0 0 8px color-mix(in srgb,var(--q) 55%,transparent)}
+
+/* Tooltip in the WoW style */
+.ak-tip{position:fixed;left:0;top:0;z-index:4000;display:none;flex-direction:column;gap:2px;max-width:320px;padding:9px 12px;background:#070a17f2;border:1px solid #9aa3b5;border-radius:4px;box-shadow:0 0 0 1px #000,0 6px 20px #000c;color:#fff;font:500 15px/1.35 var(--body);pointer-events:none}
+.ak-tip.show{display:flex}
+.ak-tip b{font-size:17px}
+.ak-tip .tt-ilvl{color:#ffd100}
+.ak-tip .tt-row{display:flex;justify-content:space-between;gap:20px}
+.ak-tip .tt-stat{color:#1eff00}
+.ak-tip .tt-price{margin-top:4px;color:#ddd}
+.ak-tip .tt-compare{margin:6px 0 0;padding-top:6px;border-top:1px solid #ffffff22;color:#ccc}
+
+.ak-tabs{margin-bottom:18px}
+
+/* Chests */
+.ak-chests{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-bottom:18px}
+.ak-chest{display:flex;flex-direction:column;align-items:center;text-align:center;margin:0}
+.ak-chest h3{margin:4px 0 2px;font-size:24px}
+.ak-chest-art{width:100%;max-width:190px;height:auto;overflow:visible}
+.ak-chest:hover .ak-chest-lid{transform:translateY(-3px) rotate(-2deg)}
+.ak-chest-lid{transform-origin:28px 86px;transition:transform .25s}
+.ak-chest-glow{opacity:0;transition:opacity .4s}
+.ak-chest:hover .ak-chest-glow{opacity:.5}
+.ak-chest-price{margin:4px 0 10px;font-size:22px}
+.ak-odds{display:flex;width:100%;height:10px;border:1px solid #000;border-radius:5px;overflow:hidden;box-shadow:0 0 0 1px #8a7342}
+.ak-odd{background:var(--q);min-width:3px}
+.ak-odds-list{display:grid;grid-template-columns:1fr 1fr;gap:2px 14px;width:100%;margin:8px 0 12px;padding:0;list-style:none;font-size:15px;text-align:left}
+.ak-odds-list b{float:right}
+.ak-chest .primary{padding:10px 26px}
+
+.ak-dialog{overflow:auto}
+.ak-dialog.ak-wide{width:min(94vw,720px)}
+.ak-dialog h2{font-size:clamp(28px,6vw,42px)}
+.ak-contents{max-height:56vh;overflow:auto;text-align:left;margin:10px 0 16px;padding-right:6px}
+.ak-contents h4{margin:14px 0 6px;font-size:20px}
+.ak-content-row{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:4px 0;border-bottom:1px solid #ffffff12}
+.ak-content-row small{display:block}
+
+/* Opening */
+.ak-open{width:min(96vw,900px);padding:24px 0 26px}
+.ak-open-stage{position:relative;min-height:330px;display:grid;place-items:center}
+.ak-open-chest{width:240px;transition:opacity .4s,transform .4s}
+.ak-open-chest .ak-chest-art{max-width:none}
+.ak-open-chest.shake{animation:akShake .9s ease-in-out}
+.ak-open-chest.open .ak-chest-lid{transform:rotate(-38deg) translate(-12px,-26px)}
+.ak-open-chest.open .ak-chest-glow{opacity:1;animation:akGlow 1s ease-out}
+.ak-open-chest.away{position:absolute;opacity:0;transform:scale(.6) translateY(-40px);pointer-events:none}
+@keyframes akShake{0%,100%{transform:none}15%{transform:rotate(-3deg)}30%{transform:rotate(3deg)}45%{transform:rotate(-4deg) translateY(-3px)}60%{transform:rotate(4deg)}75%{transform:rotate(-2deg)}}
+@keyframes akGlow{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:none}}
+.ak-reel{position:relative;width:100%;height:170px;overflow:hidden;border-top:2px solid #e8b64c;border-bottom:2px solid #e8b64c;background:linear-gradient(90deg,#000 0,#0000 18%,#0000 82%,#000 100%),url(ui/stone-dark.png) #0d1220;mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}
+.ak-reel-marker{position:absolute;left:50%;top:0;bottom:0;z-index:2;width:3px;margin-left:-1.5px;background:#ffd96a;box-shadow:0 0 12px #ffb347}
+.ak-reel-marker::before,.ak-reel-marker::after{content:"";position:absolute;left:50%;margin-left:-9px;border:9px solid transparent}
+.ak-reel-marker::before{top:0;border-top-color:#ffd96a}
+.ak-reel-marker::after{bottom:0;border-bottom-color:#ffd96a}
+.ak-reel-strip{display:flex;height:100%;will-change:transform}
+.ak-card{flex:none;box-sizing:border-box;width:132px;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:10px 8px;border-right:1px solid #0008;background:linear-gradient(transparent 55%,color-mix(in srgb,var(--q) 35%,transparent));border-bottom:4px solid var(--q)}
+.ak-card img{width:64px;height:64px;border:2px solid var(--q);border-radius:5px;box-shadow:0 0 10px color-mix(in srgb,var(--q) 50%,transparent)}
+.ak-card span{font:700 13px/1.15 var(--body);color:var(--q);text-align:center;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ak-card.landed{background:linear-gradient(transparent 20%,color-mix(in srgb,var(--q) 55%,transparent));box-shadow:inset 0 0 0 3px var(--q),0 0 30px var(--q);animation:akLand .6s ease-out}
+@keyframes akLand{0%{transform:scale(1)}40%{transform:scale(1.12)}100%{transform:scale(1)}}
+.ak-result{position:relative;margin-top:16px;padding:0 20px;animation:winPop .45s cubic-bezier(.2,1.5,.4,1)}
+.ak-result h3{margin:10px 0 4px;font-size:clamp(26px,5vw,38px)}
+.ak-result .win-rarity{font:900 22px var(--display);color:var(--q);margin:0 0 8px;text-shadow:0 0 14px var(--q)}
+.ak-rays{position:absolute;left:50%;top:70px;width:520px;height:520px;margin:-260px 0 0 -260px;z-index:-1;background:repeating-conic-gradient(color-mix(in srgb,var(--q) 40%,transparent) 0 8deg,transparent 8deg 22deg);mask-image:radial-gradient(circle,#000 10%,transparent 65%);animation:akSpin 14s linear infinite;pointer-events:none}
+@keyframes akSpin{to{transform:rotate(360deg)}}
+.won-legendary .ak-reel,.won-epic .ak-reel{animation:akFlash .8s ease-out}
+@keyframes akFlash{0%{filter:brightness(2.4)}100%{filter:none}}
+
+/* Character window */
+.ak-armory{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:18px;align-items:start}
+.ak-charwin{display:grid;grid-template-columns:auto 1fr auto;grid-template-areas:"l c r" "b b b";gap:12px 16px;margin:0;background:linear-gradient(#0000,#0008),url(ui/stone-dark.png) #121826}
+.ak-col:first-child{grid-area:l}.ak-col:nth-child(3){grid-area:r}
+.ak-col{display:flex;flex-direction:column;gap:8px}
+.ak-center{grid-area:c;display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;min-width:0}
+.ak-bottom{grid-area:b;display:flex;justify-content:center;gap:18px;padding-top:10px;border-top:1px solid #8a734255}
+.ak-slot{display:flex;flex-direction:column;align-items:center;gap:2px;width:58px}
+.ak-slot small{font-size:11px;color:var(--soft);text-align:center;line-height:1.1}
+.ak-slot .ak-icon,.ak-slot-empty{width:50px;height:50px}
+.ak-slot-empty{display:block;border:2px solid #3a3f4c;border-radius:5px;background:#05070b;box-shadow:inset 0 0 10px #000}
+.ak-slot-empty img{width:100%;height:100%;opacity:.16;filter:grayscale(1);border-radius:3px}
+.ak-portrait{display:flex;flex-direction:column;align-items:center;padding:14px 10px 6px;width:100%;border-radius:8px;background:radial-gradient(circle at 50% 35%,color-mix(in srgb,var(--class) 30%,transparent),transparent 70%)}
+.ak-portrait h3{margin:8px 0 2px;color:var(--class);font-size:28px}
+.ak-portrait p{margin:0;color:var(--soft)}
+.ak-portrait.empty{padding:40px 10px}
+.ak-face{width:96px;height:96px;border-radius:50%;border:3px solid #e8b64c;box-shadow:0 0 0 3px #000,0 0 24px color-mix(in srgb,var(--class) 60%,transparent)}
+.ak-stats{display:grid;grid-template-columns:1fr 1fr;gap:6px;width:100%;margin:0}
+.ak-stats div{padding:7px 10px;background:#0009;border:1px solid #8a734266;border-radius:4px;text-align:left}
+.ak-stats dt{font-size:13px;color:var(--soft)}
+.ak-stats dd{margin:0;font:800 22px var(--body);color:var(--cream)}
+.ak-stats dd small{margin-left:6px;font-size:14px}
+.ak-bags{margin:0}
+.ak-bag-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(50px,1fr));gap:6px;padding:8px;background:#0007;border:1px solid #000;border-radius:4px}
+.ak-bag-cell{position:relative;display:grid;place-items:center}
+.ak-bag-cell .ak-icon{width:50px;height:50px}
+.ak-bag-cell.unusable .ak-icon img{filter:sepia(1) saturate(4) hue-rotate(-40deg) brightness(.7)}
+.ak-bag-cell.listed .ak-icon{opacity:.55}
+.ak-badge{position:absolute;right:0;bottom:0;padding:0 3px;background:#000c;color:#ffd96a;font:800 11px var(--body);border-radius:3px}
+.ak-menu{position:absolute;z-index:3000;display:flex;flex-direction:column;min-width:220px;max-width:300px;margin:0;padding:10px}
+.ak-menu p{margin:0 0 6px}
+.ak-menu button{text-align:left;padding:8px 10px;background:none;border:0;border-top:1px solid #ffffff14;color:var(--cream);font:600 16px var(--body);cursor:pointer}
+.ak-menu button:hover,.ak-menu button:focus-visible{background:#ffb34722;color:#fff}
+button.armed{background:#b3261e!important;color:#fff!important}
+
+/* Merchant */
+.ak-shop{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:10px;margin-bottom:18px}
+.ak-shop-row{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;margin:0;padding:12px 14px;border-left:4px solid var(--q)}
+.ak-shop-name{display:flex;flex-direction:column;min-width:0}
+.ak-shop-name>span{font-weight:800}
+.ak-shop-name small:last-child{color:#1eff00;font-size:14px}
+.ak-shop-buy{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.ak-shop-buy .primary{padding:7px 18px;font-size:16px}
+.ak-sell-list .list-row{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center}
+
+/* Auction house */
+.ak-ah{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:18px;align-items:start}
+.ak-ah-table{display:flex;flex-direction:column}
+.ak-ah-row{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:8px 4px;border-bottom:1px solid #ffffff12}
+.ak-ah-row small{display:block}
+.ak-ah-price{display:flex;align-items:center;gap:10px}
+.ak-ah-price .primary{padding:6px 16px;font-size:16px}
+.ak-ah-form label{display:block;margin-bottom:10px}
+.ak-ah .list-row{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center}
+.ak-ah .toolbar input{flex:1;min-width:160px}
+
+/* Duels */
+.ak-arena{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:center;padding:24px;background:radial-gradient(ellipse at 50% 100%,#ff7a1a22,transparent 60%),linear-gradient(#0000,#000a),url(art/stormwind.jpg) center/cover #0c0e13}
+.ak-fighter{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;padding:14px;border:2px solid #0000;border-radius:8px;transition:border-color .2s,transform .2s}
+.ak-fighter.turn{border-color:#ffd96a;box-shadow:0 0 22px #ffb34755}
+.ak-fighter h3{margin:8px 0 0;color:var(--class);font-size:26px}
+.ak-fighter p{margin:2px 0}
+.ak-fighter.down{filter:grayscale(1) brightness(.6)}
+.ak-fighter-face{position:relative}
+.ak-fighter-face img{width:110px;height:110px;border-radius:50%;border:3px solid #e8b64c;box-shadow:0 0 0 3px #000,0 0 26px color-mix(in srgb,var(--class) 55%,transparent)}
+.ak-shield-up{position:absolute;right:-6px;bottom:-4px;font-size:30px;filter:drop-shadow(0 0 6px #4da3ff)}
+.ak-hp{position:relative;width:100%;max-width:260px;height:22px;margin-top:10px;background:#1a0606;border:2px solid #000;border-radius:4px;box-shadow:0 0 0 1px #8a7342;overflow:hidden}
+.ak-hp i{display:block;height:100%;background:linear-gradient(#5fe35f,#1e9e1e);transition:width .5s ease-out}
+.ak-hp span{position:absolute;inset:0;display:grid;place-items:center;font:800 14px var(--body);color:#fff;text-shadow:0 1px 2px #000}
+.ak-fstats{display:flex;gap:12px;color:var(--soft);font-weight:700}
+.ak-vs{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+.ak-vs>span{font:900 54px var(--display);color:#ffd96a;text-shadow:0 0 18px #ff7a1a}
+.ak-turn{font:800 20px var(--body);color:var(--cream);margin:0}
+.ak-verdict{font:900 38px var(--display);margin:0}
+.ak-fighter.lunge.left{animation:akLungeL .5s ease-in-out}
+.ak-fighter.lunge.right{animation:akLungeR .5s ease-in-out}
+@keyframes akLungeL{40%{transform:translateX(40px) rotate(4deg)}}
+@keyframes akLungeR{40%{transform:translateX(-40px) rotate(-4deg)}}
+.ak-fighter.struck{animation:akStruck .45s}
+@keyframes akStruck{0%,100%{transform:none;filter:none}20%{transform:translateX(-8px);filter:brightness(2) sepia(1) hue-rotate(-30deg) saturate(5)}60%{transform:translateX(6px)}}
+.ak-fighter.guard{animation:akGuard .7s}
+@keyframes akGuard{50%{box-shadow:0 0 30px #4da3ff}}
+.ak-float{position:absolute;left:50%;top:40px;z-index:3;font:900 34px var(--display);transform:translateX(-50%);pointer-events:none;text-shadow:0 2px 0 #000,0 0 10px #000;animation:akFloat 1.4s ease-out forwards}
+.ak-float.dmg{color:#fff}
+.ak-float.crit{color:#ffd100;font-size:46px}
+.ak-float.heal{color:#3cff2e}
+.ak-float.miss{color:#aab;font-size:26px}
+@keyframes akFloat{0%{opacity:0;transform:translate(-50%,10px) scale(.6)}15%{opacity:1;transform:translate(-50%,0) scale(1.15)}100%{opacity:0;transform:translate(-50%,-70px) scale(1)}}
+.ak-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:0 0 18px}
+.ak-action{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;gap:0 12px;align-items:center;text-align:left;padding:12px 14px;background:linear-gradient(#2a1d0c,#120c05);border:2px solid #8a7342;border-radius:6px;color:var(--cream);cursor:pointer;transition:border-color .15s,transform .1s}
+.ak-action img{grid-row:span 2;width:48px;height:48px;border:2px solid #000;border-radius:4px}
+.ak-action b{font:800 19px var(--body)}
+.ak-action small{color:var(--soft);font-size:14px}
+.ak-action:hover{border-color:#ffd96a;transform:translateY(-2px)}
+.ak-action:disabled{opacity:.5;cursor:wait;transform:none}
+.ak-log{max-height:300px;overflow:auto;margin:0;padding-left:26px}
+.ak-log li{padding:3px 0;border-bottom:1px solid #ffffff0d}
+.ak-log li.crit{color:#ffd100}.ak-log li.heal{color:#7dff7d}.ak-log li.miss{color:var(--soft)}
+.ak-rank{display:flex;flex-direction:column}
+.ak-rank-row{display:grid;grid-template-columns:36px 1fr 60px 70px 60px;gap:8px;padding:7px 4px;border-bottom:1px solid #ffffff12;align-items:center}
+.ak-rank-row.head{font-weight:800;color:var(--ember);border-bottom:2px solid #8a7342}
+.ak-rank-row.own{background:#ffb34718}
+
+/* Automat: three rolls a day */
+.slot-rolls{display:flex;justify-content:center;align-items:center;gap:10px;margin:6px 0 0;color:var(--soft)}
+.roll-pips{display:inline-flex;gap:6px}
+.roll-pips i{width:16px;height:16px;border-radius:50%;background:#2a2f3a;border:2px solid #000;box-shadow:0 0 0 1px #8a7342}
+.roll-pips i.on{background:radial-gradient(circle at 35% 30%,#fff6c4,#f2c230 45%,#a8720c 80%);box-shadow:0 0 0 1px #8a7342,0 0 8px #ffb347}
+
+@media(max-width:1000px){.ak-armory,.ak-ah{grid-template-columns:1fr}}
+@media(max-width:640px){
+ .ak-charwin{grid-template-columns:1fr 1fr;grid-template-areas:"c c" "l r" "b b"}
+ .ak-col{flex-direction:row;flex-wrap:wrap;justify-content:center}
+ .ak-arena{grid-template-columns:1fr;padding:14px}
+ .ak-vs>span{font-size:38px}
+ .ak-actions{grid-template-columns:1fr}
+ .ak-shop{grid-template-columns:1fr}
+ .ak-shop-row{grid-template-columns:auto 1fr}
+ .ak-shop-buy{grid-column:1/-1;flex-direction:row;justify-content:space-between;align-items:center}
+ .ak-rank-row{grid-template-columns:28px 1fr 46px 56px 50px;font-size:15px}
+ .ak-open-stage{min-height:300px}
+}
+@media(prefers-reduced-motion:reduce){.ak-rays,.ak-card.landed,.ak-open-chest.shake,.ak-float,.ak-fighter{animation:none!important}.ak-hp i{transition:none}}
