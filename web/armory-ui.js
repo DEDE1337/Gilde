@@ -498,3 +498,57 @@ const RELEASE_AT=Date.parse('2026-11-04T23:00:00Z');
  box.innerHTML=`<p class="release-title">Release von World of Warcraft: Forever</p><div class="release-units">${parts.map(([n,l])=>`<span><b>${String(n).padStart(2,'0')}</b><small>${l}</small></span>`).join('')}</div><p class="release-when">05.11.2026 · 0:00 Uhr</p>`;
  setTimeout(releaseCountdown,1000-Date.now()%1000)
 })();
+
+/* Section overviews: a click on a main menu entry opens a page with all its parts ("Start" goes straight to the start page). */
+const PAGE_INFO={
+ home:['inv_misc_book_09','Die Startseite mit Raids, Terminen und Neuigkeiten.'],news:['inv_scroll_03','Neuigkeiten rund um World of Warcraft: Forever.'],patches:['inv_misc_note_01','Geprüfte Patchnotes und Änderungen.'],impact:['inv_misc_spyglass_02','Was neue Patches für deine Charaktere bedeuten.'],
+ guild:['inv_banner_02','Die Gildenhalle: Motto, Geschichte und Botschaft.'],members:['achievement_guildperk_everybodysfriend','Alle Mitglieder mit ihren Charakteren.'],progress:['achievement_boss_onyxia','Welche Bosse die Gilde schon gelegt hat.'],hall:['inv_misc_trophy_argent','Die großen Momente der Gilde.'],polls:['inv_letter_15','Abstimmungen der Gilde, auch in Discord.'],crafting:['trade_blacksmithing','Wer kann was herstellen?'],
+ character:['inv_chest_plate04','Ausrüstung planen und am 3D-Modell anlegen.'],talents:['ability_marksmanship','Talente für alle Klassen verteilen.'],skills:['spell_holy_magicalsentry','Alle Fähigkeiten deiner Klasse nach Stufe.'],bis:['inv_sword_39','Beste Ausrüstung pro Platz, mit Quelle.'],legacy:['inv_misc_book_11','Legacy-Ziele und Fortschritt.'],plan:['inv_misc_map_01','Deine Levelreise mit Klassenquests und Meilensteinen.'],
+ instances:['achievement_boss_edwinvancleef','Karten, Bosse und Beute der Instanzen.'],gear:['inv_box_01','Alle Gegenstände, die deine Klasse tragen kann.'],
+ raids:['achievement_boss_ragnaros','Raids planen und sich anmelden.'],calendar:['inv_misc_pocketwatch_01','Alle Termine der Gilde.'],forum:['inv_letter_09','Diskussionen, Guides und Videos.'],board:['inv_misc_note_06','Kurze Aushänge für alle.'],
+ bonus:['inv_misc_coin_02','Drei freie Drehs am Tag für Gildengold.'],roulette:['inv_misc_dice_01','Setz dein Gold auf Rot, Schwarz oder Grün.'],blackjack:['inv_misc_ticket_tarot_blessings','Näher an 21 als der Geber.'],chests:['inv_box_birdcage_01','Gold gegen Schatztruhen voller Classic-Ausrüstung.'],ranking:['inv_misc_trophy_gold','Wer holt am meisten aus der Spielunke?'],
+ armory:['inv_chest_chain_07','Dein Spielcharakter: Ausrüstung, Stufe und Fähigkeiten.'],shop:['inv_misc_bag_10','Waffen, Rüstungen und Tränke kaufen und verkaufen.'],auctions:['inv_misc_coin_17','Handel mit anderen Gildenmitgliedern.'],duels:['ability_dualwield','Fordere Gildenmitglieder zum Duell.'],dungeons:['achievement_boss_onyxia','Instanzen zu fünft und tägliche Raids um 19 Uhr.'],
+ dashboard:['inv_misc_book_09','Deine persönliche Übersicht.'],characters:['inv_misc_head_human_01','Deine Charaktere verwalten.'],wishlist:['inv_misc_note_02','Gegenstände, die du noch willst.'],notifications:['inv_letter_15','Alle Benachrichtigungen.'],settings:['trade_engineering','Passwort und Hauptcharakter.'],notes:['inv_scroll_06','Notizen und Backup deiner Planung.']
+};
+const GROUP_TEXT={Gilde:'Alles rund um ModCheck: Mitglieder, Erfolge, Abstimmungen und Berufe.',Charaktere:'Der Charakterplaner für deine Klasse: Ausrüstung, Talente, Fähigkeiten und Levelreise.',Instanzen:'Instanzjournal und Gegenstandskatalog von WoW Forever.',Organisation:'Raids, Termine, Forum und Schwarzes Brett.',Spielunke:'Hier verdienst du Gildengold: Automat, Roulette, Blackjack und Schatztruhen.',Waffenkammer:'Unser Spiel: Charakter ausrüsten, handeln, Duelle und Instanzen.','Mein Account':'Deine Charaktere, Wunschliste, Benachrichtigungen und Einstellungen.'};
+pageViews.overview=async group=>{
+ const entry=NAV.find(g=>g[0]===group);if(!entry)return openPage('home');
+ const [name,icon,items]=entry,visible=items.filter(([, ,auth])=>!auth||P.user);
+ $('#content').innerHTML=head(`${icon} ${esc(name)}`,esc(GROUP_TEXT[name]||''))+`<div class="overview-grid">${visible.map(([id,label])=>{const [ic,text]=PAGE_INFO[id]||['inv_misc_questionmark',''];return `<button class="overview-card wow-frame" onclick="openPage('${id}')"><img src="icons/${ic}.jpg" alt="" onerror="this.onerror=null;this.src='icons/inv_misc_questionmark.jpg'"><span><b>${esc(label)}</b><small>${esc(text)}</small></span><i aria-hidden="true">›</i></button>`}).join('')}</div>`
+};
+// The main menu entries: a click opens the overview of the section (Start: the start page); hovering still shows the dropdown.
+function openSection(group){closeNav();group==='Start'?openPage('home'):openPage('overview',group)}
+
+/* Top bar: the editable planner profile belongs to the planner only. The game pages show the game character read-only. */
+const PLANNER_PAGES=new Set(['character','talents','skills','bis','legacy','plan','instances','gear','notes']);
+const GAME_PAGES=new Set(['bonus','roulette','blackjack','chests','ranking','armory','shop','auctions','duels','duel','dungeons','run']);
+async function updateTopBars(){
+ const profile=document.querySelector('section.profile');if(profile)profile.style.display=PLANNER_PAGES.has(page)?'':'none';
+ let bar=document.getElementById('gameBar');
+ if(!GAME_PAGES.has(page)||!P.user){bar?.remove();return}
+ if(!bar){bar=document.createElement('section');bar.id='gameBar';bar.className='game-bar';profile?.after(bar)}
+ try{AK.state=await api('/api/armory')}catch{return}if(!GAME_PAGES.has(page))return;
+ const s=AK.state,c=s.character;
+ if(!c){bar.innerHTML=`<span>Für die Waffenkammer brauchst du einen Charakter.</span><button class="subtle" onclick="openCharScreen()">Charakter anlegen</button>`;return}
+ const p=s.progress;
+ bar.innerHTML=`<img src="icons/${charFaceIcon({race:c.race,gender:c.gender})}.jpg" alt="" onerror="this.onerror=null;this.src='icons/inv_misc_questionmark.jpg'"><div class="game-bar-who"><b style="color:${CLASS_INFO[c.classId]?.[1]||'#fff'}">${esc(c.name)}</b><small>${esc(c.race)} · ${esc(c.className)}</small></div><div class="game-bar-level"><small>SPIELSTUFE</small><b>${p.level}</b></div><div class="game-bar-xp"><small>${p.next?`${p.xp} / ${p.next} Erfahrung`:'Höchststufe'}</small><span class="ak-xp"><i style="width:${p.next?p.xp/p.next*100:100}%"></i></span></div><div class="game-bar-gold"><small>GILDENGOLD</small>${goldText(s.balance)}</div><button class="subtle" onclick="openCharScreen()">Charakter wechseln</button>`
+}
+{const renderBeforeBars=render;render=function(){renderBeforeBars();updateTopBars()}}
+setTimeout(updateTopBars,1200);
+
+/* "Neu bei ModCheck": shown once per browser for logged-in members after this update, when no other window is open. */
+const NEWS_SEEN='modcheck-news-2026-11-waffenkammer';
+function newsSeen(){try{return localStorage.getItem(NEWS_SEEN)==='1'}catch{return true}}
+function showNews(){
+ if(newsSeen()||!P.user)return;
+ if(document.getElementById('charScreen')||document.querySelector('dialog[open]'))return setTimeout(showNews,2000);
+ try{localStorage.setItem(NEWS_SEEN,'1')}catch{}
+ const item=(icon,title,text)=>`<div class="news-item"><img src="icons/${icon}.jpg" alt=""><span><b>${title}</b><small>${text}</small></span></div>`;
+ const d=akDialog('epic',`<p class="win-rarity">Neu bei ModCheck</p><h2 id="akDlgTitle">Spielunke und Waffenkammer</h2>
+ <h3 class="news-head">♠ Spielunke: Gold verdienen</h3><div class="news-list">${item('inv_misc_coin_02','Drei Drehs am Tag','Der Automat gibt jetzt drei freie Drehs pro Tag.')}${item('inv_box_birdcage_01','Schatztruhen','Fünf Truhen voller echter Classic-Ausrüstung, mit allen Chancen offen.')}</div>
+ <h3 class="news-head">⚔ Waffenkammer: unser eigenes Spiel</h3><div class="news-list">${item('inv_chest_chain_07','Dein Charakter','Ausrüstung anlegen, am 3D-Modell sehen, Stufen bis 20 und vier Klassenfähigkeiten.')}${item('inv_misc_bag_10','Händler und Auktionshaus','Waffen, Rüstungen und Tränke kaufen, verkaufen und mit der Gilde handeln.')}${item('ability_dualwield','Duelle','Rundenkämpfe wie in alten Monster-Spielen: Kampf, Beutel, Verteidigen.')}${item('achievement_boss_onyxia','Instanzen und Raids','Zu fünft dreimal am Tag in Instanzen, jeden Tag um 19 Uhr Raid mit bis zu 25 Spielern.')}</div>
+ <p class="muted">1.500 Startgold und ein paar Tränke warten schon auf dich.</p>
+ <div class="ak-row center"><button class="primary" onclick="this.closest('dialog').close();openPage('armory')">Zur Waffenkammer</button><button class="subtle" onclick="this.closest('dialog').close();openPage('chests')">Zur Spielunke</button><button class="subtle" onclick="this.closest('dialog').close()">Später</button></div>`,'ak-wide news-dialog');
+ d.querySelector('.primary')?.focus()
+}
+setTimeout(showNews,3500);

@@ -399,3 +399,32 @@ button.armed{background:#b3261e!important;color:#fff!important}
 .release-when{margin:8px 0 0;color:var(--soft);font-weight:700}
 .release-live{margin:0;font:900 clamp(30px,6vw,52px) var(--display);color:#ffd96a;text-shadow:0 0 20px #ff7a1a}
 @media(max-width:560px){.release-units{gap:6px}.release-units span{min-width:64px;padding:8px 4px}.release-units b{font-size:32px}}
+
+/* Section overviews */
+.overview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.overview-card{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;margin:0;padding:16px;text-align:left;color:var(--text);cursor:pointer;transition:transform .12s,border-color .12s}
+.overview-card:hover,.overview-card:focus-visible{transform:translateY(-2px);border-color:#ffd96a}
+.overview-card img{width:52px;height:52px;border:2px solid #e8b64c;border-radius:6px;box-shadow:0 0 0 2px #000}
+.overview-card b{display:block;font:900 22px var(--display);color:var(--cream)}
+.overview-card small{color:var(--soft);font-size:15px}
+.overview-card i{font:900 30px var(--display);color:var(--ember);font-style:normal}
+
+/* Read-only game character bar on Spielunke and Waffenkammer pages */
+.game-bar{display:flex;flex-wrap:wrap;align-items:center;gap:14px 22px;margin:30px 0;padding:12px 18px;background:linear-gradient(#122b4c,#0b1c35);border:1px solid #66718a;border-top:2px solid #c1a15e;box-shadow:inset 0 0 30px #07152b,0 8px 22px #0003}
+.game-bar img{width:52px;height:52px;border-radius:50%;border:2px solid #e8b64c;box-shadow:0 0 0 2px #000}
+.game-bar small{display:block;color:var(--soft);font:700 12px var(--body);letter-spacing:.06em}
+.game-bar-who b{font:900 22px var(--display)}
+.game-bar-level b{font:900 30px/1 var(--display);color:#ffd96a}
+.game-bar-xp{flex:1;min-width:160px}
+.game-bar-gold .ak-gold{font-size:20px}
+
+/* What's new popup */
+.news-dialog{text-align:left}
+.news-dialog .win-rarity,.news-dialog h2{text-align:center}
+.news-head{margin:16px 0 8px;font-size:22px;color:var(--ember)}
+.news-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:8px}
+.news-item{display:flex;gap:10px;align-items:center;padding:8px;background:#0008;border:1px solid #8a734266;border-radius:6px}
+.news-item img{width:42px;height:42px;border:2px solid #e8b64c;border-radius:5px;flex:none}
+.news-item span{display:flex;flex-direction:column}
+.news-item b{color:var(--cream)}
+.news-item small{color:var(--soft);font-size:14px;line-height:1.3}
