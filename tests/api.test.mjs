@@ -629,6 +629,10 @@ test('Waffenkammer: Ausrüstung und Level pro Charakter, Login-Charakter spielt,
  // Duel with abilities: a stun skips the enemy turn, cooldowns are enforced, both sides get XP.
  const foe=await makeUser('Zielscheibe');await char('Zielscheibe','Ziel',1,'Mensch');
  sqlite.prepare('UPDATE characters SET armory_xp=1000 WHERE id=?').run(warrior);
+ // The profile shows the Waffenkammer level and the gear the character wears, also to other members.
+ const profile=await ok('Zielscheibe','GET',`/api/characters/${warrior}/profile`);
+ assert.equal(profile.character.level,levelOf(1000).level);assert.ok(profile.character.level>1);
+ assert.deepEqual((await ok('Zielscheibe','GET',`/api/characters/${mage}/profile`)).worn.map(w=>[w.slot,w.item.id]),[['back',5193]]);
  const {id:duel}=await ok('Zweichar','POST','/api/duels',{opponentId:foe});
  let d=await ok('Zielscheibe','POST',`/api/duels/${duel}/accept`);
  if(d.turnUser===foe)d=await ok('Zielscheibe','POST',`/api/duels/${duel}/action`,{action:'defend'});
