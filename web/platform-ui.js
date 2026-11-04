@@ -37,12 +37,6 @@ document.addEventListener('mouseout',e=>{if(e.target.closest?.('[data-tip-item],
 /* Navigation */
 const pageViews={};
 function openPage(id,arg){P.arg=arg??null;go(id)}
-/* Every page has its own address (#/profile/<id>), so links can be shared, reloaded and the back button works. */
-const routeHash=()=>'#/'+page+(pageViews[page]&&P.arg!=null?'/'+encodeURIComponent(P.arg):'');
-function readRoute(){const[id,arg]=location.hash.replace(/^#\/?/,'').split('/');if(!id||!(pageViews[id]||tabs.some(t=>t[0]===id)))return null;try{return[id,arg?decodeURIComponent(arg):null]}catch{return null}}
-let routeRead=false;
-function writeRoute(){if(page==='login'&&P.returnTo)return;const h=routeHash();if(location.hash!==h)history[location.hash?'pushState':'replaceState'](null,'',h)}
-addEventListener('popstate',()=>{const r=readRoute();if(r){P.arg=r[1];go(r[0])}});
 function closeNav(except){document.querySelectorAll('.nav-group.open').forEach(n=>{if(n!==except){n.classList.remove('open');n.firstElementChild.setAttribute('aria-expanded','false')}})}
 function toggleNav(group){closeNav(group);group.firstElementChild.setAttribute('aria-expanded',String(group.classList.toggle('open')))}
 document.addEventListener('click',e=>{if(!e.target.closest?.('.nav-group'))closeNav()});
@@ -85,7 +79,7 @@ async function refreshUser(){const{user}=await api('/api/me');P.user=user;P.acti
 const logout=act(async()=>{await api('/api/logout','POST');location.reload()});
 
 pageViews.login=async()=>{
- if(P.user){const[back,arg]=P.returnTo||['dashboard'];P.returnTo=null;return openPage(back,arg)}
+ if(P.user)return openPage('dashboard');
  $('#content').innerHTML=head('Willkommen in der Gildenhalle','Melde dich an oder lege ein Konto an.')+`<div class="two-col">`+frame('Anmelden',`<form id="loginForm"><label>Benutzername<input name="username" required autocomplete="username" maxlength="24"></label><label>Passwort<input name="password" type="password" required autocomplete="current-password"></label><button class="primary">Anmelden</button></form>`)+frame('Konto anlegen',`<form id="registerForm"><label>Benutzername<input name="username" required minlength="3" maxlength="24" autocomplete="username"></label><label>Passwort (mindestens 10 Zeichen)<input name="password" type="password" required minlength="10" autocomplete="new-password"></label><button class="subtle">Registrieren</button><p><small class="muted">Ein Offizier schaltet neue Konten frei.</small></p></form>`)+`</div>`;
  $('#loginForm').onsubmit=act(async e=>{e.preventDefault();await api('/api/login','POST',formData(e.target));await refreshUser();const next=P.afterLogin;P.afterLogin=null;next?openPage(next.page,next.arg):openPage('dashboard')});
  $('#registerForm').onsubmit=act(async e=>{e.preventDefault();const r=await api('/api/register','POST',formData(e.target));e.target.reset();toast(r.message)});
@@ -166,7 +160,7 @@ async function pushPlanner(){const c=P.activeChar;if(!c)return;const gear=Object
 pageViews.profile=async id=>{
  const p=await api(`/api/characters/${id}/profile`),c=p.character;
  const gear=await Promise.all(p.gear.map(async g=>({slot:g.slot,item:await loadTip('item',g.item_id).then(d=>d).catch(()=>null)})));
- $('#content').innerHTML=head(`<span style="color:${CLASS_INFO[c.classId][1]}">${esc(c.name)}</span>`,`Stufe ${+c.level} · ${esc(c.race)} · ${esc(c.className)}${c.spec?' · '+esc(c.spec):''} · ${esc(p.owner.username)}`,`<span class="pill">${esc(p.owner.guildRank)}</span>`)+`<div class="two-col">`+frame('Ausrüstung',(p.worn||[]).map(g=>`<div class="list-row"><small class="muted">${SLOT_NAMES[g.slot]||esc(g.slot)}</small>${itemLink(g.item)}</div>`).join('')+(gear.length?`<h4>Im Planer</h4>${gear.map(g=>`<div class="list-row read"><small class="muted">${SLOT_NAMES[g.slot]||esc(g.slot)}</small>${g.item?itemLink({...g.item}):''}</div>`).join('')}`:'')||emptyBox('Noch nichts angelegt.'))+frame('Berufe und Raids',p.professions.map(x=>`<div class="list-row"><span>${esc(x.profession)}${x.specialization?' · '+esc(x.specialization):''}</span><strong>${x.skill} / 300</strong></div>`).join('')+`<div class="list-row"><span>Dokumentierte Bosskills</span><strong>${p.raidKills}</strong></div>`)+`</div>`
+ $('#content').innerHTML=head(`<span style="color:${CLASS_INFO[c.classId][1]}">${esc(c.name)}</span>`,`Level ${c.level} · ${esc(c.race)} · ${esc(c.className)}${c.spec?' · '+esc(c.spec):''}`,`<span class="pill">${esc(p.owner.guildRank)}</span>`)+`<div class="two-col">`+frame('Ausrüstung',gear.map(g=>`<div class="list-row"><small class="muted">${SLOT_NAMES[g.slot]}</small>${g.item?itemLink({...g.item}):''}</div>`).join('')||emptyBox('Noch nichts angelegt.'))+frame('Berufe und Raids',p.professions.map(x=>`<div class="list-row"><span>${esc(x.profession)}${x.specialization?' · '+esc(x.specialization):''}</span><strong>${x.skill} / 300</strong></div>`).join('')+`<div class="list-row"><span>Dokumentierte Bosskills</span><strong>${p.raidKills}</strong></div>`)+`</div>`
 };
 pageViews.members=async()=>{
  const{members}=await api('/api/members');

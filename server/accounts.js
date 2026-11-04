@@ -2,8 +2,6 @@
 import {discord,berlinTime,botReady} from './discord.js';
 import {requestApproval} from './approvals.js';
 import {grantStartGold,START_GOLD} from './gold.js';
-import {progressOf} from './progression.js';
-import {ITEMS} from './armory.js';
 import {route,fail,text,int,oneOf,now,id,hashPassword,verifyPassword,createSession,dropSession,rateLimit,failuresBlocked,recordFailure,characterOwned,publicCharacter,appearance,notify,CLASSES,RACES,SLOTS,PERMISSIONS,can} from './core.js';
 
 const me=user=>user&&{id:user.id,username:user.username,role:user.role,guildRank:user.guild_rank,permissions:user.permissions,mainCharacterId:user.main_character_id,dashboard:JSON.parse(user.dashboard_json||'{}'),legacyPublic:!!user.legacy_public};
@@ -98,10 +96,7 @@ export function registerAccountRoutes(db){
  route('GET','/api/characters/:id/profile','member',({user,params})=>{
   const c=db.prepare('SELECT * FROM characters WHERE id=?').get(params.id);if(!c)fail(404,'Charakter nicht gefunden.');
   const owner=db.prepare('SELECT username,guild_rank FROM users WHERE id=?').get(c.user_id);
-  // The level shown on the profile is the Waffenkammer level from armory_xp; characters.level is only the planner value and stays 1 for characters made at login.
-  const progress=progressOf(db,c.id);
-  const worn=db.prepare('SELECT slot,item_id FROM inventory WHERE character_id=? AND slot IS NOT NULL').all(c.id).map(r=>{const i=ITEMS[r.item_id];return i&&{slot:r.slot,item:{id:i.id,name:i.name,quality:i.quality,icon:i.icon}}}).filter(Boolean);
-  return{character:{...publicCharacter(c),level:progress.level},progress:{level:progress.level,xp:progress.xp,next:progress.next},worn,owner:{username:owner.username,guildRank:owner.guild_rank},gear:db.prepare('SELECT slot,item_id FROM character_gear WHERE character_id=?').all(c.id),professions:db.prepare('SELECT profession,skill,specialization FROM character_professions WHERE character_id=?').all(c.id),raidKills:db.prepare('SELECT COUNT(*) n FROM kill_participants WHERE character_id=?').get(c.id).n,own:c.user_id===user.id||can(user,'members')}
+  return{character:publicCharacter(c),owner:{username:owner.username,guildRank:owner.guild_rank},gear:db.prepare('SELECT slot,item_id FROM character_gear WHERE character_id=?').all(c.id),professions:db.prepare('SELECT profession,skill,specialization FROM character_professions WHERE character_id=?').all(c.id),raidKills:db.prepare('SELECT COUNT(*) n FROM kill_participants WHERE character_id=?').get(c.id).n,own:c.user_id===user.id||can(user,'members')}
  });
  route('GET','/api/notifications','member',({user})=>({notifications:db.prepare('SELECT id,message,link,created_at,read_at FROM notifications WHERE user_id=? ORDER BY created_at DESC LIMIT 100').all(user.id)}));
  route('POST','/api/notifications/read','member',({user,body})=>{if(body.id)db.prepare('UPDATE notifications SET read_at=? WHERE id=? AND user_id=?').run(now(),String(body.id),user.id);else db.prepare('UPDATE notifications SET read_at=? WHERE user_id=? AND read_at IS NULL').run(now(),user.id);return{ok:true}});
