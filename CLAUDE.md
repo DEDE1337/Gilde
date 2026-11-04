@@ -15,7 +15,7 @@ Voraussetzung ist Node.js >= 22.13 (`node:sqlite`). Es gibt keine npm-Abhängigk
 ## Aufbau
 
 - `web/`: statische Oberfläche ohne Framework. `data-loader.js` holt `/api/catalog`, setzt die Globals `itemCatalog` und `dungeonCatalog` und lädt danach `app.js`, `tank-ui.js`, `guild-ui.js`, `calendar-ui.js`, `talent-ui.js` in dieser Reihenfolge.
-- `web/platform-ui.js`, `web/guild-tools-ui.js`, `web/platform.css`: Gildenplattform. `pageViews[seite]` sind asynchrone Seiten, `openPage(seite, arg)` öffnet sie. Serverdaten immer durch `esc()` führen.
+- `web/platform-ui.js`, `web/guild-tools-ui.js`, `web/platform.css`: Gildenplattform. `pageViews[seite]` sind asynchrone Seiten, `openPage(seite, arg)` öffnet sie. Serverdaten immer durch `esc()` führen. Jede Seite hat eine Adresse `#/<seite>/<arg>` (`routeHash`, `readRoute`, `writeRoute`): Neu laden, Teilen und die Zurück-Taste funktionieren, Gäste landen nach dem Login auf der angefragten Seite (`P.returnTo`). Das Charakterprofil zeigt die Waffenkammer-Stufe (`armory_xp`) und die dort angelegte Ausrüstung; `characters.level` ist nur der Planer-Wert.
 - `server/`: Plattform-API, nur mit `start.mjs`. `core.js` hat Routing, Validierung, Sitzungen und Rechte; Routen deklarieren ihren Zugriff (`public`, `member`, `admin` oder ein Recht). Rechte immer serverseitig prüfen.
 - `web/schildwall.css`: das Design der Seite, wird zuletzt geladen und überschreibt die älteren Stylesheets. Schriften liegen lokal in `web/fonts/`, bitte nicht wieder von Google laden.
 - `server/bonus.js`: Tagesbonus. Das Ergebnis entsteht nur auf dem Server, drei Drehs pro Tag nach `Europe/Berlin`, Serienbonus nur beim ersten. Gewinne und Symbole stehen in `SYMBOLS`.
