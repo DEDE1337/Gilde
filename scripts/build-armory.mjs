@@ -51,6 +51,15 @@ export const INSTANCES=[
  {id:'onyxia',atlas:['Onyxia'],kind:'raid',icon:'achievement_boss_onyxia'},
  {id:'moltencore',atlas:['MoltenCore'],kind:'raid',icon:'achievement_boss_ragnaros'}
 ];
+// Gathering: real Classic materials per profession with the character level from which they turn up (the levels are this game's rule).
+export const GATHER={
+ mining:[[2770,1],[2771,13],[2772,25],[3858,35],[10620,49]],
+ herbalism:[[2447,1],[765,1],[785,10],[3356,25],[3357,30],[3818,32],[3821,34],[3358,37],[8838,46],[13463,54]],
+ skinning:[[2318,1],[2319,15],[4234,25],[4304,35],[8170,45]]
+};
+// Alchemy: the real recipes (Wowhead spell tooltips list the reagents) for the two potions of the duel bag that can be brewed from gathered herbs.
+// The vials are merchant goods in the game as well.
+export const RECIPES=[{potion:'heal',spell:7181},{potion:'mana',spell:11448}],VIALS=[3372,8925];
 // Bosses per run: dungeons four, raids five. The end boss is the one with the highest level, the others are picked evenly over the rest; all fight in level order.
 const BOSSES_PER_RUN={dungeon:4,raid:5};
 
@@ -148,6 +157,17 @@ const valueOf=item=>Math.round(Math.pow(Math.max(item.itemLevel,10),1.5)*VALUE_F
 
 // Item display IDs for the 3D viewer, from the game's ItemModifiedAppearance and ItemAppearance tables (wago.tools, Classic Era).
 const displays=await displayIds();
+// Materials and recipes: names and icons from the tooltips, reagents parsed from the recipe's spell tooltip.
+const materials={};
+for(const [kind,list] of Object.entries(GATHER))for(const [id,level] of list){const raw=await tooltip(id);materials[id]={id,name:raw.name,icon:raw.icon,quality:raw.quality,gather:kind,level}}
+for(const id of VIALS){const raw=await tooltip(id);materials[id]={id,name:raw.name,icon:raw.icon,quality:raw.quality,vendor:true}}
+const recipes=[];
+for(const r of RECIPES){
+ const spell=await nether('spell',r.spell);if(!spell)throw Error('Rezept fehlt: '+r.spell);
+ const part=spell.tooltip.split(/Reagenzien:/)[1]||'',reagents=[...part.matchAll(/item=(\d+)[^>]*>[^<]*<\/a>(?:<\/span>)?(?:&nbsp;|\s)*(?:\((\d+)\))?/g)].map(m=>[+m[1],+(m[2]||1)]).filter(([id])=>materials[id]);
+ if(!reagents.length)throw Error('Keine Reagenzien für '+r.spell);
+ recipes.push({potion:r.potion,spell:r.spell,name:spell.name,reagents})
+}
 const lua=await atlasLua(),raws=new Map();
 async function rawItem(id){if(!raws.has(id)){try{raws.set(id,await tooltip(id))}catch{raws.set(id,null)}}return raws.get(id)}
 const gearOf=async ids=>{const out=[];for(const id of ids){const raw=await rawItem(id);if(!raw)continue;let it;try{it=parse(id,raw)}catch{continue}if(it.slot&&!HIDDEN_SLOTS.includes(it.slot)&&!out.includes(id))out.push(id)}return out};
@@ -185,7 +205,7 @@ const chests=CHESTS.map(chest=>{
  const count=Object.values(pools).reduce((a,p)=>a+p.length,0);if(count<15)throw Error(`${chest.id} hat nur ${count} Items`);
  return{...chest,items:pools}
 });
-writeFileSync(new URL('../server/armory-items.json',import.meta.url),JSON.stringify({source:'Wowhead Classic-Tooltips (nether.wowhead.com), abgerufen '+new Date().toISOString().slice(0,10)+'; Bossbeute aus AtlasLootClassic '+ATLAS_SHA.slice(0,8)+' (GPL-2.0)',items,chests,shop:SHOP,dungeons},null,1)+'\n');
+writeFileSync(new URL('../server/armory-items.json',import.meta.url),JSON.stringify({source:'Wowhead Classic-Tooltips (nether.wowhead.com), abgerufen '+new Date().toISOString().slice(0,10)+'; Bossbeute aus AtlasLootClassic '+ATLAS_SHA.slice(0,8)+' (GPL-2.0)',items,chests,shop:SHOP,dungeons,materials,recipes},null,1)+'\n');
 console.log('Instanzen:\n'+dungeons.map(d=>`${d.id} ${d.level}-${d.maxLevel} [${d.bosses.map(b=>b.name+' '+b.level+' ('+b.loot.length+')').join(', ')}]`).join('\n'));
 console.log('\n'+Object.keys(items).length+' Items geschrieben.');
 for(const c of chests){const ev=Object.entries(c.items).reduce((sum,[r,pool])=>{const total=pool.reduce((a,p)=>a+p.weight,0);return sum+c.odds[r]/100*pool.reduce((a,p)=>a+p.weight/total*items[p.id].value,0)},0);console.log(c.id,'Preis',c.price,'Erwartungswert (Shopwert)',Math.round(ev))}

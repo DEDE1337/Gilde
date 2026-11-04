@@ -14,6 +14,9 @@ import {registerArmoryRoutes} from './armory.js';
 import {registerDuelRoutes} from './duels.js';
 import {registerDungeonRoutes} from './dungeons.js';
 import {registerLiveRoutes,noteWrite} from './live.js';
+import {registerTowerRoutes} from './tower.js';
+import {registerCraftingRoutes} from './crafting.js';
+import {registerDailyRoutes} from './daily.js';
 
 const MAX_BODY=64*1024,MAX_UPLOAD=3*1024*1024,OPEN_API=new Set(['/api/me','/api/register','/api/login']);
 const IMAGE_TYPES=[['image/png',b=>b.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10]))],['image/jpeg',b=>b[0]===0xff&&b[1]===0xd8&&b[2]===0xff],['image/webp',b=>b.toString('latin1',0,4)==='RIFF'&&b.toString('latin1',8,12)==='WEBP']];
@@ -22,7 +25,7 @@ const sameOrigin=(req,url)=>{const origin=req.headers.origin;if(!origin)return !
 async function readBody(req,limit){const chunks=[];let size=0;for await(const c of req){size+=c.length;if(size>limit)fail(413,'Die Anfrage ist zu groß.');chunks.push(c)}return Buffer.concat(chunks)}
 
 export function createPlatform({db,env,uploadDir}){
- registerAccountRoutes(db);registerRaidRoutes(db);registerGearRoutes(db,env);registerBonusRoutes(db);registerPollRoutes(db);registerArmoryRoutes(db);registerDuelRoutes(db);registerLiveRoutes(db);const dungeons=registerDungeonRoutes(db);
+ registerAccountRoutes(db);registerRaidRoutes(db);registerGearRoutes(db,env);registerBonusRoutes(db);registerPollRoutes(db);registerArmoryRoutes(db);registerDuelRoutes(db);registerLiveRoutes(db);registerTowerRoutes(db);registerCraftingRoutes(db);registerDailyRoutes(db);const dungeons=registerDungeonRoutes(db);
  const forum=registerForumRoutes(db),progress=registerProgressRoutes(db,env,forum);
  let ipDebug=()=>({});
  const secure=process.env.MODCHECK_HTTPS==='1';

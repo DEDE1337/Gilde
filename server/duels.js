@@ -7,6 +7,7 @@ import {grantXp,XP,POTIONS,POTIONS_PER_DUEL} from './progression.js';
 import {statsOf} from './armory.js';
 import {book,transaction,potionsOf} from './gold.js';
 import {forfeitLine} from './sayings.js';
+import {bumpTask} from './daily.js';
 
 const TURN_MS=45e3,PENDING_MS=24*3600e3,OPEN_CHALLENGES=3,LOG_KEPT=40;
 // Small reward, capped per day and per opponent, so two friends cannot farm gold by dueling each other in a loop.
@@ -74,6 +75,7 @@ export function registerDuelRoutes(db){
   });
   grantXp(db,state.fighters[winnerId]?.characterId,XP.duelWin,'duel-win');grantXp(db,state.fighters[loserId]?.characterId,XP.duelLoss,'duel-loss');
   notify(db,loserId,`Duell verloren gegen ${username(winnerId)}.`,'duels','duel-end:'+duel.id);
+  bumpTask(db,winnerId,'duel');bumpTask(db,loserId,'duel');
  }
  function act(duel,userId,action){
   const state=JSON.parse(duel.state),me=state.fighters[userId],otherId=userId===duel.challenger_id?duel.opponent_id:duel.challenger_id,other=state.fighters[otherId];

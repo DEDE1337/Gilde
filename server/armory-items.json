@@ -19583,5 +19583,221 @@
     }
    ]
   }
+ ],
+ "materials": {
+  "765": {
+   "id": 765,
+   "name": "Silberblatt",
+   "icon": "inv_misc_herb_10",
+   "quality": 1,
+   "gather": "herbalism",
+   "level": 1
+  },
+  "785": {
+   "id": 785,
+   "name": "Maguskönigskraut",
+   "icon": "inv_jewelry_talisman_03",
+   "quality": 1,
+   "gather": "herbalism",
+   "level": 10
+  },
+  "2318": {
+   "id": 2318,
+   "name": "Leichtes Leder",
+   "icon": "inv_misc_leatherscrap_03",
+   "quality": 1,
+   "gather": "skinning",
+   "level": 1
+  },
+  "2319": {
+   "id": 2319,
+   "name": "Mittleres Leder",
+   "icon": "inv_misc_leatherscrap_05",
+   "quality": 1,
+   "gather": "skinning",
+   "level": 15
+  },
+  "2447": {
+   "id": 2447,
+   "name": "Friedensblume",
+   "icon": "inv_misc_flower_02",
+   "quality": 1,
+   "gather": "herbalism",
+   "level": 1
+  },
+  "2770": {
+   "id": 2770,
+   "name": "Kupfererz",
+   "icon": "inv_ore_copper_01",
+   "quality": 1,
+   "gather": "mining",
+   "level": 1
+  },
+  "2771": {
+   "id": 2771,
+   "name": "Zinnerz",
+   "icon": "inv_ore_tin_01",
+   "quality": 1,
+   "gather": "mining",
+   "level": 13
+  },
+  "2772": {
+   "id": 2772,
+   "name": "Eisenerz",
+   "icon": "inv_ore_iron_01",
+   "quality": 1,
+   "gather": "mining",
+   "level": 25
+  },
+  "3356": {
+   "id": 3356,
+   "name": "Königsblut",
+   "icon": "inv_misc_herb_03",
+   "quality": 1,
+   "gather": "herbalism",
+   "level": 25
+  },
+  "3357": {
+   "id": 3357,
+   "name": "Lebenswurz",
+   "icon": "inv_misc_root_02",
+   "quality": 1,
+   "gather": "herbalism",
+   "level": 30
+  },
+  "3358": {
+   "id": 3358,
+   "name": "Khadgars Schnurrbart",
+   "icon": "inv_misc_herb_08",
+   "quality": 1,
+   "gather": "herbalism",
+   "level": 37
+  },
+  "3372": {
+   "id": 3372,
+   "name": "Verbleite Phiole",
+   "icon": "inv_drink_06",
+   "quality": 1,
+   "vendor": true
+  },
+  "3818": {
+   "id": 3818,
+   "name": "Blassblatt",
+   "icon": "inv_misc_herb_12",
+   "quality": 1,
+   "gather": "herbalism",
+   "level": 32
+  },
+  "3821": {
+   "id": 3821,
+   "name": "Golddorn",
+   "icon": "inv_misc_herb_15",
+   "quality": 1,
+   "gather": "herbalism",
+   "level": 34
+  },
+  "3858": {
+   "id": 3858,
+   "name": "Mithrilerz",
+   "icon": "inv_ore_mithril_02",
+   "quality": 1,
+   "gather": "mining",
+   "level": 35
+  },
+  "4234": {
+   "id": 4234,
+   "name": "Schweres Leder",
+   "icon": "inv_misc_leatherscrap_07",
+   "quality": 1,
+   "gather": "skinning",
+   "level": 25
+  },
+  "4304": {
+   "id": 4304,
+   "name": "Dickes Leder",
+   "icon": "inv_misc_leatherscrap_08",
+   "quality": 1,
+   "gather": "skinning",
+   "level": 35
+  },
+  "8170": {
+   "id": 8170,
+   "name": "Unverwüstliches Leder",
+   "icon": "inv_misc_leatherscrap_02",
+   "quality": 1,
+   "gather": "skinning",
+   "level": 45
+  },
+  "8838": {
+   "id": 8838,
+   "name": "Sonnengras",
+   "icon": "inv_misc_herb_18",
+   "quality": 1,
+   "gather": "herbalism",
+   "level": 46
+  },
+  "8925": {
+   "id": 8925,
+   "name": "Kristallphiole",
+   "icon": "inv_drink_06",
+   "quality": 1,
+   "vendor": true
+  },
+  "10620": {
+   "id": 10620,
+   "name": "Thoriumerz",
+   "icon": "inv_ore_thorium_02",
+   "quality": 1,
+   "gather": "mining",
+   "level": 49
+  },
+  "13463": {
+   "id": 13463,
+   "name": "Traumblatt",
+   "icon": "inv_misc_herb_dreamfoil",
+   "quality": 1,
+   "gather": "herbalism",
+   "level": 54
+  }
+ },
+ "recipes": [
+  {
+   "potion": "heal",
+   "spell": 7181,
+   "name": "Großer Heiltrank",
+   "reagents": [
+    [
+     3357,
+     1
+    ],
+    [
+     3356,
+     1
+    ],
+    [
+     3372,
+     1
+    ]
+   ]
+  },
+  {
+   "potion": "mana",
+   "spell": 11448,
+   "name": "Großer Manatrank",
+   "reagents": [
+    [
+     3358,
+     1
+    ],
+    [
+     3821,
+     1
+    ],
+    [
+     3372,
+     1
+    ]
+   ]
+  }
  ]
 }

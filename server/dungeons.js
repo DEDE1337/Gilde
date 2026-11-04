@@ -1,4 +1,5 @@
-/* Dungeons and raids. Dungeons: a host opens a lobby, up to five players join, the host starts; three runs per Berlin day.
+/* Dungeons and raids. Dungeons: a host opens a lobby, up to five players join, the host starts; as many runs as you like,
+   the first three of a Berlin day pay double (daily bonus).
    Raids are scheduled every day at 19:00 Berlin time for up to 25 players: sign-up opens at 18:00, the fight starts on its own.
    The party fights the bosses one after another, each player in join order, then the boss. Every boss that goes down pays XP and may drop
    an item from its own real loot table; the clear pays gold.
@@ -10,6 +11,7 @@ import {ITEMS,DUNGEON_DATA,BASE_STATS,giveItem,bagFull} from './armory.js';
 import {book,transaction,potionsOf} from './gold.js';
 import {grantXp,levelBonus,progressOf,POTIONS,POTIONS_PER_DUEL} from './progression.js';
 import {forfeitLine} from './sayings.js';
+import {bumpTask} from './daily.js';
 
 // What a lightly geared player of a level brings: base values, level bonus and about a third of the slots with green or blue items of the last ten levels.
 // Bosses are measured against it, so a fair party of the instance's level wins most of the time, an underleveled one rarely.
@@ -30,7 +32,7 @@ export function typicalPlayer(level){
 // Boss values per party member (hp) or flat; end bosses and raid bosses hit harder and last longer. A raid with a single boss (Onyxia)
 // has no wear-down from earlier fights, so that boss alone carries the whole raid.
 const ROLE={dungeon:{hp:.7,angriff:1.05,verteidigung:1.5},end:{hp:1.05,angriff:1.3,verteidigung:2},raid:{hp:1.2,angriff:1.15,verteidigung:2},raidEnd:{hp:1.8,angriff:1.4,verteidigung:2.2},raidAlone:{hp:3,angriff:1.8,verteidigung:2.2}};
-function bossStats(kind,level,isEnd,alone){
+export function bossStats(kind,level,isEnd,alone){
  const t=typicalPlayer(level),r=ROLE[kind==='raid'?(alone?'raidAlone':isEnd?'raidEnd':'raid'):(isEnd?'end':'dungeon')];
  return{hp:Math.round(t.leben*r.hp*DIFFICULTY),angriff:Math.round(t.angriff*r.angriff*DIFFICULTY),verteidigung:Math.round(t.verteidigung*r.verteidigung),krit:Math.round((5+level/10)*10)/10}
 }
@@ -46,7 +48,9 @@ export const DUNGEONS=DUNGEON_DATA.map(d=>{
  const avg=d.bosses.reduce((a,b)=>a+b.level,0)/d.bosses.length,level=d.kind==='raid'?d.level:Math.min(d.maxLevel,Math.max(d.level,Math.round(avg)-4));
  return{...d,level,bosses:d.bosses.map((b,i,all)=>{const cap=d.kind==='raid'?60:Math.min(d.maxLevel,level+4),st=bossStats(d.kind,Math.min(b.level,cap),i===all.length-1,all.length===1),over=d.kind==='raid'?1:1+.04*Math.min(2,Math.max(0,b.level-cap));return{...b,...st,hp:Math.round(st.hp*over),angriff:Math.round(st.angriff*over)}})}
 });
-const PARTY={dungeon:5,raid:25},PER_DAY={dungeon:3,raid:1},TURN_MS={dungeon:45e3,raid:30e3},LOBBY_MS=2*3600e3,LOG_KEPT=60,BOSS_HEAL_BETWEEN=.3;
+// Dungeons have no daily limit: the first BONUS_RUNS of a day pay double gold and XP and drop more often. Raids stay once a day.
+export const BONUS_RUNS=3,BONUS={gold:2,xp:2,drop:1.5};
+const PARTY={dungeon:5,raid:25},PER_DAY={raid:1},TURN_MS={dungeon:45e3,raid:30e3},LOBBY_MS=2*3600e3,LOG_KEPT=60,BOSS_HEAL_BETWEEN=.3;
 // Raid schedule: weekday (0 = Sunday) to raid, start hour in Berlin time, sign-up one hour before.
 export const RAID_DAYS={1:'onyxia',2:'moltencore',3:'onyxia',4:'moltencore',5:'onyxia',6:'moltencore',0:'onyxia'},RAID_HOUR=19,SIGNUP_MS=3600e3,RAID_CALENDAR_WEEKS=6;
 // The UTC instant of a Berlin wall-clock time (handles summer and winter time).
@@ -108,11 +112,12 @@ export function registerDungeonRoutes(db){
   const dungeon=dungeonOf(run.dungeon),gold=clearGold(dungeon);
   for(const uid of state.order){
    if(state.left.includes(uid))continue;
-   book(db,uid,gold,dungeon.kind,run.id);
+   const paid=state.bonus?.[uid]?gold*BONUS.gold:gold;
+   book(db,uid,paid,dungeon.kind,run.id);bumpTask(db,uid,'dungeon');
    // The log is cut to its last entries, so the run keeps every member's XP and drops in state.rewards.
    const got=state.rewards?.[uid]||{xp:0,items:[]},items=got.items.map(i=>ITEMS[i].name);
-   state.log.push({by:uid,action:'loot',gold,xp:got.xp,items,damage:0});
-   notify(db,uid,`${dungeon.name} geschafft! +${gold} Gold${items.length?`, Beute: ${items.join(', ')}`:''}.`,'dungeons','run-won:'+run.id+':'+uid)
+   state.log.push({by:uid,action:'loot',gold:paid,xp:got.xp,items,bonus:!!state.bonus?.[uid],damage:0});
+   notify(db,uid,`${dungeon.name} geschafft! +${paid} Gold${items.length?`, Beute: ${items.join(', ')}`:''}.`,'dungeons','run-won:'+run.id+':'+uid)
   }
  }
  // A boss is down: every member still in gets its XP and a roll on that boss's own loot table.
@@ -120,12 +125,12 @@ export function registerDungeonRoutes(db){
   const index=state.bossIndex,boss=dungeon.bosses[index],isEnd=index===dungeon.bosses.length-1,chance=DROP_CHANCE[dungeon.kind==='raid'?(isEnd?'raidEnd':'raid'):(isEnd?'end':'dungeon')];
   for(const uid of state.order){
    if(state.left.includes(uid))continue;
-   const f=state.fighters[uid],xp=xpFor(dungeon,bossXp(dungeon,boss,isEnd),f.characterId?progressOf(db,f.characterId).level:f.level);
+   const extra=!!state.bonus?.[uid],f=state.fighters[uid],xp=xpFor(dungeon,bossXp(dungeon,boss,isEnd),f.characterId?progressOf(db,f.characterId).level:f.level)*(extra?BONUS.xp:1);
    let itemId=null;
-   if(randomInt(100)<chance&&!bagFull(db,uid)){itemId=dropFrom(boss);giveItem(db,uid,itemId,'dungeon:'+dungeon.id)}
-   const levelUp=grantXp(db,f.characterId,xp,dungeon.kind);
+   if(randomInt(100)<Math.min(100,chance*(extra?BONUS.drop:1))&&!bagFull(db,uid)){itemId=dropFrom(boss);giveItem(db,uid,itemId,'dungeon:'+dungeon.id)}
+   const levelUp=grantXp(db,f.characterId,xp,dungeon.kind);bumpTask(db,uid,'boss');
    const got=((state.rewards||={})[uid]||={xp:0,items:[]});got.xp+=xp;if(itemId)got.items.push(itemId);
-   state.log.push({by:uid,action:'drop',boss:boss.name,xp,itemId,itemName:itemId?ITEMS[itemId].name:null,quality:itemId?ITEMS[itemId].quality:null,levelUp,damage:0})
+   state.log.push({by:uid,action:'drop',boss:boss.name,xp,bonus:extra,itemId,itemName:itemId?ITEMS[itemId].name:null,quality:itemId?ITEMS[itemId].quality:null,levelUp,damage:0})
   }
  }
  // After a player's move: next player, or the boss when everybody had a turn; then check for a downed boss or a wiped party.
@@ -194,7 +199,8 @@ export function registerDungeonRoutes(db){
  function begin(run){
   const dungeon=dungeonOf(run.dungeon),list=members(run.id);
   const fighters=Object.fromEntries(list.map(m=>[m.user_id,fighterOf(db,m.user_id)]));
-  const state={bossIndex:0,boss:makeBoss(dungeon,0,list.length),fighters,order:list.map(m=>m.user_id),left:[],round:1,log:[{by:'boss',action:'bossup',name:dungeon.bosses[0].name,icon:dungeon.bosses[0].icon,damage:0}]};
+  const bonus=dungeon.kind==='dungeon'?Object.fromEntries(list.filter(m=>runsToday(m.user_id,'dungeon')<BONUS_RUNS).map(m=>[m.user_id,true])):{};
+  const state={bossIndex:0,boss:makeBoss(dungeon,0,list.length),fighters,bonus,order:list.map(m=>m.user_id),left:[],round:1,log:[{by:'boss',action:'bossup',name:dungeon.bosses[0].name,icon:dungeon.bosses[0].icon,damage:0}]};
   transaction(db,()=>{
    if(Number(db.prepare(`UPDATE dungeon_runs SET status='active',updated_at=? WHERE id=? AND status='lobby'`).run(now(),run.id).changes)!==1)fail(409,'Die Gruppe ist schon unterwegs.');
    db.prepare('UPDATE dungeon_members SET started_day=? WHERE run_id=?').run(berlinDay(),run.id);
@@ -231,7 +237,7 @@ export function registerDungeonRoutes(db){
   const mine=openRunOf(user.id);
   const raids=raidSlots().slice(0,2).map(slot=>{const run=db.prepare('SELECT * FROM dungeon_runs WHERE id=?').get('raid-'+slot.day),list=run?members(run.id):[];return{dungeon:slot.dungeon,name:dungeonOf(slot.dungeon).name,startsAt:new Date(slot.startsAt).toISOString(),signupAt:new Date(slot.startsAt-SIGNUP_MS).toISOString(),runId:run?.id||null,status:run?.status||'planned',count:list.length,max:PARTY.raid,signedUp:list.some(m=>m.user_id===user.id)}});
   return{raids,dungeons:DUNGEONS.map(d=>({id:d.id,name:d.name,kind:d.kind,level:d.level,maxLevel:d.maxLevel,icon:d.icon,gold:clearGold(d),xp:d.bosses.reduce((a,b,i,all)=>a+bossXp(d,b,i===all.length-1),0),party:PARTY[d.kind],bosses:d.bosses.map((b,i,all)=>({name:b.name,icon:b.icon,level:b.level,dropChance:DROP_CHANCE[d.kind==='raid'?(i===all.length-1?'raidEnd':'raid'):(i===all.length-1?'end':'dungeon')],loot:b.loot}))})),
-   runsLeft:{dungeon:Math.max(0,PER_DAY.dungeon-runsToday(user.id,'dungeon')),raid:Math.max(0,PER_DAY.raid-runsToday(user.id,'raid'))},perDay:PER_DAY,
+   runsLeft:{raid:Math.max(0,PER_DAY.raid-runsToday(user.id,'raid'))},bonusLeft:Math.max(0,BONUS_RUNS-runsToday(user.id,'dungeon')),bonusRuns:BONUS_RUNS,bonus:BONUS,perDay:PER_DAY,
    lobbies:lobbies.map(r=>({id:r.id,dungeon:r.dungeon,name:dungeonOf(r.dungeon).name,kind:r.kind,status:r.status,host:members(r.id).find(m=>m.user_id===r.host_id)?.username||'?',members:members(r.id).map(m=>m.username),max:PARTY[r.kind]})),
    current:mine?mine.id:null,
    recent:db.prepare(`SELECT r.id,r.dungeon,r.status,r.updated_at FROM dungeon_runs r JOIN dungeon_members m ON m.run_id=r.id WHERE m.user_id=? AND r.status IN ('won','wiped','abandoned') ORDER BY r.updated_at DESC LIMIT 8`).all(user.id).map(r=>({id:r.id,name:dungeonOf(r.dungeon).name,status:r.status,at:r.updated_at}))}
@@ -243,7 +249,6 @@ export function registerDungeonRoutes(db){
   if(dungeon.kind==='raid')fail(400,'Schlachtzüge laufen jeden Tag um 19 Uhr. Anmeldung ab 18 Uhr.');
   if(!fighterOf(db,user.id).characterId)fail(400,'Leg erst einen Charakter an.');
   if(openRunOf(user.id))fail(409,'Du bist schon in einer Gruppe.');
-  if(runsToday(user.id,dungeon.kind)>=PER_DAY[dungeon.kind])fail(409,dungeon.kind==='raid'?'Dein Raid für heute ist schon gelaufen.':'Deine drei Instanzen für heute sind schon gelaufen.');
   const rid=id();
   transaction(db,()=>{db.prepare('INSERT INTO dungeon_runs(id,dungeon,kind,host_id,created_at,updated_at) VALUES (?,?,?,?,?,?)').run(rid,dungeon.id,dungeon.kind,user.id,now(),now());db.prepare('INSERT INTO dungeon_members(run_id,user_id,joined_at) VALUES (?,?,?)').run(rid,user.id,now())});
   return show(db.prepare('SELECT * FROM dungeon_runs WHERE id=?').get(rid),user.id)
@@ -255,7 +260,6 @@ export function registerDungeonRoutes(db){
   if(run.starts_at&&Date.now()<run.starts_at-SIGNUP_MS)fail(409,'Die Anmeldung öffnet eine Stunde vor dem Start.');
   if(!fighterOf(db,user.id).characterId)fail(400,'Leg erst einen Charakter an.');
   if(openRunOf(user.id))fail(409,'Du bist schon in einer Gruppe.');
-  if(run.kind==='dungeon'&&runsToday(user.id,dungeon.kind)>=PER_DAY[dungeon.kind])fail(409,'Für heute hast du keine Läufe mehr übrig.');
   if(members(run.id).length>=PARTY[run.kind])fail(409,'Die Gruppe ist voll.');
   db.prepare('INSERT INTO dungeon_members(run_id,user_id,joined_at) VALUES (?,?,?)').run(run.id,user.id,now());
   if(run.host_id)notify(db,run.host_id,`${user.username} ist deiner Gruppe für ${dungeon.name} beigetreten.`,'dungeons','join:'+run.id+':'+user.id);
@@ -276,7 +280,6 @@ export function registerDungeonRoutes(db){
   if(run.host_id!==user.id)fail(403,'Nur der Gruppenleiter startet.');
   if(run.status!=='lobby')fail(409,'Die Gruppe ist schon unterwegs.');
   const list=members(run.id);
-  for(const m of list)if(runsToday(m.user_id,dungeon.kind)>=PER_DAY[dungeon.kind])fail(409,`${m.username} hat heute keine Läufe mehr übrig.`);
   begin(run);
   return show(db.prepare('SELECT * FROM dungeon_runs WHERE id=?').get(run.id),user.id)
  });

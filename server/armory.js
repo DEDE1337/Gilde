@@ -6,11 +6,12 @@ import {route,fail,now,id,int,rateLimit,notify,CLASSES} from './core.js';
 import {discord} from './discord.js';
 import {balanceOf,book,transaction,grantStartGold,START_GOLD,addPotions,potionsOf} from './gold.js';
 import {progressOf,levelBonus,abilitiesFor,grantXp,XP,POTIONS} from './progression.js';
+import {bumpTask} from './daily.js';
 
-const DATA=JSON.parse(readFileSync(new URL('./armory-items.json',import.meta.url),'utf8'));
+export const DATA=JSON.parse(readFileSync(new URL('./armory-items.json',import.meta.url),'utf8'));
 export const ITEMS=DATA.items,CHESTS=DATA.chests,SHOP=new Set(DATA.shop),DUNGEON_DATA=DATA.dungeons||[];
 const RARITIES=['uncommon','rare','epic','legendary'];
-export const BASE_STATS={leben:400,angriff:20,verteidigung:5,krit:5,ausweichen:2,heilkraft:0};
+export const BASE_STATS={leben:400,angriff:20,verteidigung:5,krit:5,ausweichen:0,heilkraft:0};
 // Main attribute per class: it counts fully towards attack, the other two a quarter. Agility gives everyone dodge, spirit makes heals stronger.
 export const MAIN_ATTRIBUTE={1:'str',2:'str',3:'agi',4:'agi',5:'int',7:'int',8:'int',9:'int',11:'agi'};
 const ATTRIBUTES=['str','agi','int','spi'],MAX_DODGE=25,MAX_CRIT=50;
@@ -131,7 +132,7 @@ export function registerArmoryRoutes(db){
    db.prepare('INSERT INTO chest_opens(id,user_id,chest,item_id,rarity,created_at) VALUES (?,?,?,?,?,?)').run(id(),user.id,chest.id,draw.itemId,draw.rarity,now());
    return{...draw,uid}
   });
-  const character=characterOf(db,user.id),levelUp=character?grantXp(db,character.id,XP.chest(chest.price),'chest'):0;
+  const character=characterOf(db,user.id),levelUp=character?grantXp(db,character.id,XP.chest(chest.price),'chest'):0;bumpTask(db,user.id,'chest');
   const item=ITEMS[won.itemId];
   if(won.rarity==='legendary')discord('spielunke',{title:`🟠 LEGENDÄR aus der Truhe: ${item.name}`,text:`**${user.username}** hat die ${chest.name} geöffnet und **${item.name}** gezogen!`,color:0xff8000});
   return{...view(user.id),won:{uid:won.uid,itemId:won.itemId,rarity:won.rarity},xpGained:character?XP.chest(chest.price):0,levelUp}

@@ -22,6 +22,7 @@ Der Auftrag setzte Login, Accounts, Mitgliederverwaltung, News und Patchnotes al
 | Berufe | Berufe, Stufen, Rezepte per Wowhead-ID mit Materialien und Ergebnis, Handwerkersuche, Anfragen mit Status |
 | Forum | Kategorien, Themen, Antworten, Bearbeiten, Löschen, Bilder, Suche, Likes (einer pro Mitglied, zweiter Klick nimmt ihn zurück), Moderation, Zugriffsschutz, Schwarzes Brett |
 | Waffenkammer-Spiel | 546 echte Classic-Items, 21 Instanzen und 2 Schlachtzüge mit echter Beute pro Boss (AtlasLootClassic, Namen und Stufen von Wowhead), Stufe 1 bis 60, Items erst ab ihrer Stufe, Klassen-Hauptattribut, Ausweichen, Heilkraft, Beute-Übersicht pro Instanz |
+| Dauerbeschäftigung | Instanzen ohne Tageslimit (3 Bonus-Läufe mit doppelter Belohnung), Turm der Prüfungen (endlos, Kasse, Mitnehmen oder Fallen, Wochen-Rangliste), Sammelberufe mit echten Materialien, Alchemie nach echten Rezepten, Material-Markt, drei Tagesaufgaben mit Serie |
 | Live und Navigation | Glocke im Kopf mit Zähler und Liste (als gelesen markieren, entfernen), Seiten aktualisieren sich selbst (Forum, Raids, Instanzen-Gruppen, Benachrichtigungen), Zurück/Vor und Neuladen bleiben über Hash-Adressen (`#topic/<id>`) auf der Seite |
 | Dashboard | Alle sechs Bereiche, ein- und ausblendbar, sortierbar, im Account gespeichert |
 | Legacy | Accountpunkte, Talente pro Charakter, Grenzen, Voraussetzungen, berechnete Meilensteine, Verlauf, Sichtbarkeit |

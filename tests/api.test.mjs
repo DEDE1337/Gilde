@@ -697,16 +697,19 @@ test('Instanzen: Lobby, Start nur durch Leiter, Kampf gegen alle Bosse, Beute, T
  assert.equal(r.status,'won');assert.equal(r.bossIndex,dm.bosses.length-1);
  // Every boss pays XP to every member and may drop an item from its own table; the clear pays gold.
  const drops=r.log.filter(e=>e.action==='drop');assert.equal(drops.length,dm.bosses.length*2);
- for(const e of drops){const b=dm.bosses.find(x=>x.name===e.boss);assert.ok(b);assert.equal(e.xp,bossXp(dm,b,b===dm.bosses.at(-1)));if(e.itemId)assert.ok(b.loot.includes(e.itemId),'Beute aus der Tabelle des Bosses')}
- const loot=r.log.filter(e=>e.action==='loot');assert.equal(loot.length,2);assert.ok(loot.every(e=>e.gold===clearGold(dm)&&e.xp===dm.bosses.reduce((a,b,i)=>a+bossXp(dm,b,i===dm.bosses.length-1),0)));
+ for(const e of drops){const b=dm.bosses.find(x=>x.name===e.boss);assert.ok(b);assert.equal(e.xp,2*bossXp(dm,b,b===dm.bosses.at(-1)));if(e.itemId)assert.ok(b.loot.includes(e.itemId),'Beute aus der Tabelle des Bosses')}
+ const loot=r.log.filter(e=>e.action==='loot');assert.equal(loot.length,2);assert.ok(loot.every(e=>e.gold===clearGold(dm)*2&&e.xp===2*dm.bosses.reduce((a,b,i)=>a+bossXp(dm,b,i===dm.bosses.length-1),0)),'Tagesbonus verdoppelt');
  const got=sqlite.prepare(`SELECT item_id FROM inventory WHERE user_id=? AND source='dungeon:deadmines'`).all(host).map(x=>x.item_id);
  assert.equal(got.length,drops.filter(e=>e.by===host&&e.itemId).length);
  assert.ok(r.log.some(e=>e.action==='bossdown'&&e.name==='Edwin van Cleef'));
  assert.equal(sqlite.prepare(`SELECT COUNT(*) n FROM gold_ledger WHERE user_id=? AND reason='dungeon'`).get(host).n,1);
- // Daily limit: three dungeon runs, then no more.
+ // No daily limit: the first three runs of a day carry the bonus (double gold and XP), later runs still pay normally.
+ assert.ok(drops.every(e=>e.bonus),'erster Lauf mit Tagesbonus');assert.ok(loot.every(e=>e.bonus));
  for(let n=0;n<2;n++){const l=await ok('Gruppenleiter','POST','/api/dungeons',{dungeon:'deadmines'});await ok('Gruppenleiter','POST',`/api/dungeons/${l.id}/start`);await ok('Gruppenleiter','POST',`/api/dungeons/${l.id}/forfeit`)}
- assert.equal((await ok('Gruppenleiter','GET','/api/dungeons')).runsLeft.dungeon,0);
- await denied(409,'Gruppenleiter','POST','/api/dungeons',{dungeon:'deadmines'});
+ assert.equal((await ok('Gruppenleiter','GET','/api/dungeons')).bonusLeft,0);
+ const fourth=await ok('Gruppenleiter','POST','/api/dungeons',{dungeon:'deadmines'});const started=await ok('Gruppenleiter','POST',`/api/dungeons/${fourth.id}/start`);assert.equal(started.status,'active','vierter Lauf geht');
+ assert.equal(JSON.parse(sqlite.prepare('SELECT state FROM dungeon_runs WHERE id=?').get(fourth.id).state).bonus[host],undefined,'ohne Bonus');
+ await ok('Gruppenleiter','POST',`/api/dungeons/${fourth.id}/forfeit`);
  // Raids are scheduled: Wednesday and Sunday 19:00 Berlin, nobody opens them by hand.
  const {raidSlots,berlinInstant}=await import('../server/dungeons.js');
  await denied(400,'Mitlaeufer','POST','/api/dungeons',{dungeon:'onyxia'});
@@ -794,4 +797,103 @@ test('Bestandsschutz: vor dem Stufen-Update angelegte Ausrüstung zählt weiter,
  a=await ok('Altbestand','POST','/api/armory/unequip',{uid:'alt-1'});assert.equal(a.stats.leben,a.base.leben);
  assert.equal(sqlite.prepare("SELECT level_exempt FROM inventory WHERE id='alt-1'").get().level_exempt,0,'Ablegen beendet den Bestandsschutz');
  await denied(400,'Altbestand','POST','/api/armory/equip',{uid:'alt-1'});
+});
+test('Turm der Prüfungen: Etagen, Kasse, Mitnehmen, Fallen behält die Hälfte, Rangliste',async()=>{
+ const {resetRateLimits}=await import('../server/core.js');resetRateLimits();
+ const {enemyFor,floorLevel,floorGold,weekOf,GUARDIAN_EVERY}=await import('../server/tower.js');
+ assert.equal(weekOf(new Date('2026-11-04T10:00:00Z')),'2026-11-02','Woche beginnt Montag');
+ assert.equal(floorLevel(20,1),15);assert.ok(floorLevel(20,30)>floorLevel(20,3));
+ const e1=enemyFor(30,1,()=>0),e5=enemyFor(30,GUARDIAN_EVERY,()=>0),e30=enemyFor(30,30,()=>0);
+ assert.equal(e5.guardian,true);assert.ok(e5.max>e1.max&&e30.max>e5.max,'Etagen werden härter');assert.ok(e1.loot.length&&e1.name);
+ await denied(401,'gast','GET','/api/tower');
+ await makeUser('Turmlaeufer');await denied(400,'Turmlaeufer','POST','/api/tower/start');
+ const uid=sqlite.prepare("SELECT id FROM users WHERE username='Turmlaeufer'").get().id;
+ await char('Turmlaeufer','Kletterer',1,'Zwerg');sqlite.prepare("UPDATE characters SET armory_xp=40000 WHERE user_id=?").run(uid);
+ let t=await ok('Turmlaeufer','POST','/api/tower/start');assert.equal(t.run.status,'active');assert.equal(t.run.floor,1);
+ await denied(409,'Turmlaeufer','POST','/api/tower/start');
+ await denied(400,'Turmlaeufer','POST','/api/tower/action',{action:'pyro'});
+ // Floor 1 falls quickly when the enemy is weakened: gold goes into the bank, XP is paid at once, the next floor comes.
+ sqlite.prepare(`UPDATE tower_runs SET state=json_set(state,'$.enemy.hp',1) WHERE user_id=? AND status='active'`).run(uid);
+ t=await ok('Turmlaeufer','POST','/api/tower/action',{action:'attack'});
+ assert.equal(t.run.floor,2);assert.equal(t.run.best,1);const cleared=t.run.log.find(e=>e.action==='floor');assert.equal(t.run.gold,cleared.gold);assert.equal(cleared.gold,floorGold(floorLevel(t.run.me.level,1)));
+ const xp=sqlite.prepare("SELECT SUM(amount) n FROM armory_xp_log WHERE reason='tower'").get().n;assert.ok(xp>0);
+ // One potion per floor.
+ sqlite.prepare("INSERT INTO potions(user_id,potion,count) VALUES (?,'heal',5) ON CONFLICT(user_id,potion) DO UPDATE SET count=5").run(uid);
+ t=await ok('Turmlaeufer','POST','/api/tower/action',{action:'potion:heal'});
+ if(t.run.status==='active')await denied(409,'Turmlaeufer','POST','/api/tower/action',{action:'potion:heal'});
+ // Cash out: the whole bank lands in the purse.
+ const before=(await ok('Turmlaeufer','GET','/api/armory')).balance,bank=t.run.gold;
+ t=await ok('Turmlaeufer','POST','/api/tower/cashout');assert.equal(t.run.status,'cashed');assert.equal(t.run.paid,bank);
+ assert.equal((await ok('Turmlaeufer','GET','/api/armory')).balance,before+bank);
+ await denied(409,'Turmlaeufer','POST','/api/tower/cashout');
+ // Falling keeps half of the bank.
+ t=await ok('Turmlaeufer','POST','/api/tower/start');
+ sqlite.prepare(`UPDATE tower_runs SET gold=101,state=json_set(state,'$.me.hp',1,'$.me.ausweichen',0,'$.enemy.angriff',100000,'$.enemy.hp',999999,'$.enemy.max',999999) WHERE user_id=? AND status='active'`).run(uid);
+ const b2=(await ok('Turmlaeufer','GET','/api/armory')).balance;
+ t=await ok('Turmlaeufer','POST','/api/tower/action',{action:'attack'});
+ assert.equal(t.run.status,'dead');assert.equal(t.run.paid,50);assert.equal((await ok('Turmlaeufer','GET','/api/armory')).balance,b2+50);
+ // Weekly ranking shows the best floor.
+ assert.ok(t.ranking.some(r=>r.username==='Turmlaeufer'&&r.best>=1));assert.ok(t.bestThisWeek>=1);
+});
+test('Berufe: Sammeln mit Abklingzeit, Händler, echte Rezepte brauen, Material-Markt',async()=>{
+ const {resetRateLimits}=await import('../server/core.js');resetRateLimits();
+ const {gatherDraw,MATERIALS,RECIPES,GATHER_MS}=await import('../server/crafting.js');
+ assert.ok(Object.keys(MATERIALS).length>=20);assert.deepEqual(RECIPES.find(r=>r.potion==='heal').reagents,[[3357,1],[3356,1],[3372,1]],'echtes Rezept: Lebenswurz, Königsblut, Verbleite Phiole');
+ for(let i=0;i<50;i++){const d=gatherDraw('mining',10);assert.ok(MATERIALS[d.itemId].level<=10&&d.count>=1&&d.count<=3)}
+ const sammler=await makeUser('Sammlerin'),haendler=await makeUser('Marktfrau');
+ await denied(400,'Sammlerin','POST','/api/gather',{kind:'mining'});
+ await char('Sammlerin','Kraeuterfee',5,'Mensch');await char('Marktfrau','Feilscherin',1,'Zwerg');
+ sqlite.prepare("UPDATE characters SET armory_xp=40000 WHERE user_id IN (?,?)").run(sammler,haendler);
+ await denied(400,'Sammlerin','POST','/api/gather',{kind:'fishing'});
+ let g=await ok('Sammlerin','POST','/api/gather',{kind:'herbalism'});assert.ok(g.found.count>=1);assert.equal(g.materials[g.found.itemId]>=1,true);assert.ok(g.cooldowns.herbalism>GATHER_MS-5000);
+ await denied(409,'Sammlerin','POST','/api/gather',{kind:'herbalism'});
+ await ok('Sammlerin','POST','/api/gather',{kind:'mining'});
+ // Brewing needs every reagent; vials come from the merchant.
+ await denied(409,'Sammlerin','POST','/api/brew',{potion:'heal'});
+ for(const [id,n] of [[3357,2],[3356,2]])sqlite.prepare('INSERT INTO materials(user_id,item_id,count) VALUES (?,?,?) ON CONFLICT(user_id,item_id) DO UPDATE SET count=excluded.count').run(sammler,id,n);
+ const gold0=(await ok('Sammlerin','GET','/api/materials')).balance;
+ g=await ok('Sammlerin','POST','/api/materials/buy',{itemId:3372,count:2});assert.equal(g.balance,gold0-10);
+ await denied(400,'Sammlerin','POST','/api/materials/buy',{itemId:3357,count:1});
+ const heal0=g.potions.heal||0;g=await ok('Sammlerin','POST','/api/brew',{potion:'heal',count:2});
+ assert.equal(g.potions.heal,heal0+2);assert.equal(g.materials[3357]||0,0);assert.equal(g.materials[3372]||0,0);
+ await denied(409,'Sammlerin','POST','/api/brew',{potion:'heal'});
+ // Merchant and market.
+ sqlite.prepare('INSERT INTO materials(user_id,item_id,count) VALUES (?,2772,10) ON CONFLICT(user_id,item_id) DO UPDATE SET count=10').run(sammler);
+ const b1=(await ok('Sammlerin','GET','/api/materials')).balance;
+ g=await ok('Sammlerin','POST','/api/materials/sell',{itemId:2772,count:4});assert.equal(g.balance,b1+4*g.catalog.find(m=>m.id===2772).sell);assert.equal(g.materials[2772],6);
+ await denied(409,'Sammlerin','POST','/api/materials/sell',{itemId:2772,count:99});
+ g=await ok('Sammlerin','POST','/api/materials/auctions',{itemId:2772,count:5,price:120});assert.equal(g.materials[2772],1);
+ const offer=g.market.find(a=>a.own&&a.itemId===2772);assert.ok(offer);
+ await denied(400,'Sammlerin','POST',`/api/materials/auctions/${offer.id}/buy`);
+ const s0=(await ok('Sammlerin','GET','/api/materials')).balance,h0=(await ok('Marktfrau','GET','/api/materials')).balance;
+ g=await ok('Marktfrau','POST',`/api/materials/auctions/${offer.id}/buy`);assert.equal(g.materials[2772],5);assert.equal(g.balance,h0-120);
+ assert.equal((await ok('Sammlerin','GET','/api/materials')).balance,s0+120);
+ await denied(404,'Marktfrau','POST',`/api/materials/auctions/${offer.id}/buy`);
+ g=await ok('Marktfrau','POST','/api/materials/auctions',{itemId:2772,count:5,price:50});const mine=g.market.find(a=>a.own);
+ await denied(404,'Sammlerin','DELETE',`/api/materials/auctions/${mine.id}`);
+ g=await ok('Marktfrau','DELETE',`/api/materials/auctions/${mine.id}`);assert.equal(g.materials[2772],5);
+});
+test('Tagesaufgaben: drei pro Tag, Fortschritt aus dem Spiel, Abholen einmal, Serie',async()=>{
+ const {resetRateLimits}=await import('../server/core.js');resetRateLimits();
+ const {pickTasks,TASKS}=await import('../server/daily.js');
+ const p=pickTasks('u1','2026-11-04');assert.equal(p.length,3);assert.equal(new Set(p.map(t=>t.task)).size,3);assert.deepEqual(pickTasks('u1','2026-11-04'),p,'gleich für denselben Tag');
+ for(const t of p)assert.ok(TASKS[t.task].targets.includes(t.target));
+ const uid=await makeUser('Fleissig');await char('Fleissig','Eifrig',1,'Zwerg');
+ let d=await ok('Fleissig','GET','/api/daily');assert.equal(d.tasks.length,3);assert.equal(d.streak,0);
+ const first=d.tasks[0];await denied(409,'Fleissig','POST',`/api/daily/${first.task}/claim`);await denied(404,'Fleissig','POST','/api/daily/gibtsnicht/claim');
+ // Progress from the game: opening a chest counts for the chest task (if it is one today).
+ sqlite.prepare(`INSERT INTO gold_ledger(id,user_id,amount,reason,created_at) VALUES ('fleiss-gold',?,5000,'test',?)`).run(uid,new Date().toISOString());
+ await ok('Fleissig','POST','/api/armory/chest',{chest:'stormwind'});
+ d=await ok('Fleissig','GET','/api/daily');const chest=d.tasks.find(t=>t.task==='chest');if(chest)assert.equal(chest.progress,1);
+ sqlite.prepare('UPDATE daily_tasks SET progress=target WHERE user_id=?').run(uid);
+ const b0=(await ok('Fleissig','GET','/api/armory')).balance;
+ d=await ok('Fleissig','POST',`/api/daily/${first.task}/claim`);assert.equal(d.tasks[0].claimed,true);
+ assert.equal((await ok('Fleissig','GET','/api/armory')).balance,b0+d.claimedReward.gold);
+ await denied(409,'Fleissig','POST',`/api/daily/${first.task}/claim`);
+ for(const t of d.tasks.slice(1))d=await ok('Fleissig','POST',`/api/daily/${t.task}/claim`);
+ assert.equal(d.allClaimed,true);assert.equal(d.streak,1);
+ // Yesterday's full set keeps the streak going: today's rewards grow by 10 %.
+ const yesterday=new Date(Date.now()-864e5).toLocaleDateString('en-CA',{timeZone:'Europe/Berlin'});
+ sqlite.prepare('UPDATE daily_streaks SET last_day=?,streak=3 WHERE user_id=?').run(yesterday,uid);
+ d=await ok('Fleissig','GET','/api/daily');assert.equal(d.streak,3);assert.ok(Math.abs(d.factor-1.3)<1e-9);
 });
