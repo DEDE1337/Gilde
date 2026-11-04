@@ -526,8 +526,16 @@ test('Waffenkammer: Startgold einmal, Truhen, Shop, Ausrüstung mit Klassenregel
  const shield=shieldBuy.inventory.find(i=>i.itemId===5443);assert.equal(shield.usable,false);
  await denied(400,'Truhenjaeger','POST','/api/armory/equip',{uid:shield.uid});
  const ringUid=bought.inventory.find(i=>i.itemId===ring).uid;
+ // The item's required level counts: level 1 may not wear a level 20 cape.
+ assert.equal(cat.items[ring].requiredLevel,20);assert.equal(bought.inventory.find(i=>i.uid===ringUid).needLevel,20);
+ await denied(400,'Truhenjaeger','POST','/api/armory/equip',{uid:ringUid});
+ sqlite.prepare("UPDATE characters SET armory_xp=1000000 WHERE user_id=?").run(uid);
+ const a0=await ok('Truhenjaeger','GET','/api/armory');assert.equal(a0.progress.level,60);assert.equal(a0.inventory.find(i=>i.uid===ringUid).needLevel,0);
  a=await ok('Truhenjaeger','POST','/api/armory/equip',{uid:ringUid});
- assert.equal(a.inventory.find(i=>i.uid===ringUid).slot,'back');assert.equal(a.stats.angriff,a.base.angriff+cat.items[ring].game.angriff);
+ // Attributes are weighed by class: intellect counts fully for a mage, strength and agility a quarter.
+ const attrs=cat.items[ring].attributes||{};
+ assert.equal(a.inventory.find(i=>i.uid===ringUid).slot,'back');assert.equal(a.stats.angriff,Math.round(a0.stats.angriff+cat.items[ring].game.angriff+(attrs.int||0)+((attrs.str||0)+(attrs.agi||0))*.25));
+ assert.equal(a.mainAttribute,'int');assert.equal(a.attributes.agi,attrs.agi||0);
  await denied(409,'Truhenjaeger','POST','/api/armory/sell',{uid:ringUid});
  await denied(404,'Mitglied','POST','/api/armory/equip',{uid:ringUid});
  await denied(404,'Mitglied','POST','/api/armory/sell',{uid:shield.uid});
@@ -612,16 +620,18 @@ test('Waffenkammer: Ausrüstung und Level pro Charakter, Login-Charakter spielt,
  const uid=await makeUser('Zweichar');
  const warrior=await char('Zweichar','Brann',1,'Zwerg'),mage=await char('Zweichar','Funki',8,'Gnom');
  sqlite.prepare(`INSERT INTO gold_ledger(id,user_id,amount,reason,created_at) VALUES ('zweichar-gold',?,100000,'test',?)`).run(uid,new Date().toISOString());
- // Gear belongs to the active character only.
+ // Gear belongs to the active character only. The cape needs level 20 (12,160 XP).
+ sqlite.prepare('UPDATE characters SET armory_xp=12160 WHERE user_id=?').run(uid);
  const cape=(await ok('Zweichar','POST','/api/armory/buy',{itemId:5193})).inventory.find(i=>i.itemId===5193).uid;
  let a=await ok('Zweichar','POST','/api/armory/active',{characterId:warrior});assert.equal(a.character.id,warrior);
  a=await ok('Zweichar','POST','/api/armory/equip',{uid:cape});assert.equal(a.inventory.find(i=>i.uid===cape).slot,'back');assert.ok(a.gear.some(g=>g.slot==='back'&&g.display));
  a=await ok('Zweichar','POST','/api/armory/active',{characterId:mage});assert.equal(a.character.className,'Magier');
- assert.equal(a.inventory.find(i=>i.uid===cape).slot,null);assert.equal(a.inventory.find(i=>i.uid===cape).wornBy,'Brann');assert.equal(a.stats.leben,a.base.leben);
+ assert.equal(a.inventory.find(i=>i.uid===cape).slot,null);assert.equal(a.inventory.find(i=>i.uid===cape).wornBy,'Brann');assert.equal(a.stats.leben,a.base.leben+25*(a.progress.level-1),'nur Stufe, kein Umhang');
  a=await ok('Zweichar','POST','/api/armory/equip',{uid:cape});assert.equal(a.inventory.find(i=>i.uid===cape).slot,'back');
  a=await ok('Zweichar','POST','/api/armory/active',{characterId:warrior});assert.equal(a.inventory.find(i=>i.uid===cape).wornBy,'Funki');
  await denied(404,'Mitglied','POST','/api/armory/active',{characterId:warrior});
  // XP: a chest gives a tenth of its price, the level adds values.
+ sqlite.prepare('UPDATE characters SET armory_xp=0 WHERE user_id=?').run(uid);
  const opened=await ok('Zweichar','POST','/api/armory/chest',{chest:'moltencore'});
  assert.equal(opened.xpGained,15,'eine Truhe gibt nur wenig Erfahrung');assert.equal(opened.progress.level,1);assert.equal(opened.stats.angriff,opened.base.angriff);
  assert.deepEqual(opened.potions,{heal:2,mana:1},'Starttränke');
@@ -650,7 +660,14 @@ test('Waffenkammer: Ausrüstung und Level pro Charakter, Login-Charakter spielt,
 
 test('Instanzen: Lobby, Start nur durch Leiter, Kampf gegen alle Bosse, Beute, Tageslimit, Aufgeben mit Spruch',async()=>{
  const {resetRateLimits}=await import('../server/core.js');resetRateLimits();
- const {bossTurn}=await import('../server/dungeons.js');
+ const {bossTurn,DUNGEONS,bossXp,clearGold}=await import('../server/dungeons.js');
+ const {ITEMS}=await import('../server/armory.js');
+ // Instances come from real data: every boss has loot, every loot item exists, the end boss of the Deadmines is VanCleef.
+ const dm=DUNGEONS.find(d=>d.id==='deadmines');assert.ok(DUNGEONS.length>=20);
+ for(const d of DUNGEONS){assert.ok(d.bosses.length>=1,d.id);for(const b of d.bosses){assert.ok(b.loot.length&&b.loot.every(id=>ITEMS[id]?.slot),d.id+' '+b.name);assert.ok(b.hp>0&&b.angriff>0)}}
+ for(const id of ['deadmines','shadowfang','scarlet','stratholme','onyxia','moltencore'])assert.ok(DUNGEONS.some(d=>d.id===id),'alte Instanz '+id+' bleibt');
+ assert.equal(dm.bosses.at(-1).name,'Edwin van Cleef');assert.equal(DUNGEONS.find(d=>d.id==='moltencore').bosses.at(-1).name,'Ragnaros');
+ assert.ok(dm.bosses.at(-1).hp>dm.bosses[0].hp,'Endboss ist zäher');
  const {FORFEIT_SAYINGS}=await import('../server/sayings.js');assert.ok(FORFEIT_SAYINGS.length>=10&&FORFEIT_SAYINGS.length<=15);
  const party=[{id:'a',hp:500,max:500,verteidigung:0,defending:false},{id:'b',hp:500,max:500,verteidigung:0,defending:false}];
  const boss={angriff:100,verteidigung:0,krit:0,stunned:false,turns:2};
@@ -666,7 +683,7 @@ test('Instanzen: Lobby, Start nur durch Leiter, Kampf gegen alle Bosse, Beute, T
  await ok('Mitlaeufer','POST',`/api/dungeons/${lobby.id}/join`);
  await denied(403,'Mitlaeufer','POST',`/api/dungeons/${lobby.id}/start`);
  let r=await ok('Gruppenleiter','POST',`/api/dungeons/${lobby.id}/start`);
- assert.equal(r.status,'active');assert.equal(r.boss.name,"Rhahk'Zor");assert.equal(r.boss.max,400,'Lebenspunkte wachsen mit der Gruppengröße');
+ assert.equal(r.status,'active');assert.equal(r.boss.name,dm.bosses[0].name);assert.equal(r.boss.max,dm.bosses[0].hp*2,'Lebenspunkte wachsen mit der Gruppengröße');
  await denied(409,'Mitlaeufer','POST',`/api/dungeons/${lobby.id}/join`);
  const names={[host]:'Gruppenleiter',[mate]:'Mitlaeufer'};
  for(let i=0;i<400&&r.status==='active';i++){
@@ -677,9 +694,14 @@ test('Instanzen: Lobby, Start nur durch Leiter, Kampf gegen alle Bosse, Beute, T
   sqlite.prepare('UPDATE dungeon_runs SET state=json_set(state,\'$.boss.hp\',MIN(json_extract(state,\'$.boss.hp\'),60)) WHERE id=?').run(lobby.id);
   r=await ok(who,'POST',`/api/dungeons/${lobby.id}/action`,{action:'attack'})
  }
- assert.equal(r.status,'won');assert.equal(r.bossIndex,2);
- const loot=r.log.filter(e=>e.action==='loot');assert.equal(loot.length,2);assert.ok(loot.every(e=>e.gold===40&&e.xp===30));
- assert.ok(r.log.some(e=>e.action==='bossdown'&&e.name==='Edwin VanCleef'));
+ assert.equal(r.status,'won');assert.equal(r.bossIndex,dm.bosses.length-1);
+ // Every boss pays XP to every member and may drop an item from its own table; the clear pays gold.
+ const drops=r.log.filter(e=>e.action==='drop');assert.equal(drops.length,dm.bosses.length*2);
+ for(const e of drops){const b=dm.bosses.find(x=>x.name===e.boss);assert.ok(b);assert.equal(e.xp,bossXp(dm,b,b===dm.bosses.at(-1)));if(e.itemId)assert.ok(b.loot.includes(e.itemId),'Beute aus der Tabelle des Bosses')}
+ const loot=r.log.filter(e=>e.action==='loot');assert.equal(loot.length,2);assert.ok(loot.every(e=>e.gold===clearGold(dm)&&e.xp===dm.bosses.reduce((a,b,i)=>a+bossXp(dm,b,i===dm.bosses.length-1),0)));
+ const got=sqlite.prepare(`SELECT item_id FROM inventory WHERE user_id=? AND source='dungeon:deadmines'`).all(host).map(x=>x.item_id);
+ assert.equal(got.length,drops.filter(e=>e.by===host&&e.itemId).length);
+ assert.ok(r.log.some(e=>e.action==='bossdown'&&e.name==='Edwin van Cleef'));
  assert.equal(sqlite.prepare(`SELECT COUNT(*) n FROM gold_ledger WHERE user_id=? AND reason='dungeon'`).get(host).n,1);
  // Daily limit: three dungeon runs, then no more.
  for(let n=0;n<2;n++){const l=await ok('Gruppenleiter','POST','/api/dungeons',{dungeon:'deadmines'});await ok('Gruppenleiter','POST',`/api/dungeons/${l.id}/start`);await ok('Gruppenleiter','POST',`/api/dungeons/${l.id}/forfeit`)}
@@ -697,7 +719,7 @@ test('Instanzen: Lobby, Start nur durch Leiter, Kampf gegen alle Bosse, Beute, T
  await ok('Mitlaeufer','POST','/api/dungeons/raid-test/join');await ok('Gruppenleiter','POST','/api/dungeons/raid-test/join');
  await denied(409,'Mitlaeufer','POST','/api/dungeons/raid-test/start');
  sqlite.prepare('UPDATE dungeon_runs SET starts_at=? WHERE id=?').run(Date.now()-1000,'raid-test');
- r=await ok('Mitlaeufer','GET','/api/dungeons/raid-test');assert.equal(r.status,'active','startet zur Raidzeit von selbst');assert.equal(r.boss.max,3200);
+ r=await ok('Mitlaeufer','GET','/api/dungeons/raid-test');assert.equal(r.status,'active','startet zur Raidzeit von selbst');assert.equal(r.boss.max,DUNGEONS.find(d=>d.id==='onyxia').bosses[0].hp*2);
  // Forfeit: a silly line, the leaver is out of the fight and free again; the rest fights on.
  r=await ok('Mitlaeufer','POST','/api/dungeons/raid-test/forfeit');
  assert.equal(r.status,'active');const line=r.log.find(e=>e.action==='forfeit');assert.ok(line.text.includes('Laeufer'));
@@ -746,4 +768,30 @@ test('Live-Puls: nur angemeldet, zählt Ungelesenes, Stempel ändern sich bei Fo
  const p3=await ok('PulsA','GET','/api/pulse');assert.notEqual(p3.areas.dungeons,p2.areas.dungeons,'neue Gruppe ist für andere sichtbar');
  await ok('PulsA','POST','/api/notifications/read',{});
  const p4=await ok('PulsA','GET','/api/pulse');assert.equal(p4.unread,0);assert.notEqual(p4.areas.notes,p3.areas.notes);
+});
+test('Neue Werte: Ausweichen, Heilkraft, Stufe 60 und Ausrüstung über der Stufe zählt nicht',async()=>{
+ const {resolveAction}=await import('../server/duels.js');
+ const {levelOf,LEVEL_CAP,xpToNext}=await import('../server/progression.js');
+ assert.equal(LEVEL_CAP,60);assert.equal(xpToNext(19),1180,'bis Stufe 20 unverändert');assert.equal(levelOf(12160).level,20);assert.equal(levelOf(1e9).level,60);
+ const hit=(ausweichen,rolls)=>{let i=0;const d={id:'d',hp:1000,max:1000,verteidigung:0,ausweichen};return[resolveAction({id:'a',angriff:100,krit:0,abilities:[]},d,'attack',()=>rolls[i++]??0),d]};
+ let [e,d]=hit(100,[0]);assert.equal(e.dodged,true);assert.equal(d.hp,1000,'ausgewichen: kein Schaden');
+ [e,d]=hit(0,[999,15]);assert.equal(e.dodged,undefined);assert.ok(d.hp<1000);
+ const healer={id:'h',hp:100,max:1000,heilkraft:100,abilities:[{key:'heal',kind:'heal',value:.3}]};
+ assert.equal(resolveAction(healer,{id:'x'},'heal').heal,600,'Heilkraft 100 % verdoppelt die Heilung');
+ // An item above the character's level stays worn but adds nothing until the level is reached.
+ const uid=await makeUser('Ueberstufe'),cid=await char('Ueberstufe','Hochgriff',1,'Zwerg');
+ sqlite.prepare(`INSERT INTO inventory(id,user_id,item_id,slot,character_id,source,created_at) VALUES ('ueber-1',?,5193,'back',?,'test',?)`).run(uid,cid,new Date().toISOString());
+ let a=await ok('Ueberstufe','GET','/api/armory');assert.equal(a.stats.leben,a.base.leben,'Stufe 1: Umhang (Stufe 20) zählt nicht');
+ sqlite.prepare('UPDATE characters SET armory_xp=12160 WHERE id=?').run(cid);
+ a=await ok('Ueberstufe','GET','/api/armory');assert.ok(a.stats.leben>a.base.leben+25*19,'ab Stufe 20 zählt er');
+});
+test('Bestandsschutz: vor dem Stufen-Update angelegte Ausrüstung zählt weiter, bis sie abgelegt wird',async()=>{
+ const uid=await makeUser('Altbestand'),cid=await char('Altbestand','Truhenheld',1,'Zwerg');
+ // Like the migration: an item worn before the level rule carries level_exempt=1.
+ sqlite.prepare(`INSERT INTO inventory(id,user_id,item_id,slot,character_id,source,level_exempt,created_at) VALUES ('alt-1',?,5193,'back',?,'test',1,?)`).run(uid,cid,new Date().toISOString());
+ let a=await ok('Altbestand','GET','/api/armory');const worn=a.inventory.find(i=>i.uid==='alt-1');
+ assert.equal(worn.levelExempt,true);assert.ok(a.stats.leben>a.base.leben,'zählt trotz Stufe 1');
+ a=await ok('Altbestand','POST','/api/armory/unequip',{uid:'alt-1'});assert.equal(a.stats.leben,a.base.leben);
+ assert.equal(sqlite.prepare("SELECT level_exempt FROM inventory WHERE id='alt-1'").get().level_exempt,0,'Ablegen beendet den Bestandsschutz');
+ await denied(400,'Altbestand','POST','/api/armory/equip',{uid:'alt-1'});
 });

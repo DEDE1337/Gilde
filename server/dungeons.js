@@ -1,31 +1,51 @@
 /* Dungeons and raids. Dungeons: a host opens a lobby, up to five players join, the host starts; three runs per Berlin day.
    Raids are scheduled every day at 19:00 Berlin time for up to 25 players: sign-up opens at 18:00, the fight starts on its own.
-   The party fights the bosses one after another, each player in join order, then the boss. A clear pays gold, XP and maybe an item.
-   Boss names are from WoW Classic, their numbers are this game's own. */
+   The party fights the bosses one after another, each player in join order, then the boss. Every boss that goes down pays XP and may drop
+   an item from its own real loot table; the clear pays gold.
+   Instances, bosses, boss levels and loot come from armory-items.json (WoW Classic data, see scripts/build-armory.mjs); the fight numbers are this game's own. */
 import {randomInt} from 'node:crypto';
 import {route,fail,now,id,rateLimit,notify} from './core.js';
 import {fighterOf,resolveAction,drinkPotion,ready} from './duels.js';
-import {CHESTS,ITEMS,drawFrom,giveItem,bagFull} from './armory.js';
+import {ITEMS,DUNGEON_DATA,BASE_STATS,giveItem,bagFull} from './armory.js';
 import {book,transaction,potionsOf} from './gold.js';
-import {grantXp,POTIONS,POTIONS_PER_DUEL} from './progression.js';
+import {grantXp,levelBonus,progressOf,POTIONS,POTIONS_PER_DUEL} from './progression.js';
 import {forfeitLine} from './sayings.js';
 
-const B=(name,icon,hp,angriff,verteidigung,krit=5)=>({name,icon,hp,angriff,verteidigung,krit});
-// hp is per player in the party, so a group of two meets a boss half as tough as a group of four.
-export const DUNGEONS=[
- {id:'deadmines',name:'Die Todesminen',kind:'dungeon',level:1,icon:'achievement_boss_edwinvancleef',loot:'stormwind',lootChance:40,gold:40,xp:30,
-  bosses:[B("Rhahk'Zor",'inv_hammer_09',200,18,8),B('Mr. Smite','inv_axe_22',280,22,12),B('Edwin VanCleef','achievement_boss_edwinvancleef',380,28,15)]},
- {id:'shadowfang',name:'Burg Schattenfang',kind:'dungeon',level:4,icon:'spell_shadow_antishadow',loot:'ironforge',lootChance:40,gold:60,xp:40,
-  bosses:[B('Rethilgore','inv_misc_head_gnoll_01',350,30,20),B('Rudelmeister Nandos','ability_hunter_pet_wolf',450,36,24),B('Erzmagier Arugal','spell_shadow_antishadow',600,42,26)]},
- {id:'scarlet',name:'Scharlachrotes Kloster',kind:'dungeon',level:8,icon:'spell_holy_resurrection',loot:'ironforge',lootChance:45,gold:90,xp:50,
-  bosses:[B('Herod','ability_warrior_bladestorm',600,50,40),B('Hochinquisitor Weißsträhne','spell_holy_resurrection',800,60,40,8)]},
- {id:'stratholme',name:'Stratholme',kind:'dungeon',level:12,icon:'inv_sword_17',loot:'stratholme',lootChance:50,gold:130,xp:60,
-  bosses:[B('Ramstein der Gierschlund','inv_misc_head_undead_01',900,70,60),B('Baron Totenschwur','inv_sword_17',1300,85,60,8)]},
- {id:'onyxia',name:'Onyxias Hort',kind:'raid',level:14,icon:'achievement_boss_onyxia',loot:'azeroth',lootChance:100,gold:250,xp:90,
-  bosses:[B('Onyxia','achievement_boss_onyxia',1600,110,90,10)]},
- {id:'moltencore',name:'Geschmolzener Kern',kind:'raid',level:16,icon:'achievement_boss_ragnaros',loot:'moltencore',lootChance:100,gold:400,xp:120,
-  bosses:[B('Lucifron','spell_shadow_curseofmannoroth',1300,100,90),B('Golemagg der Verbrenner','spell_fire_lavaspawn',1600,115,100),B('Ragnaros','achievement_boss_ragnaros',2200,140,100,10)]}
-];
+// What a lightly geared player of a level brings: base values, level bonus and about a third of the slots with green or blue items of the last ten levels.
+// Bosses are measured against it, so a fair party of the instance's level wins most of the time, an underleveled one rarely.
+// Bosses are measured against a player without gear (base values and level bonus), so a fresh character finds a way in;
+// every item found makes the next run easier. DIFFICULTY lifts health and attack on top.
+const typicalCache=new Map(),GEAR_SHARE=0,DIFFICULTY=1.1;
+export function typicalPlayer(level){
+ if(typicalCache.has(level))return typicalCache.get(level);
+ const t={...BASE_STATS},bonus=levelBonus(level);for(const k of Object.keys(t))t[k]+=bonus[k]||0;
+ const bySlot={};
+ for(const i of Object.values(ITEMS)){const req=i.requiredLevel||0;if(!i.slot||i.retired||!['uncommon','rare'].includes(i.quality)||req>level||req<level-10)continue;(bySlot[['mainhand','onehand','twohand'].includes(i.slot)?'weapon':i.slot]||=[]).push(i)}
+ for(const list of Object.values(bySlot)){
+  const avg=fn=>list.reduce((a,i)=>a+fn(i),0)/list.length*GEAR_SHARE;
+  t.leben+=avg(i=>i.game.leben);t.verteidigung+=avg(i=>i.game.verteidigung);t.angriff+=avg(i=>i.game.angriff+Math.max(i.stats?.str||0,i.stats?.agi||0,i.stats?.int||0));t.krit+=avg(i=>i.game.krit)
+ }
+ typicalCache.set(level,t);return t
+}
+// Boss values per party member (hp) or flat; end bosses and raid bosses hit harder and last longer. A raid with a single boss (Onyxia)
+// has no wear-down from earlier fights, so that boss alone carries the whole raid.
+const ROLE={dungeon:{hp:.7,angriff:1.05,verteidigung:1.5},end:{hp:1.05,angriff:1.3,verteidigung:2},raid:{hp:1.2,angriff:1.15,verteidigung:2},raidEnd:{hp:1.8,angriff:1.4,verteidigung:2.2},raidAlone:{hp:3,angriff:1.8,verteidigung:2.2}};
+function bossStats(kind,level,isEnd,alone){
+ const t=typicalPlayer(level),r=ROLE[kind==='raid'?(alone?'raidAlone':isEnd?'raidEnd':'raid'):(isEnd?'end':'dungeon')];
+ return{hp:Math.round(t.leben*r.hp*DIFFICULTY),angriff:Math.round(t.angriff*r.angriff*DIFFICULTY),verteidigung:Math.round(t.verteidigung*r.verteidigung),krit:Math.round((5+level/10)*10)/10}
+}
+// Rewards: XP per boss (WoW-style grey: next to nothing once you outlevel the instance by more than five), a loot roll per boss and member,
+// gold for the clear. Loot is weighted by quality, so epics stay rare.
+const DROP_CHANCE={dungeon:22,end:45,raid:30,raidEnd:60},QUALITY_WEIGHT={uncommon:10,rare:6,epic:2,legendary:.4};
+export const bossXp=(dungeon,boss,isEnd)=>Math.round((10+boss.level*4)*(isEnd?2:1)*(dungeon.kind==='raid'?1.5:1));
+export const clearGold=dungeon=>Math.round((15+dungeon.level*3)*(dungeon.kind==='raid'?3:1));
+const xpFor=(dungeon,amount,playerLevel)=>playerLevel>dungeon.maxLevel+5?Math.round(amount*.1):amount;
+// The recommended level follows the bosses (some wings have bosses well above the zone's range). A boss more than four levels above it
+// (Avatar of Hakkar, 63 in a 54 instance) fights with the values of that limit plus 4 % health and attack per extra level, at most two (raids excepted).
+export const DUNGEONS=DUNGEON_DATA.map(d=>{
+ const avg=d.bosses.reduce((a,b)=>a+b.level,0)/d.bosses.length,level=d.kind==='raid'?d.level:Math.min(d.maxLevel,Math.max(d.level,Math.round(avg)-4));
+ return{...d,level,bosses:d.bosses.map((b,i,all)=>{const cap=d.kind==='raid'?60:Math.min(d.maxLevel,level+4),st=bossStats(d.kind,Math.min(b.level,cap),i===all.length-1,all.length===1),over=d.kind==='raid'?1:1+.04*Math.min(2,Math.max(0,b.level-cap));return{...b,...st,hp:Math.round(st.hp*over),angriff:Math.round(st.angriff*over)}})}
+});
 const PARTY={dungeon:5,raid:25},PER_DAY={dungeon:3,raid:1},TURN_MS={dungeon:45e3,raid:30e3},LOBBY_MS=2*3600e3,LOG_KEPT=60,BOSS_HEAL_BETWEEN=.3;
 // Raid schedule: weekday (0 = Sunday) to raid, start hour in Berlin time, sign-up one hour before.
 export const RAID_DAYS={1:'onyxia',2:'moltencore',3:'onyxia',4:'moltencore',5:'onyxia',6:'moltencore',0:'onyxia'},RAID_HOUR=19,SIGNUP_MS=3600e3,RAID_CALENDAR_WEEKS=6;
@@ -47,7 +67,12 @@ export function raidSlots(from=Date.now(),days=7){
 }
 const berlinDay=(d=new Date())=>new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Berlin',year:'numeric',month:'2-digit',day:'2-digit'}).format(d);
 const dungeonOf=key=>DUNGEONS.find(d=>d.id===key)||fail(400,'Diese Instanz gibt es nicht.');
-const makeBoss=(dungeon,index,players)=>{const b=dungeon.bosses[index];return{id:'boss',name:b.name,icon:b.icon,max:b.hp*players,hp:b.hp*players,angriff:b.angriff,verteidigung:b.verteidigung,krit:b.krit,defending:false,shield:0,buff:0,stunned:false,turns:0}};
+// The boss hits once per round whatever the party size, so its attack grows with the party.
+// Measured with simulated parties (solo has no healer and takes every hit, so it gets the biggest discount).
+const PARTY_SCALE=[0,.3,.6,1,1.15,1.35];
+export const bossScale=(kind,players)=>kind==='raid'?Math.min(1.1,.5+players*.03):PARTY_SCALE[Math.min(5,Math.max(1,players))];
+const makeBoss=(dungeon,index,players)=>{const b=dungeon.bosses[index];return{id:'boss',name:b.name,icon:b.icon,level:b.level,max:b.hp*players,hp:b.hp*players,angriff:Math.round(b.angriff*bossScale(dungeon.kind,players)),verteidigung:b.verteidigung,krit:b.krit,defending:false,shield:0,buff:0,stunned:false,turns:0}};
+function dropFrom(boss){const pool=boss.loot.filter(id=>ITEMS[id]),total=pool.reduce((a,id)=>a+QUALITY_WEIGHT[ITEMS[id].quality],0);let pick=randomInt(Math.max(1,Math.round(total*10)))/10;for(const id of pool){if((pick-=QUALITY_WEIGHT[ITEMS[id].quality])<0)return id}return pool[0]}
 
 // The boss acts after every full round: a normal hit on a random fighter, every third turn something nasty.
 export function bossTurn(boss,party,rand=randomInt){
@@ -80,17 +105,27 @@ export function registerDungeonRoutes(db){
  }
  // Clear: every member who did not give up gets gold, XP and a roll for loot from the dungeon's chest pool.
  function reward(run,state){
-  const dungeon=dungeonOf(run.dungeon),chest=CHESTS.find(c=>c.id===dungeon.loot);
+  const dungeon=dungeonOf(run.dungeon),gold=clearGold(dungeon);
   for(const uid of state.order){
    if(state.left.includes(uid))continue;
-   const f=state.fighters[uid];let itemId=null;
-   transaction(db,()=>{
-    book(db,uid,dungeon.gold,dungeon.kind,run.id);
-    if(chest&&randomInt(100)<dungeon.lootChance&&!bagFull(db,uid)){itemId=drawFrom(chest).itemId;giveItem(db,uid,itemId,'dungeon:'+dungeon.id)}
-   });
-   const levelUp=grantXp(db,f.characterId,dungeon.xp,dungeon.kind);
-   state.log.push({by:uid,action:'loot',gold:dungeon.gold,xp:dungeon.xp,itemId,itemName:itemId?ITEMS[itemId].name:null,quality:itemId?ITEMS[itemId].quality:null,levelUp,damage:0});
-   notify(db,uid,`${dungeon.name} geschafft! +${dungeon.gold} Gold${itemId?`, Beute: ${ITEMS[itemId].name}`:''}.`,'dungeons','run-won:'+run.id+':'+uid)
+   book(db,uid,gold,dungeon.kind,run.id);
+   // The log is cut to its last entries, so the run keeps every member's XP and drops in state.rewards.
+   const got=state.rewards?.[uid]||{xp:0,items:[]},items=got.items.map(i=>ITEMS[i].name);
+   state.log.push({by:uid,action:'loot',gold,xp:got.xp,items,damage:0});
+   notify(db,uid,`${dungeon.name} geschafft! +${gold} Gold${items.length?`, Beute: ${items.join(', ')}`:''}.`,'dungeons','run-won:'+run.id+':'+uid)
+  }
+ }
+ // A boss is down: every member still in gets its XP and a roll on that boss's own loot table.
+ function bossLoot(run,state,dungeon){
+  const index=state.bossIndex,boss=dungeon.bosses[index],isEnd=index===dungeon.bosses.length-1,chance=DROP_CHANCE[dungeon.kind==='raid'?(isEnd?'raidEnd':'raid'):(isEnd?'end':'dungeon')];
+  for(const uid of state.order){
+   if(state.left.includes(uid))continue;
+   const f=state.fighters[uid],xp=xpFor(dungeon,bossXp(dungeon,boss,isEnd),f.characterId?progressOf(db,f.characterId).level:f.level);
+   let itemId=null;
+   if(randomInt(100)<chance&&!bagFull(db,uid)){itemId=dropFrom(boss);giveItem(db,uid,itemId,'dungeon:'+dungeon.id)}
+   const levelUp=grantXp(db,f.characterId,xp,dungeon.kind);
+   const got=((state.rewards||={})[uid]||={xp:0,items:[]});got.xp+=xp;if(itemId)got.items.push(itemId);
+   state.log.push({by:uid,action:'drop',boss:boss.name,xp,itemId,itemName:itemId?ITEMS[itemId].name:null,quality:itemId?ITEMS[itemId].quality:null,levelUp,damage:0})
   }
  }
  // After a player's move: next player, or the boss when everybody had a turn; then check for a downed boss or a wiped party.
@@ -98,6 +133,7 @@ export function registerDungeonRoutes(db){
   const dungeon=dungeonOf(run.dungeon);
   if(state.boss.hp<=0){
    state.log.push({by:'boss',action:'bossdown',name:state.boss.name,damage:0});
+   bossLoot(run,state,dungeon);
    if(state.bossIndex+1>=dungeon.bosses.length){reward(run,state);return end(run,state,'won')}
    state.bossIndex++;const players=state.order.filter(uid=>!state.left.includes(uid)).length;
    state.boss=makeBoss(dungeon,state.bossIndex,players);
@@ -194,7 +230,7 @@ export function registerDungeonRoutes(db){
   const lobbies=db.prepare(`SELECT * FROM dungeon_runs WHERE status IN ('lobby','active') ORDER BY created_at DESC LIMIT 50`).all().map(settle).filter(r=>r&&['lobby','active'].includes(r.status));
   const mine=openRunOf(user.id);
   const raids=raidSlots().slice(0,2).map(slot=>{const run=db.prepare('SELECT * FROM dungeon_runs WHERE id=?').get('raid-'+slot.day),list=run?members(run.id):[];return{dungeon:slot.dungeon,name:dungeonOf(slot.dungeon).name,startsAt:new Date(slot.startsAt).toISOString(),signupAt:new Date(slot.startsAt-SIGNUP_MS).toISOString(),runId:run?.id||null,status:run?.status||'planned',count:list.length,max:PARTY.raid,signedUp:list.some(m=>m.user_id===user.id)}});
-  return{raids,dungeons:DUNGEONS.map(d=>({id:d.id,name:d.name,kind:d.kind,level:d.level,icon:d.icon,gold:d.gold,xp:d.xp,lootChance:d.lootChance,party:PARTY[d.kind],bosses:d.bosses.map(b=>({name:b.name,icon:b.icon}))})),
+  return{raids,dungeons:DUNGEONS.map(d=>({id:d.id,name:d.name,kind:d.kind,level:d.level,maxLevel:d.maxLevel,icon:d.icon,gold:clearGold(d),xp:d.bosses.reduce((a,b,i,all)=>a+bossXp(d,b,i===all.length-1),0),party:PARTY[d.kind],bosses:d.bosses.map((b,i,all)=>({name:b.name,icon:b.icon,level:b.level,dropChance:DROP_CHANCE[d.kind==='raid'?(i===all.length-1?'raidEnd':'raid'):(i===all.length-1?'end':'dungeon')],loot:b.loot}))})),
    runsLeft:{dungeon:Math.max(0,PER_DAY.dungeon-runsToday(user.id,'dungeon')),raid:Math.max(0,PER_DAY.raid-runsToday(user.id,'raid'))},perDay:PER_DAY,
    lobbies:lobbies.map(r=>({id:r.id,dungeon:r.dungeon,name:dungeonOf(r.dungeon).name,kind:r.kind,status:r.status,host:members(r.id).find(m=>m.user_id===r.host_id)?.username||'?',members:members(r.id).map(m=>m.username),max:PARTY[r.kind]})),
    current:mine?mine.id:null,

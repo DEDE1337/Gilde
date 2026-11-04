@@ -21,10 +21,12 @@ export function resolveAction(attacker,defender,action,rand=randomInt){
  const ability=(attacker.abilities||[]).find(a=>a.key===action);
  const entry={by:attacker.id,action,damage:0,crit:false,miss:false,...(ability?{ability:ability.name,icon:ability.icon,kind:ability.kind}:{})};
  if(action==='defend'){entry.heal=healBy(attacker,attacker.max*DEFEND_HEAL);attacker.defending=true;return entry}
- if(ability?.kind==='heal'){entry.heal=healBy(attacker,attacker.max*ability.value);return entry}
+ if(ability?.kind==='heal'){entry.heal=healBy(attacker,attacker.max*ability.value*(1+(attacker.heilkraft||0)/100));return entry}
  if(ability?.kind==='shield'){attacker.shield=(attacker.shield||0)+Math.round(attacker.max*ability.value);entry.shield=attacker.shield;return entry}
  if(ability?.kind==='buff'){attacker.buff=BUFF_CHARGES;entry.buff=ability.value;return entry}
  if(action==='strong'&&rand(100)>=STRONG_HIT){entry.miss=true;return entry}
+ // Dodge (from agility): the hit misses completely. Only rolled when the defender has any, so fights without it keep their dice.
+ if(defender.ausweichen>0&&rand(1000)<defender.ausweichen*10){Object.assign(entry,{miss:true,dodged:true});return entry}
  const crit=rand(1000)<attacker.krit*10,spread=85+rand(31);
  let damage=attacker.angriff*DAMAGE_SCALE*spread/100*100/(100+defender.verteidigung);
  if(action==='strong')damage*=STRONG_FACTOR;

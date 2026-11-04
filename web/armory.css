@@ -432,3 +432,27 @@ button.armed{background:#b3261e!important;color:#fff!important}
 .ak-slot.ak-changed .ak-icon,.ak-slot.ak-changed .ak-slot-empty{animation:ak-changed 1.4s ease-out}
 @keyframes ak-changed{0%{box-shadow:0 0 0 3px #ffd100,0 0 18px 6px #ffb347}100%{box-shadow:0 0 0 0 #ffd10000,0 0 0 0 #ffb34700}}
 @media(prefers-reduced-motion:reduce){.ak-slot.ak-changed .ak-icon,.ak-slot.ak-changed .ak-slot-empty{animation:none;outline:2px solid #ffd100}}
+/* Extra values and attributes under the four main values */
+.ak-attrs{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:4px;width:100%;margin:6px 0 0}
+.ak-attrs div{display:flex;justify-content:space-between;gap:6px;padding:4px 8px;background:#0006;border:1px solid #8a734233;border-radius:4px;font-size:13px}
+.ak-attrs dt{color:var(--soft)}
+.ak-attrs dd{margin:0;font-weight:700}
+.ak-attrs .main{border-color:#ffd10088}
+.ak-attrs .main dt{color:#ffd100}
+.ak-tip .tt-attr{color:#fff}
+.ak-tip .tt-bad,.tt-bad{color:#ff4040}
+/* Instance cards: how they fit the player's level */
+.ak-dungeon .fit{font-weight:700}
+.ak-dungeon.fit-good .fit{color:#1eff00}
+.ak-dungeon.fit-tough .fit{color:#ffd100}
+.ak-dungeon.fit-hard .fit{color:#ff4040}
+.ak-dungeon.fit-grey .fit{color:#9d9d9d}
+.ak-dungeon.fit-hard{opacity:.8}
+/* Loot dialog per boss */
+.ak-loot-dialog{max-width:min(720px,94vw)}
+.ak-loot-list{max-height:60vh;overflow:auto;text-align:left;margin:10px 0}
+.ak-loot-list section{padding:8px 0;border-bottom:1px solid #ffffff14}
+.ak-loot-list h4{display:flex;align-items:center;gap:8px;margin:0 0 6px;font:700 16px var(--body);color:var(--cream)}
+.ak-loot-list h4 img{width:26px;height:26px;border-radius:4px}
+.ak-loot-icons{display:flex;flex-wrap:wrap;gap:6px}
+#akLog li.q-epic{color:#c86cff}#akLog li.q-rare{color:#4aa3ff}#akLog li.q-legendary{color:#ff9a2e}

@@ -1,12 +1,13 @@
-/* Waffenkammer levels and class abilities. Level 1 to 20 per character: XP mostly from duels, a little from chests, a little more health, attack and
+/* Waffenkammer levels and class abilities. Level 1 to 60 per character, like the real instances' levels: XP mostly from duels, a little from chests, a little more health, attack and
    defence per level, and four real class abilities unlocked on the way. The abilities are WoW names and icons; their duel effects are this game's own rules. */
 import {id,now} from './core.js';
 
-export const LEVEL_CAP=20,UNLOCK_LEVELS=[1,4,8,12];
-// XP needed from level n to n+1: 100, 160, 220 ... Level 20 takes about 12,000 XP, several weeks of regular duels.
-export const xpToNext=level=>level>=LEVEL_CAP?0:60*level+40;
+export const LEVEL_CAP=60,UNLOCK_LEVELS=[1,4,8,12];
+// XP needed from level n to n+1: 100, 160, 220 ... up to level 20 (unchanged, so nobody's level moved when the cap rose), then 1,240 rising by 40 per level.
+// Level 60 takes about 92,000 XP: a few weeks of daily dungeons, which pay more the higher the instance.
+export const xpToNext=level=>level>=LEVEL_CAP?0:level<20?60*level+40:1240+(level-20)*40;
 export function levelOf(xp){let level=1,rest=xp;while(level<LEVEL_CAP&&rest>=xpToNext(level)){rest-=xpToNext(level);level++}return{level,xp:level>=LEVEL_CAP?0:rest,next:xpToNext(level),total:xp}}
-export const levelBonus=level=>({leben:25*(level-1),angriff:2*(level-1),verteidigung:level-1,krit:0});
+export const levelBonus=level=>({leben:25*(level-1),angriff:2*(level-1),verteidigung:level-1,krit:0,ausweichen:0,heilkraft:0});
 // Chests give a small fixed amount plus one per 100 gold; duels are the main source and count for the first ten of a day only.
 export const XP={chest:price=>5+Math.floor(price/100),duelWin:40,duelLoss:15,duelsPerDay:10};
 const berlinDay=(d=new Date())=>new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Berlin',year:'numeric',month:'2-digit',day:'2-digit'}).format(d);

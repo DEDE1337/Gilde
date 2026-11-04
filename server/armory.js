@@ -8,9 +8,12 @@ import {balanceOf,book,transaction,grantStartGold,START_GOLD,addPotions,potionsO
 import {progressOf,levelBonus,abilitiesFor,grantXp,XP,POTIONS} from './progression.js';
 
 const DATA=JSON.parse(readFileSync(new URL('./armory-items.json',import.meta.url),'utf8'));
-export const ITEMS=DATA.items,CHESTS=DATA.chests,SHOP=new Set(DATA.shop);
+export const ITEMS=DATA.items,CHESTS=DATA.chests,SHOP=new Set(DATA.shop),DUNGEON_DATA=DATA.dungeons||[];
 const RARITIES=['uncommon','rare','epic','legendary'];
-export const BASE_STATS={leben:400,angriff:20,verteidigung:5,krit:5};
+export const BASE_STATS={leben:400,angriff:20,verteidigung:5,krit:5,ausweichen:2,heilkraft:0};
+// Main attribute per class: it counts fully towards attack, the other two a quarter. Agility gives everyone dodge, spirit makes heals stronger.
+export const MAIN_ATTRIBUTE={1:'str',2:'str',3:'agi',4:'agi',5:'int',7:'int',8:'int',9:'int',11:'agi'};
+const ATTRIBUTES=['str','agi','int','spi'],MAX_DODGE=25,MAX_CRIT=50;
 const BAG_LIMIT=200,OPEN_LISTINGS=20,MAX_PRICE=1000000;
 export const buyPrice=item=>item.value*(item.quality==='legendary'?6:3);
 export const sellPrice=item=>Math.max(1,Math.floor(item.value/4));
@@ -48,17 +51,29 @@ export function characterOf(db,userId){
  const own=cid=>cid&&db.prepare(`SELECT ${CHARACTER_COLUMNS} FROM characters WHERE id=? AND user_id=?`).get(cid,userId);
  return own(user?.game_character_id)||own(user?.main_character_id)||db.prepare(`SELECT ${CHARACTER_COLUMNS} FROM characters WHERE user_id=? ORDER BY created_at LIMIT 1`).get(userId)
 }
-// Base values, the level bonus and every item this character wears and its class may use.
+// An item counts only while the character may wear it: right class and high enough level. Gear worn since before the level rule
+// (inventory.level_exempt) skips the level check until it is taken off.
+export const wearable=(item,character,level)=>!!item?.slot&&!!character&&allowedClasses(item).includes(character.class_id)&&level>=(item.requiredLevel||0);
+// Base values, the level bonus and every item this character wears and may use. Attributes are weighed by class:
+// the main attribute adds fully to attack and gives crit (agility 1 % per 30, intellect per 40, strength per 60), agility gives dodge (1 % per 25),
+// spirit strengthens heals (1 % per 4 spirit).
 export function statsOf(db,userId){
  const character=characterOf(db,userId),stats={...BASE_STATS},progress=character?progressOf(db,character.id):{level:1,xp:0,next:0,total:0};
- const bonus=levelBonus(progress.level);for(const k of Object.keys(stats))stats[k]+=bonus[k];
- const worn=character?db.prepare('SELECT item_id,slot FROM inventory WHERE character_id=? AND slot IS NOT NULL').all(character.id):[];
+ const bonus=levelBonus(progress.level);for(const k of Object.keys(stats))stats[k]+=bonus[k]||0;
+ const worn=character?db.prepare('SELECT item_id,slot,level_exempt FROM inventory WHERE character_id=? AND slot IS NOT NULL').all(character.id):[];
+ const attributes={str:0,agi:0,int:0,spi:0,sta:0};
  for(const row of worn){
-  const item=ITEMS[row.item_id];if(!item?.slot||!allowedClasses(item).includes(character.class_id))continue;
-  for(const k of Object.keys(stats))stats[k]+=item.game[k]
+  const item=ITEMS[row.item_id];if(!wearable(item,character,row.level_exempt?99:progress.level))continue;
+  for(const k of Object.keys(stats))stats[k]+=item.game[k]||0;
+  for(const k of Object.keys(attributes))attributes[k]+=item.stats?.[k]||0
  }
- stats.krit=Math.min(50,Math.round(stats.krit*10)/10);
- return{character,stats,progress,abilities:character?abilitiesFor(character.class_id,progress.level):[],gear:worn.filter(r=>ITEMS[r.item_id]?.display).map(r=>({slot:r.slot,itemId:r.item_id,display:ITEMS[r.item_id].display,twohand:ITEMS[r.item_id].slot==='twohand',shield:ITEMS[r.item_id].type==='Schild'}))}
+ const main=MAIN_ATTRIBUTE[character?.class_id]||'str';
+ stats.angriff+=ATTRIBUTES.filter(k=>k!=='spi').reduce((a,k)=>a+attributes[k]*(k===main?1:.25),0);
+ stats.krit+=attributes[main]/{agi:30,int:40,str:60}[main];
+ stats.ausweichen+=attributes.agi/25;stats.heilkraft+=attributes.spi/4;
+ for(const k of ['angriff','leben','verteidigung'])stats[k]=Math.round(stats[k]);
+ stats.krit=Math.min(MAX_CRIT,Math.round(stats.krit*10)/10);stats.ausweichen=Math.min(MAX_DODGE,Math.round(stats.ausweichen*10)/10);stats.heilkraft=Math.round(stats.heilkraft);
+ return{character,stats,attributes,mainAttribute:main,progress,abilities:character?abilitiesFor(character.class_id,progress.level):[],gear:worn.filter(r=>ITEMS[r.item_id]?.display).map(r=>({slot:r.slot,itemId:r.item_id,display:ITEMS[r.item_id].display,twohand:ITEMS[r.item_id].slot==='twohand',shield:ITEMS[r.item_id].type==='Schild'}))}
 }
 const ownItem=(db,userId,uid)=>db.prepare('SELECT * FROM inventory WHERE id=? AND user_id=?').get(String(uid||''),userId)||fail(404,'Diesen Gegenstand hast du nicht.');
 export const bagFull=(db,userId)=>db.prepare('SELECT COUNT(*) n FROM inventory WHERE user_id=?').get(userId).n>=BAG_LIMIT;
@@ -73,15 +88,15 @@ export function drawFrom(chest){
 
 export function registerArmoryRoutes(db){
  const view=userId=>{
-  const welcome=grantStartGold(db,userId),{character,stats,progress,abilities,gear}=statsOf(db,userId);
+  const welcome=grantStartGold(db,userId),{character,stats,attributes,mainAttribute,progress,abilities,gear}=statsOf(db,userId);
   // Items worn by another character of the account carry that character's name; the bag holds only items nobody wears.
   const names=Object.fromEntries(db.prepare('SELECT id,name FROM characters WHERE user_id=?').all(userId).map(c=>[c.id,c.name]));
-  const inventory=db.prepare('SELECT id,item_id,slot,character_id,listed,source,created_at FROM inventory WHERE user_id=? ORDER BY created_at DESC').all(userId)
-   .map(r=>{const mine=!!r.slot&&r.character_id===character?.id;return{uid:r.id,itemId:r.item_id,slot:mine?r.slot:null,wornBy:r.slot&&!mine?names[r.character_id]||'?':null,listed:!!r.listed,source:r.source,usable:!!character&&allowedClasses(ITEMS[r.item_id]).includes(character.class_id)}});
-  return{balance:balanceOf(db,userId),welcome:welcome?START_GOLD:0,character:character&&{id:character.id,name:[character.name,character.surname].filter(Boolean).join(' '),classId:character.class_id,className:CLASSES[character.class_id],race:character.race,gender:character.gender??0,appearance:JSON.parse(character.appearance_json||'{}')},stats,base:BASE_STATS,progress,abilities,gear,inventory,potions:potionsOf(db,userId)}
+  const inventory=db.prepare('SELECT id,item_id,slot,character_id,listed,source,level_exempt,created_at FROM inventory WHERE user_id=? ORDER BY created_at DESC').all(userId)
+   .map(r=>{const mine=!!r.slot&&r.character_id===character?.id,item=ITEMS[r.item_id];return{uid:r.id,itemId:r.item_id,slot:mine?r.slot:null,wornBy:r.slot&&!mine?names[r.character_id]||'?':null,listed:!!r.listed,source:r.source,usable:!!character&&allowedClasses(item).includes(character.class_id),needLevel:(item.requiredLevel||0)>progress.level?item.requiredLevel:0,levelExempt:mine&&!!r.level_exempt&&(item.requiredLevel||0)>progress.level}});
+  return{balance:balanceOf(db,userId),welcome:welcome?START_GOLD:0,character:character&&{id:character.id,name:[character.name,character.surname].filter(Boolean).join(' '),classId:character.class_id,className:CLASSES[character.class_id],race:character.race,gender:character.gender??0,appearance:JSON.parse(character.appearance_json||'{}')},stats,attributes,mainAttribute,base:BASE_STATS,progress,abilities,gear,inventory,potions:potionsOf(db,userId)}
  };
  // Static data: items with their prices, chests with all odds, shop stock. Same for every player.
- const catalog={items:Object.fromEntries(Object.values(ITEMS).map(i=>[i.id,{id:i.id,name:i.name,quality:i.quality,icon:i.icon,itemLevel:i.itemLevel,requiredLevel:i.requiredLevel,slot:i.slot,type:i.type,game:i.game,value:i.value,buy:buyPrice(i),sell:sellPrice(i),classes:allowedClasses(i)}])),
+ const catalog={items:Object.fromEntries(Object.values(ITEMS).map(i=>[i.id,{id:i.id,name:i.name,quality:i.quality,icon:i.icon,itemLevel:i.itemLevel,requiredLevel:i.requiredLevel,slot:i.slot,type:i.type,game:i.game,attributes:Object.fromEntries(['str','agi','int','spi','sta'].map(k=>[k,i.stats?.[k]||0]).filter(([,v])=>v)),value:i.value,buy:buyPrice(i),sell:sellPrice(i),classes:allowedClasses(i)}])),
   chests:CHESTS.map(c=>({id:c.id,name:c.name,price:c.price,icon:c.icon,odds:c.odds,items:Object.fromEntries(RARITIES.map(r=>{const pool=c.items[r],total=pool.reduce((a,p)=>a+p.weight,0);return[r,pool.map(p=>({id:p.id,chance:Math.round(c.odds[r]*p.weight/total*100)/100}))]}))})),
   shop:[...SHOP],potions:Object.values(POTIONS),base:BASE_STATS,source:DATA.source};
  route('POST','/api/armory/potion','member',({user,body})=>{
@@ -148,23 +163,24 @@ export function registerArmoryRoutes(db){
   if(row.listed)fail(409,'Das Item steht im Auktionshaus.');
   if(!item.slot)fail(400,`${item.name} lässt sich nicht anlegen, das ist eine Trophäe.`);
   if(!allowedClasses(item).includes(character.class_id))fail(400,`${CLASSES[character.class_id]} können ${item.type||'das'} nicht tragen.`);
+  const level=progressOf(db,character.id).level;if(level<(item.requiredLevel||0))fail(400,`${item.name} kannst du erst ab Stufe ${item.requiredLevel} tragen, du bist Stufe ${level}.`);
   const options=slotsFor(item,character.class_id);
   let slot=body.slot;
   if(slot!==undefined&&!options.includes(slot))fail(400,'In diesen Platz passt das Item nicht.');
   if(slot===undefined)slot=options.find(s=>!db.prepare('SELECT 1 FROM inventory WHERE character_id=? AND slot=?').get(character.id,s))||options[0];
   // An item worn by another character of the account moves over to this one.
   transaction(db,()=>{
-   const clear=s=>db.prepare('UPDATE inventory SET slot=NULL,character_id=NULL WHERE character_id=? AND slot=?').run(character.id,s);
-   db.prepare('UPDATE inventory SET slot=NULL,character_id=NULL WHERE id=?').run(row.id);
+   const clear=s=>db.prepare('UPDATE inventory SET slot=NULL,character_id=NULL,level_exempt=0 WHERE character_id=? AND slot=?').run(character.id,s);
+   db.prepare('UPDATE inventory SET slot=NULL,character_id=NULL,level_exempt=0 WHERE id=?').run(row.id);
    clear(slot);
    if(item.slot==='twohand')clear('offhand');
    if(slot==='offhand'){const main=db.prepare(`SELECT item_id FROM inventory WHERE character_id=? AND slot='mainhand'`).get(character.id);if(main&&ITEMS[main.item_id].slot==='twohand')clear('mainhand')}
-   db.prepare('UPDATE inventory SET slot=?,character_id=? WHERE id=?').run(slot,character.id,row.id)
+   db.prepare('UPDATE inventory SET slot=?,character_id=?,level_exempt=0 WHERE id=?').run(slot,character.id,row.id)
   });
   return view(user.id)
  });
  route('POST','/api/armory/unequip','member',({user,body})=>{
-  const row=ownItem(db,user.id,body.uid);db.prepare('UPDATE inventory SET slot=NULL,character_id=NULL WHERE id=?').run(row.id);return view(user.id)
+  const row=ownItem(db,user.id,body.uid);db.prepare('UPDATE inventory SET slot=NULL,character_id=NULL,level_exempt=0 WHERE id=?').run(row.id);return view(user.id)
  });
 
  // Auction house: fixed buy-out prices, no bids, no run time, no mailbox.
@@ -192,7 +208,7 @@ export function registerArmoryRoutes(db){
    if(balanceOf(db,user.id)<a.price)fail(400,`Dafür fehlen dir ${a.price-balanceOf(db,user.id)} Gold.`);
    if(bagFull(db,user.id))fail(400,'Deine Taschen sind voll.');
    if(Number(db.prepare(`UPDATE auctions SET status='sold',buyer_id=?,closed_at=? WHERE id=? AND status='open'`).run(user.id,now(),a.id).changes)!==1)fail(409,'Jemand war schneller.');
-   db.prepare(`UPDATE inventory SET user_id=?,listed=0,slot=NULL,character_id=NULL,source='auction' WHERE id=?`).run(user.id,a.inventory_id);
+   db.prepare(`UPDATE inventory SET user_id=?,listed=0,slot=NULL,character_id=NULL,level_exempt=0,source='auction' WHERE id=?`).run(user.id,a.inventory_id);
    book(db,user.id,-a.price,'auction-buy',a.id);book(db,a.seller_id,a.price,'auction-sale',a.id);
    return a
   });
