@@ -20,7 +20,8 @@ Der Auftrag setzte Login, Accounts, Mitgliederverwaltung, News und Patchnotes al
 | Hall of Fame | Einreichen, Prüfen, Suche, Filter, Chronik, Vorschlag aus First Kill |
 | BiS | Listen mit Pflichtquelle, Items per Wowhead-ID, Alternativen, Status, Fortschritt nach Plätzen, gildenweite Wunschliste |
 | Berufe | Berufe, Stufen, Rezepte per Wowhead-ID mit Materialien und Ergebnis, Handwerkersuche, Anfragen mit Status |
-| Forum | Kategorien, Themen, Antworten, Bearbeiten, Löschen, Bilder, Suche, Moderation, Zugriffsschutz, Schwarzes Brett |
+| Forum | Kategorien, Themen, Antworten, Bearbeiten, Löschen, Bilder, Suche, Likes (einer pro Mitglied, zweiter Klick nimmt ihn zurück), Moderation, Zugriffsschutz, Schwarzes Brett |
+| Live und Navigation | Glocke im Kopf mit Zähler und Liste (als gelesen markieren, entfernen), Seiten aktualisieren sich selbst (Forum, Raids, Instanzen-Gruppen, Benachrichtigungen), Zurück/Vor und Neuladen bleiben über Hash-Adressen (`#topic/<id>`) auf der Seite |
 | Dashboard | Alle sechs Bereiche, ein- und ausblendbar, sortierbar, im Account gespeichert |
 | Legacy | Accountpunkte, Talente pro Charakter, Grenzen, Voraussetzungen, berechnete Meilensteine, Verlauf, Sichtbarkeit |
 | News | Automatisch aus dem Wowhead-Forever-RSS |

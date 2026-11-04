@@ -709,3 +709,45 @@ test('Instanzen: Lobby, Start nur durch Leiter, Kampf gegen alle Bosse, Beute, T
  await denied(409,'Mitlaeufer','POST','/api/dungeons/raid-test/action',{action:'attack'});
  r=await ok('Gruppenleiter','POST','/api/dungeons/raid-test/forfeit');assert.equal(r.status,'wiped');
 });
+test('Forum-Likes: einer pro Mitglied, nochmal klicken nimmt ihn zurück, Rechte und Benachrichtigung',async()=>{
+ await makeUser('LikeAutor');await makeUser('LikeFan');await makeUser('LikeMod','officer',['moderate']);
+ await char('LikeAutor','Likeheld');
+ const t=await ok('LikeAutor','POST','/api/forum/categories/general/topics',{title:'Daumen hoch?',body:'Bitte liken'});
+ let view=await ok('LikeFan','GET',`/api/forum/topics/${t.id}`);const pid=view.posts[0].id;
+ assert.equal(view.posts[0].likes,0);assert.equal(view.posts[0].liked,false);
+ await denied(401,'gast','POST',`/api/forum/posts/${pid}/like`);
+ await denied(404,'LikeFan','POST','/api/forum/posts/gibtsnicht/like');
+ let r=await ok('LikeFan','POST',`/api/forum/posts/${pid}/like`);assert.deepEqual([r.likes,r.liked,r.likers],[1,true,['LikeFan']]);
+ r=await ok('LikeMod','POST',`/api/forum/posts/${pid}/like`);assert.equal(r.likes,2);
+ view=await ok('LikeAutor','GET',`/api/forum/topics/${t.id}`);assert.equal(view.posts[0].likes,2);assert.equal(view.posts[0].liked,false);assert.deepEqual(view.posts[0].likers,['LikeFan','LikeMod']);
+ const notes=(await ok('LikeAutor','GET','/api/notifications')).notifications.filter(n=>n.message.includes('gefällt dein Beitrag'));
+ assert.equal(notes.length,2);assert.equal(notes[0].link,'topic:'+t.id);
+ r=await ok('LikeFan','POST',`/api/forum/posts/${pid}/like`);assert.deepEqual([r.likes,r.liked],[1,false],'zweiter Klick nimmt den Like zurück');
+ await ok('LikeFan','POST',`/api/forum/posts/${pid}/like`);
+ assert.equal((await ok('LikeAutor','GET','/api/notifications')).notifications.filter(n=>n.message.includes('gefällt dein Beitrag')).length,2,'erneutes Liken meldet nicht noch einmal');
+ await ok('LikeAutor','POST',`/api/forum/posts/${pid}/like`);
+ assert.equal((await ok('LikeAutor','GET','/api/notifications')).notifications.filter(n=>n.message.includes('LikeAutor gefällt')).length,0,'eigener Like meldet nichts');
+ // Read access counts: a post in a moderators-only category cannot be liked by a plain member.
+ sqlite.prepare(`INSERT INTO forum_categories(id,name,description,sort,access) VALUES ('likes-officer','Offiziere','',99,'officer')`).run();
+ const hidden=await ok('LikeMod','POST','/api/forum/categories/likes-officer/topics',{title:'Nur Offiziere',body:'Geheim'});
+ const hiddenPost=(await ok('LikeMod','GET',`/api/forum/topics/${hidden.id}`)).posts[0].id;
+ await denied(403,'LikeFan','POST',`/api/forum/posts/${hiddenPost}/like`);
+ await ok('LikeMod','DELETE',`/api/forum/posts/${pid}`);
+ await denied(410,'LikeFan','POST',`/api/forum/posts/${pid}/like`);
+ assert.equal(sqlite.prepare('SELECT COUNT(*) n FROM forum_likes WHERE post_id=?').get(pid).n,3);
+});
+test('Live-Puls: nur angemeldet, zählt Ungelesenes, Stempel ändern sich bei Forum, Gruppen und Benachrichtigungen',async()=>{
+ await makeUser('PulsA');await makeUser('PulsB');await char('PulsB','Pulsheld');
+ await denied(401,'gast','GET','/api/pulse');
+ const p0=await ok('PulsA','GET','/api/pulse');
+ assert.equal(p0.unread,0);for(const k of ['notes','forum','raids','dungeons'])assert.equal(typeof p0.areas[k],'string');
+ assert.deepEqual(await ok('PulsA','GET','/api/pulse'),p0,'ohne Änderung bleibt der Stempel gleich');
+ const t=await ok('PulsA','POST','/api/forum/categories/general/topics',{title:'Puls-Thema',body:'Erster Beitrag'});
+ const p1=await ok('PulsA','GET','/api/pulse');assert.notEqual(p1.areas.forum,p0.areas.forum);assert.equal(p1.areas.dungeons,p0.areas.dungeons);
+ await ok('PulsB','POST',`/api/forum/topics/${t.id}/posts`,{body:'Antwort von B'});
+ const p2=await ok('PulsA','GET','/api/pulse');assert.equal(p2.unread,1);assert.notEqual(p2.areas.notes,p1.areas.notes);assert.notEqual(p2.areas.forum,p1.areas.forum);
+ await ok('PulsB','POST','/api/dungeons',{dungeon:'deadmines'});
+ const p3=await ok('PulsA','GET','/api/pulse');assert.notEqual(p3.areas.dungeons,p2.areas.dungeons,'neue Gruppe ist für andere sichtbar');
+ await ok('PulsA','POST','/api/notifications/read',{});
+ const p4=await ok('PulsA','GET','/api/pulse');assert.equal(p4.unread,0);assert.notEqual(p4.areas.notes,p3.areas.notes);
+});
