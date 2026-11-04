@@ -359,6 +359,36 @@ const forfeitDuel=act(async()=>{stopDuelPolling();const d=await api(`/api/duels/
 
 /* Spielunke tutorial: shows on every way into the Spielunke until "Nicht mehr anzeigen" is ticked. */
 const TAVERN_PAGES=new Set(['bonus','roulette','blackjack','chests','ranking']),TUTORIAL_OFF='modcheck-tavern-tutorial-off';
+// Tutorials of the newer game parts: shown when entering the page, at most once per browser session, until "Nicht mehr anzeigen".
+const GAME_TUTORIALS={
+ dungeons:{eyebrow:'Instanzen & Schlachtzüge',title:'So funktionieren Instanzen',steps:[
+  ['inv_misc_coin_02','Bonus-Läufe','Die ersten drei Läufe am Tag zahlen doppeltes Gold und doppelte Erfahrung und lassen öfter Beute fallen. Danach geht es mit normaler Belohnung weiter, so oft du willst.'],
+  ['achievement_boss_edwinvancleef','Echte Bossbeute','Jeder Boss wirft seine echte Classic-Beute ab. Mit „Beute ansehen“ siehst du vorher, was drin ist.'],
+  ['spell_holy_resurrection','Passende Stufe','Grün heißt: passt zu dir. Rot heißt: zu schwer. Wer die Instanz weit überragt, bekommt kaum noch Erfahrung.'],
+  ['inv_misc_groupneedmore','Allein oder mit Gruppe','Solo geht, zu dritt ist es deutlich leichter. Bis zu fünf Spieler, jeden Abend um 19 Uhr Raid für bis zu 25.']]},
+ tower:{eyebrow:'Turm der Prüfungen',title:'Wie hoch kommst du?',steps:[
+  ['inv_misc_head_dragon_01','Etage für Etage','Jede Etage hält einen echten Instanzboss, jede ist etwas härter als die davor. Zwischen den Etagen heilst du ein wenig.'],
+  ['inv_misc_coin_02','Die Kasse','Jede geschaffte Etage füllt deine Kasse. Mit „Mitnehmen“ bekommst du alles. Fällst du, bleibt dir die Hälfte. Wann hörst du auf?'],
+  ['inv_box_04','Wächter','Jede fünfte Etage bewacht ein Wächter: stärker, aber mit Chance auf echte Beute. Danach laden deine Fähigkeiten wieder auf.'],
+  ['achievement_bg_topdps','Rangliste','Die höchste Etage der Woche zählt. Ab Etage 10 meldet Discord einen neuen Gildenrekord.']]},
+ gather:{eyebrow:'Berufe & Markt',title:'Sammeln, brauen, handeln',steps:[
+  ['inv_pick_02','Sammeln','Bergbau, Kräuterkunde und Kürschnerei geben alle zwei Minuten echte Classic-Materialien. Höhere Stufe, bessere Funde.'],
+  ['inv_potion_54','Alchemie','Braue Große Heiltränke und Große Manatränke nach den echten Rezepten. Phiolen gibt es beim Händler.'],
+  ['inv_misc_bag_10','Verkaufen','Der Händler kauft alles, auf dem Markt der Gilde bekommst du oft mehr. Du wirst benachrichtigt, wenn jemand kauft.'],
+  ['spell_holy_greaterheal','Wofür?','Eigene Tränke tragen dich höher im Turm und durch schwere Instanzen.']]},
+ daily:{eyebrow:'Tagesaufgaben',title:'Jeden Tag drei Aufgaben',steps:[
+  ['inv_misc_note_01','Drei Aufgaben','Jeden Tag neue: Bosse besiegen, Etagen schaffen, Tränke brauen und mehr. Der Fortschritt zählt von selbst.'],
+  ['inv_misc_coin_02','Abholen','Ist eine Aufgabe geschafft, holst du hier Gold und Erfahrung ab.'],
+  ['spell_holy_borrowedtime','Serie','Schaffst du alle drei an aufeinanderfolgenden Tagen, gibt es pro Tag 10 % mehr, bis +70 %.'],
+  ['ability_dualwield','Tipp','Die Aufgaben passen zu Instanzen, Turm und Berufen. Wer alles ein bisschen spielt, schafft sie nebenbei.']]}
+};
+const tutorialKey=id=>'modcheck-tutorial-off-'+id;
+function showGameTutorial(id){
+ const t=GAME_TUTORIALS[id];if(!t||page!==id||document.querySelector('dialog[open]'))return;
+ try{if(localStorage.getItem(tutorialKey(id))==='1'||sessionStorage.getItem('modcheck-tutorial-seen-'+id)==='1')return;sessionStorage.setItem('modcheck-tutorial-seen-'+id,'1')}catch{return}
+ const d=akDialog('epic',`<p class="win-rarity">${t.eyebrow}</p><h2 id="akDlgTitle">${t.title}</h2><div class="ak-steps">${t.steps.map(([icon,title,text],i)=>`<div class="ak-step"><span class="ak-step-n">${i+1}</span><img src="icons/${icon}.jpg" alt="" onerror="this.onerror=null;this.src='icons/inv_misc_questionmark.jpg'"><b>${title}</b><small>${text}</small></div>`).join('')}</div><label class="ak-tutorial-off"><input type="checkbox" id="akTutorialOff"> Nicht mehr anzeigen</label><button class="primary" onclick="this.closest('dialog').close()">Los geht's</button>`,'ak-wide ak-tutorial');
+ d.querySelector('#akTutorialOff').addEventListener('change',e=>{try{localStorage.setItem(tutorialKey(id),e.target.checked?'1':'0')}catch{}})
+}
 function tavernTutorialOff(){try{return localStorage.getItem(TUTORIAL_OFF)==='1'}catch{return false}}
 function showTavernTutorial(){
  if(tavernTutorialOff()||document.querySelector('dialog.ak-tutorial'))return;
@@ -374,7 +404,7 @@ function showTavernTutorial(){
 }
 // go() from app.js drives every page change; wrapping it catches the step into the Spielunke from anywhere else.
 const goBeforeTutorial=go;
-go=function(id){const was=page;if(id!=='duel'&&typeof stopBattleModels==='function')stopBattleModels();if(!['duel','run','duels'].includes(id))stopDuelPolling();goBeforeTutorial(id);if(TAVERN_PAGES.has(id)&&!TAVERN_PAGES.has(was)&&typeof P!=='undefined'&&P.user)setTimeout(showTavernTutorial,400)};
+go=function(id){const was=page;if(id!=='duel'&&typeof stopBattleModels==='function')stopBattleModels();if(!['duel','run','duels'].includes(id))stopDuelPolling();goBeforeTutorial(id);if(TAVERN_PAGES.has(id)&&!TAVERN_PAGES.has(was)&&typeof P!=='undefined'&&P.user)setTimeout(showTavernTutorial,400);if(GAME_TUTORIALS[id]&&id!==was&&typeof P!=='undefined'&&P.user)setTimeout(()=>showGameTutorial(id),600)};
 
 /* Dungeons and raids: list with lobbies, lobby view, and the party battle against the bosses. */
 // How an instance fits the player's level: [css key, label].
@@ -554,19 +584,22 @@ async function updateTopBars(){
 {const renderBeforeBars=render;render=function(){renderBeforeBars();updateTopBars()}}
 setTimeout(updateTopBars,1200);
 
-/* "Neu bei ModCheck": shown once per browser for logged-in members after this update, when no other window is open. */
-const NEWS_SEEN='modcheck-news-2026-11-waffenkammer';
-function newsSeen(){try{return localStorage.getItem(NEWS_SEEN)==='1'}catch{return true}}
+/* "Neu bei ModCheck": shown once per browser for logged-in members after each update (new NEWS_SEEN key per edition), when no other
+   window is open. "Nicht mehr anzeigen" (NEWS_OFF) switches off all future news windows. */
+const NEWS_SEEN='modcheck-news-2026-11-endlos',NEWS_OFF='modcheck-news-off';
+function newsSeen(){try{return localStorage.getItem(NEWS_SEEN)==='1'||localStorage.getItem(NEWS_OFF)==='1'}catch{return true}}
 function showNews(){
  if(newsSeen()||!P.user)return;
  if(document.getElementById('charScreen')||document.querySelector('dialog[open]'))return setTimeout(showNews,2000);
  try{localStorage.setItem(NEWS_SEEN,'1')}catch{}
  const item=(icon,title,text)=>`<div class="news-item"><img src="icons/${icon}.jpg" alt=""><span><b>${title}</b><small>${text}</small></span></div>`;
- const d=akDialog('epic',`<p class="win-rarity">Neu bei ModCheck</p><h2 id="akDlgTitle">Spielunke und Waffenkammer</h2>
- <h3 class="news-head">♠ Spielunke: Gold verdienen</h3><div class="news-list">${item('inv_misc_coin_02','Drei Drehs am Tag','Der Automat gibt jetzt drei freie Drehs pro Tag.')}${item('inv_box_birdcage_01','Schatztruhen','Fünf Truhen voller echter Classic-Ausrüstung, mit allen Chancen offen.')}</div>
- <h3 class="news-head">⚔ Waffenkammer: unser eigenes Spiel</h3><div class="news-list">${item('inv_chest_chain_07','Dein Charakter','Ausrüstung anlegen, am 3D-Modell sehen, Stufen bis 60 und vier Klassenfähigkeiten.')}${item('inv_misc_bag_10','Händler und Auktionshaus','Waffen, Rüstungen und Tränke kaufen, verkaufen und mit der Gilde handeln.')}${item('ability_dualwield','Duelle','Rundenkämpfe wie in alten Monster-Spielen: Kampf, Beutel, Verteidigen.')}${item('achievement_boss_onyxia','Instanzen und Raids','Zu fünft dreimal am Tag in Instanzen, jeden Tag um 19 Uhr Raid mit bis zu 25 Spielern.')}</div>
- <p class="muted">1.500 Startgold und ein paar Tränke warten schon auf dich.</p>
- <div class="ak-row center"><button class="primary" onclick="this.closest('dialog').close();openPage('armory')">Zur Waffenkammer</button><button class="subtle" onclick="this.closest('dialog').close();openPage('chests')">Zur Spielunke</button><button class="subtle" onclick="this.closest('dialog').close()">Später</button></div>`,'ak-wide news-dialog');
+ const d=akDialog('epic',`<p class="win-rarity">Neu bei ModCheck</p><h2 id="akDlgTitle">Die Waffenkammer wird groß</h2>
+ <h3 class="news-head">⚔ Mehr Spiel</h3><div class="news-list">${item('achievement_boss_edwinvancleef','23 Instanzen mit echter Beute','Von Ragefire bis Stratholme, dazu Onyxia und der Geschmolzene Kern. Jeder Boss wirft seine echte Classic-Beute ab, 546 Items.')}${item('spell_holy_resurrection','Stufe 1 bis 60','Neue Werte: Hauptattribut deiner Klasse, Ausweichen, Heilkraft. Ausrüstung zählt ab ihrer Stufe, was du schon trägst, behält Bestandsschutz.')}${item('inv_misc_coin_02','Instanzen ohne Limit','Die ersten drei Läufe am Tag zahlen doppelt, danach geht es normal weiter, so oft du willst.')}</div>
+ <h3 class="news-head">🗼 Nie wieder Leerlauf</h3><div class="news-list">${item('inv_misc_head_dragon_01','Turm der Prüfungen','Endlos Etage für Etage, Gold in die Kasse. Mitnehmen oder alles riskieren? Mit Wochen-Rangliste.')}${item('inv_pick_02','Berufe & Markt','Bergbau, Kräuterkunde, Kürschnerei, Tränke brauen nach echten Rezepten und Materialien an die Gilde verkaufen.')}${item('inv_misc_note_01','Tagesaufgaben','Drei Aufgaben am Tag mit Serienbonus bis +70 %.')}</div>
+ <h3 class="news-head">✦ Rund um die Seite</h3><div class="news-list">${item('spell_holy_borrowedtime','Live-Updates und Glocke','Seiten aktualisieren sich selbst, die Glocke oben zeigt Benachrichtigungen, die Zurück-Taste bleibt auf der Seite.')}${item('achievement_guildperk_everybodysfriend','Likes im Forum','Beiträge mit einem Klick liken.')}</div>
+ <label class="ak-tutorial-off"><input type="checkbox" id="akNewsOff"> Neuigkeiten-Fenster nicht mehr anzeigen</label>
+ <div class="ak-row center"><button class="primary" onclick="this.closest('dialog').close();openPage('tower')">Zum Turm</button><button class="subtle" onclick="this.closest('dialog').close();openPage('dungeons')">Zu den Instanzen</button><button class="subtle" onclick="this.closest('dialog').close()">Später</button></div>`,'ak-wide news-dialog');
+ d.querySelector('#akNewsOff').addEventListener('change',e=>{try{localStorage.setItem(NEWS_OFF,e.target.checked?'1':'0')}catch{}});
  d.querySelector('.primary')?.focus()
 }
 setTimeout(showNews,3500);
