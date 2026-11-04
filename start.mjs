@@ -46,9 +46,12 @@ const backgroundTasks={waitUntil(){}};
 const platform=createPlatform({db:sqlite,env:dataEnv,uploadDir:path.join(dataDir,'uploads')});
 const refreshAll=async()=>{await refreshWowheadData(dataEnv,dataEnv.refreshLimit);await platform.progress.refreshNews();platform.progress.detectChanges()};
 const discordChannels=configureDiscord(dataDir);
-const analyticsToken=(await readFile(path.join(dataDir,'cf-analytics-token.txt'),'utf8').catch(()=>process.env.MODCHECK_CF_ANALYTICS_TOKEN||'')).trim();
-const analyticsTag=/^[a-f0-9]{32}$/.test(analyticsToken)?`<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"${analyticsToken}"}'></script>`:'';
-if(analyticsToken&&!analyticsTag)console.warn('cf-analytics-token.txt enthält keinen gültigen Schlüssel, die Analyse bleibt aus.');
+// The token may be pasted as the bare key, in quotes or as the whole Cloudflare snippet; take the first 32-character hex key found. An empty file falls back to the variable.
+const analyticsRaw=((await readFile(path.join(dataDir,'cf-analytics-token.txt'),'utf8').catch(()=>'')).trim()||process.env.MODCHECK_CF_ANALYTICS_TOKEN||'').trim();
+const analyticsToken=(analyticsRaw.match(/(?<![a-f0-9])[a-f0-9]{32}(?![a-f0-9])/i)?.[0]||'').toLowerCase();
+const analyticsTag=analyticsToken?`<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"${analyticsToken}"}'></script>`:'';
+if(analyticsRaw&&!analyticsTag)console.warn('Cloudflare-Analytics-Schlüssel ungültig (cf-analytics-token.txt oder MODCHECK_CF_ANALYTICS_TOKEN), die Analyse bleibt aus.');
+else console.log(analyticsTag?'Cloudflare Web Analytics aktiv.':'Cloudflare Web Analytics aus (kein Schlüssel).');
 const escHtml=s=>s.replace(/[&<>"']/g,c=>`&#${c.charCodeAt(0)};`);
 const analyticsNote='<h3>Besucherstatistik</h3><p>Wir zählen Seitenaufrufe mit Cloudflare Web Analytics. Das Messskript setzt keine Cookies und erstellt keine Profile über mehrere Seiten hinweg. Cloudflare erhält dabei deine IP-Adresse, die aufgerufene Seite, Browser- und Ladezeitangaben und wertet sie nur zusammengefasst für uns aus. Grundlage ist unser berechtigtes Interesse zu sehen, ob die Seite genutzt wird und schnell lädt (Art. 6 Abs. 1 lit. f DSGVO). Werbeblocker unterdrücken das Skript häufig, das ist in Ordnung.</p>';
 async function legalPage(bytes){
