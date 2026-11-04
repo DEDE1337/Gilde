@@ -1,6 +1,38 @@
 {
  "source": "Wowhead Classic-Tooltips (nether.wowhead.com), abgerufen 2026-11-03",
  "items": {
+  "812": {
+   "id": 812,
+   "name": "Glimmender Reinholzstab",
+   "quality": "epic",
+   "icon": "inv_staff_29",
+   "itemLevel": 54,
+   "requiredLevel": 49,
+   "slot": "twohand",
+   "type": "Stab",
+   "classes": null,
+   "stats": {
+    "sta": 15,
+    "str": 0,
+    "agi": 0,
+    "int": 29,
+    "spi": 9,
+    "armor": 0,
+    "dps": 51.29,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 150,
+    "angriff": 103,
+    "verteidigung": 0,
+    "krit": 0.7
+   },
+   "value": 875,
+   "display": 15990
+  },
   "873": {
    "id": 873,
    "name": "Stab des Jordan",
@@ -30,7 +62,8 @@
     "verteidigung": 0,
     "krit": 0.5
    },
-   "value": 555
+   "value": 555,
+   "display": 20298
   },
   "942": {
    "id": 942,
@@ -39,7 +72,7 @@
    "icon": "inv_jewelry_ring_07",
    "itemLevel": 52,
    "requiredLevel": 47,
-   "slot": "ring",
+   "slot": null,
    "type": "",
    "classes": null,
    "stats": {
@@ -57,11 +90,13 @@
    "unique": false,
    "game": {
     "leben": 0,
-    "angriff": 17,
+    "angriff": 0,
     "verteidigung": 0,
-    "krit": 1.4
+    "krit": 0
    },
-   "value": 825
+   "value": 825,
+   "display": null,
+   "retired": true
   },
   "943": {
    "id": 943,
@@ -92,7 +127,8 @@
     "verteidigung": 10,
     "krit": 0.6
    },
-   "value": 730
+   "value": 730,
+   "display": 20256
   },
   "1121": {
    "id": 1121,
@@ -123,7 +159,8 @@
     "verteidigung": 7,
     "krit": 0.3
    },
-   "value": 130
+   "value": 130,
+   "display": 703
   },
   "1156": {
    "id": 1156,
@@ -132,7 +169,7 @@
    "icon": "inv_jewelry_ring_09",
    "itemLevel": 22,
    "requiredLevel": 17,
-   "slot": "ring",
+   "slot": null,
    "type": "",
    "classes": null,
    "stats": {
@@ -150,11 +187,13 @@
    "unique": true,
    "game": {
     "leben": 0,
-    "angriff": 8,
+    "angriff": 0,
     "verteidigung": 0,
-    "krit": 0.5
+    "krit": 0
    },
-   "value": 115
+   "value": 115,
+   "display": null,
+   "retired": true
   },
   "1443": {
    "id": 1443,
@@ -163,7 +202,7 @@
    "icon": "inv_jewelry_amulet_01",
    "itemLevel": 60,
    "requiredLevel": 55,
-   "slot": "neck",
+   "slot": null,
    "type": "",
    "classes": null,
    "stats": {
@@ -180,12 +219,14 @@
    },
    "unique": false,
    "game": {
-    "leben": 80,
-    "angriff": 25,
+    "leben": 0,
+    "angriff": 0,
     "verteidigung": 0,
-    "krit": 1.6
+    "krit": 0
    },
-   "value": 1020
+   "value": 1020,
+   "display": null,
+   "retired": true
   },
   "1980": {
    "id": 1980,
@@ -194,7 +235,7 @@
    "icon": "inv_jewelry_ring_15",
    "itemLevel": 43,
    "requiredLevel": 38,
-   "slot": "ring",
+   "slot": null,
    "type": "",
    "classes": null,
    "stats": {
@@ -211,12 +252,14 @@
    },
    "unique": false,
    "game": {
-    "leben": 100,
-    "angriff": 14,
+    "leben": 0,
+    "angriff": 0,
     "verteidigung": 0,
-    "krit": 1.1
+    "krit": 0
    },
-   "value": 620
+   "value": 620,
+   "display": null,
+   "retired": true
   },
   "2041": {
    "id": 2041,
@@ -247,7 +290,8 @@
     "verteidigung": 8,
     "krit": 0.4
    },
-   "value": 130
+   "value": 130,
+   "display": 1330
   },
   "2042": {
    "id": 2042,
@@ -278,7 +322,8 @@
     "verteidigung": 0,
     "krit": 0.3
    },
-   "value": 130
+   "value": 130,
+   "display": 20379
   },
   "2099": {
    "id": 2099,
@@ -309,7 +354,8 @@
     "verteidigung": 0,
     "krit": 0.8
    },
-   "value": 970
+   "value": 970,
+   "display": 28636
   },
   "2164": {
    "id": 2164,
@@ -340,7 +386,72 @@
     "verteidigung": 0,
     "krit": 0.6
    },
-   "value": 665
+   "value": 665,
+   "display": 20312
+  },
+  "2243": {
+   "id": 2243,
+   "name": "Hand von Edgar dem Seltsamen",
+   "quality": "epic",
+   "icon": "inv_mace_14",
+   "itemLevel": 62,
+   "requiredLevel": 57,
+   "slot": "onehand",
+   "type": "Streitkolben",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 13,
+    "spi": 10,
+    "armor": 0,
+    "dps": 45,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": true,
+   "game": {
+    "leben": 0,
+    "angriff": 79,
+    "verteidigung": 0,
+    "krit": 0.8
+   },
+   "value": 1075,
+   "display": 19729
+  },
+  "2244": {
+   "id": 2244,
+   "name": "Krolklinge",
+   "quality": "epic",
+   "icon": "inv_sword_18",
+   "itemLevel": 56,
+   "requiredLevel": 51,
+   "slot": "mainhand",
+   "type": "Schwert",
+   "classes": null,
+   "stats": {
+    "sta": 5,
+    "str": 7,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 40.89,
+    "crit": 1,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 50,
+    "angriff": 75,
+    "verteidigung": 0,
+    "krit": 1.7
+   },
+   "value": 920,
+   "display": 3447
   },
   "2825": {
    "id": 2825,
@@ -371,7 +482,8 @@
     "verteidigung": 0,
     "krit": 0.6
    },
-   "value": 600
+   "value": 600,
+   "display": 20552
   },
   "2915": {
    "id": 2915,
@@ -402,7 +514,8 @@
     "verteidigung": 0,
     "krit": 0.7
    },
-   "value": 825
+   "value": 825,
+   "display": 19664
   },
   "3481": {
    "id": 3481,
@@ -433,7 +546,8 @@
     "verteidigung": 9,
     "krit": 0
    },
-   "value": 75
+   "value": 75,
+   "display": 9038
   },
   "3482": {
    "id": 3482,
@@ -464,7 +578,8 @@
     "verteidigung": 9,
     "krit": 0
    },
-   "value": 80
+   "value": 80,
+   "display": 4343
   },
   "3483": {
    "id": 3483,
@@ -495,7 +610,8 @@
     "verteidigung": 9,
     "krit": 0
    },
-   "value": 85
+   "value": 85,
+   "display": 4413
   },
   "3484": {
    "id": 3484,
@@ -526,7 +642,8 @@
     "verteidigung": 10,
     "krit": 0
    },
-   "value": 95
+   "value": 95,
+   "display": 9412
   },
   "3485": {
    "id": 3485,
@@ -557,7 +674,8 @@
     "verteidigung": 9,
     "krit": 0
    },
-   "value": 100
+   "value": 100,
+   "display": 9414
   },
   "3487": {
    "id": 3487,
@@ -588,7 +706,8 @@
     "verteidigung": 0,
     "krit": 0.2
    },
-   "value": 50
+   "value": 50,
+   "display": 20196
   },
   "3491": {
    "id": 3491,
@@ -619,7 +738,8 @@
     "verteidigung": 0,
     "krit": 0.2
    },
-   "value": 75
+   "value": 75,
+   "display": 5205
   },
   "3492": {
    "id": 3492,
@@ -650,7 +770,8 @@
     "verteidigung": 0,
     "krit": 0.3
    },
-   "value": 100
+   "value": 100,
+   "display": 3780
   },
   "4243": {
    "id": 4243,
@@ -681,7 +802,8 @@
     "verteidigung": 5,
     "krit": 0.1
    },
-   "value": 40
+   "value": 40,
+   "display": 9511
   },
   "5191": {
    "id": 5191,
@@ -712,7 +834,8 @@
     "verteidigung": 0,
     "krit": 0.3
    },
-   "value": 130
+   "value": 130,
+   "display": 1929
   },
   "5193": {
    "id": 5193,
@@ -743,7 +866,8 @@
     "verteidigung": 6,
     "krit": 0.2
    },
-   "value": 140
+   "value": 140,
+   "display": 22998
   },
   "5443": {
    "id": 5443,
@@ -774,7 +898,8 @@
     "verteidigung": 31,
     "krit": 0.1
    },
-   "value": 100
+   "value": 100,
+   "display": 18474
   },
   "6084": {
    "id": 6084,
@@ -805,7 +930,8 @@
     "verteidigung": 6,
     "krit": 0
    },
-   "value": 30
+   "value": 30,
+   "display": 3058
   },
   "7930": {
    "id": 7930,
@@ -836,7 +962,8 @@
     "verteidigung": 28,
     "krit": 0
    },
-   "value": 185
+   "value": 185,
+   "display": 4151
   },
   "9452": {
    "id": 9452,
@@ -867,7 +994,8 @@
     "verteidigung": 0,
     "krit": 0.3
    },
-   "value": 200
+   "value": 200,
+   "display": 20323
   },
   "9454": {
    "id": 9454,
@@ -898,7 +1026,8 @@
     "verteidigung": 7,
     "krit": 0
    },
-   "value": 200
+   "value": 200,
+   "display": 4623
   },
   "9458": {
    "id": 9458,
@@ -929,7 +1058,8 @@
     "verteidigung": 55,
     "krit": 0
    },
-   "value": 250
+   "value": 250,
+   "display": 18374
   },
   "9459": {
    "id": 9459,
@@ -960,7 +1090,8 @@
     "verteidigung": 0,
     "krit": 0.4
    },
-   "value": 250
+   "value": 250,
+   "display": 19298
   },
   "9492": {
    "id": 9492,
@@ -991,7 +1122,8 @@
     "verteidigung": 9,
     "krit": 0
    },
-   "value": 250
+   "value": 250,
+   "display": 15371
   },
   "10001": {
    "id": 10001,
@@ -1022,7 +1154,8 @@
     "verteidigung": 9,
     "krit": 0
    },
-   "value": 165
+   "value": 165,
+   "display": 4368
   },
   "10002": {
    "id": 10002,
@@ -1053,7 +1186,8 @@
     "verteidigung": 8,
     "krit": 0
    },
-   "value": 165
+   "value": 165,
+   "display": 8236
   },
   "10004": {
    "id": 10004,
@@ -1084,7 +1218,8 @@
     "verteidigung": 9,
     "krit": 0
    },
-   "value": 170
+   "value": 170,
+   "display": 24950
   },
   "10023": {
    "id": 10023,
@@ -1115,7 +1250,8 @@
     "verteidigung": 8,
     "krit": 0
    },
-   "value": 180
+   "value": 180,
+   "display": 11126
   },
   "10025": {
    "id": 10025,
@@ -1146,7 +1282,8 @@
     "verteidigung": 9,
     "krit": 0
    },
-   "value": 205
+   "value": 205,
+   "display": 19060
   },
   "10028": {
    "id": 10028,
@@ -1177,7 +1314,8 @@
     "verteidigung": 9,
     "krit": 0
    },
-   "value": 195
+   "value": 195,
+   "display": 12867
   },
   "10031": {
    "id": 10031,
@@ -1208,7 +1346,8 @@
     "verteidigung": 9,
     "krit": 0
    },
-   "value": 200
+   "value": 200,
+   "display": 9048
   },
   "10399": {
    "id": 10399,
@@ -1239,7 +1378,8 @@
     "verteidigung": 8,
     "krit": 0.1
    },
-   "value": 130
+   "value": 130,
+   "display": 6082
   },
   "10400": {
    "id": 10400,
@@ -1270,7 +1410,8 @@
     "verteidigung": 5,
     "krit": 0.1
    },
-   "value": 45
+   "value": 45,
+   "display": 3201
   },
   "10401": {
    "id": 10401,
@@ -1301,7 +1442,8 @@
     "verteidigung": 5,
     "krit": 0
    },
-   "value": 45
+   "value": 45,
+   "display": 2057
   },
   "10402": {
    "id": 10402,
@@ -1332,7 +1474,8 @@
     "verteidigung": 5,
     "krit": 0.1
    },
-   "value": 45
+   "value": 45,
+   "display": 4014
   },
   "10403": {
    "id": 10403,
@@ -1363,7 +1506,8 @@
     "verteidigung": 5,
     "krit": 0
    },
-   "value": 60
+   "value": 60,
+   "display": 3251
   },
   "11684": {
    "id": 11684,
@@ -1394,7 +1538,72 @@
     "verteidigung": 0,
     "krit": 0.8
    },
-   "value": 1020
+   "value": 1020,
+   "display": 21751
+  },
+  "11735": {
+   "id": 11735,
+   "name": "Ragefury-Augenklappe",
+   "quality": "rare",
+   "icon": "inv_helmet_46",
+   "itemLevel": 57,
+   "requiredLevel": 52,
+   "slot": "head",
+   "type": "Leder",
+   "classes": null,
+   "stats": {
+    "sta": 9,
+    "str": 6,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 132,
+    "dps": 0,
+    "crit": 2,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 233,
+    "angriff": 6,
+    "verteidigung": 16,
+    "krit": 2
+   },
+   "value": 475,
+   "display": 1166
+  },
+  "11744": {
+   "id": 11744,
+   "name": "Blutfaust",
+   "quality": "rare",
+   "icon": "inv_gauntlets_11",
+   "itemLevel": 56,
+   "requiredLevel": 51,
+   "slot": "onehand",
+   "type": "Faustwaffe",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 36.67,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 0,
+    "angriff": 58,
+    "verteidigung": 0,
+    "krit": 0.6
+   },
+   "value": 460,
+   "display": 21715
   },
   "11745": {
    "id": 11745,
@@ -1425,7 +1634,8 @@
     "verteidigung": 25,
     "krit": 0
    },
-   "value": 460
+   "value": 460,
+   "display": 21718
   },
   "11746": {
    "id": 11746,
@@ -1456,7 +1666,8 @@
     "verteidigung": 30,
     "krit": 0
    },
-   "value": 460
+   "value": 460,
+   "display": 15302
   },
   "11810": {
    "id": 11810,
@@ -1465,7 +1676,7 @@
    "icon": "inv_jewelry_amulet_01",
    "itemLevel": 60,
    "requiredLevel": 55,
-   "slot": "trinket",
+   "slot": null,
    "type": "",
    "classes": null,
    "stats": {
@@ -1483,11 +1694,13 @@
    "unique": true,
    "game": {
     "leben": 0,
-    "angriff": 15,
+    "angriff": 0,
     "verteidigung": 0,
-    "krit": 1.3
+    "krit": 0
    },
-   "value": 510
+   "value": 510,
+   "display": null,
+   "retired": true
   },
   "11815": {
    "id": 11815,
@@ -1496,7 +1709,7 @@
    "icon": "inv_jewelry_talisman_01",
    "itemLevel": 58,
    "requiredLevel": 53,
-   "slot": "trinket",
+   "slot": null,
    "type": "",
    "classes": null,
    "stats": {
@@ -1514,11 +1727,13 @@
    "unique": true,
    "game": {
     "leben": 0,
-    "angriff": 15,
+    "angriff": 0,
     "verteidigung": 0,
-    "krit": 1.2
+    "krit": 0
    },
-   "value": 485
+   "value": 485,
+   "display": null,
+   "retired": true
   },
   "11816": {
    "id": 11816,
@@ -1549,7 +1764,40 @@
     "verteidigung": 0,
     "krit": 0.6
    },
-   "value": 460
+   "value": 460,
+   "display": 22212
+  },
+  "11817": {
+   "id": 11817,
+   "name": "Schwert des Lordgenerals",
+   "quality": "rare",
+   "icon": "inv_sword_25",
+   "itemLevel": 56,
+   "requiredLevel": 51,
+   "slot": "mainhand",
+   "type": "Schwert",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 36.92,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 0,
+    "angriff": 58,
+    "verteidigung": 0,
+    "krit": 0.6
+   },
+   "value": 460,
+   "display": 21809
   },
   "11819": {
    "id": 11819,
@@ -1558,7 +1806,7 @@
    "icon": "inv_jewelry_talisman_06",
    "itemLevel": 59,
    "requiredLevel": 54,
-   "slot": "trinket",
+   "slot": null,
    "type": "",
    "classes": null,
    "stats": {
@@ -1576,11 +1824,13 @@
    "unique": true,
    "game": {
     "leben": 0,
-    "angriff": 21,
+    "angriff": 0,
     "verteidigung": 0,
-    "krit": 1.2
+    "krit": 0
    },
-   "value": 500
+   "value": 500,
+   "display": null,
+   "retired": true
   },
   "11820": {
    "id": 11820,
@@ -1611,7 +1861,8 @@
     "verteidigung": 25,
     "krit": 0.4
    },
-   "value": 485
+   "value": 485,
+   "display": 15579
   },
   "11923": {
    "id": 11923,
@@ -1642,7 +1893,8 @@
     "verteidigung": 0,
     "krit": 0.6
    },
-   "value": 475
+   "value": 475,
+   "display": 21956
   },
   "11926": {
    "id": 11926,
@@ -1673,7 +1925,8 @@
     "verteidigung": 24,
     "krit": 2
    },
-   "value": 475
+   "value": 475,
+   "display": 22442
   },
   "11931": {
    "id": 11931,
@@ -1704,7 +1957,8 @@
     "verteidigung": 0,
     "krit": 1.6
    },
-   "value": 500
+   "value": 500,
+   "display": 28719
   },
   "11932": {
    "id": 11932,
@@ -1735,7 +1989,8 @@
     "verteidigung": 0,
     "krit": 0.6
    },
-   "value": 500
+   "value": 500,
+   "display": 1926
   },
   "11933": {
    "id": 11933,
@@ -1744,7 +1999,7 @@
    "icon": "inv_misc_gem_sapphire_01",
    "itemLevel": 60,
    "requiredLevel": 55,
-   "slot": "neck",
+   "slot": null,
    "type": "",
    "classes": null,
    "stats": {
@@ -1761,12 +2016,14 @@
    },
    "unique": false,
    "game": {
-    "leben": 70,
-    "angriff": 15,
+    "leben": 0,
+    "angriff": 0,
     "verteidigung": 0,
-    "krit": 1.3
+    "krit": 0
    },
-   "value": 510
+   "value": 510,
+   "display": null,
+   "retired": true
   },
   "12405": {
    "id": 12405,
@@ -1797,7 +2054,8 @@
     "verteidigung": 27,
     "krit": 0
    },
-   "value": 210
+   "value": 210,
+   "display": 21305
   },
   "12410": {
    "id": 12410,
@@ -1828,7 +2086,8 @@
     "verteidigung": 26,
     "krit": 0
    },
-   "value": 250
+   "value": 250,
+   "display": 21257
   },
   "12422": {
    "id": 12422,
@@ -1859,7 +2118,8 @@
     "verteidigung": 32,
     "krit": 0
    },
-   "value": 280
+   "value": 280,
+   "display": 24504
   },
   "12427": {
    "id": 12427,
@@ -1890,7 +2150,8 @@
     "verteidigung": 27,
     "krit": 0
    },
-   "value": 270
+   "value": 270,
+   "display": 14964
   },
   "12583": {
    "id": 12583,
@@ -1921,7 +2182,8 @@
     "verteidigung": 0,
     "krit": 0.7
    },
-   "value": 550
+   "value": 550,
+   "display": 22404
   },
   "12590": {
    "id": 12590,
@@ -1952,7 +2214,8 @@
     "verteidigung": 0,
     "krit": 0.8
    },
-   "value": 1100
+   "value": 1100,
+   "display": 25613
   },
   "12592": {
    "id": 12592,
@@ -1983,7 +2246,8 @@
     "verteidigung": 0,
     "krit": 0.8
    },
-   "value": 1100
+   "value": 1100,
+   "display": 22906
   },
   "13340": {
    "id": 13340,
@@ -2014,7 +2278,8 @@
     "verteidigung": 14,
     "krit": 0.5
    },
-   "value": 550
+   "value": 550,
+   "display": 24013
   },
   "13344": {
    "id": 13344,
@@ -2045,7 +2310,8 @@
     "verteidigung": 21,
     "krit": 0
    },
-   "value": 550
+   "value": 550,
+   "display": 16681
   },
   "13346": {
    "id": 13346,
@@ -2076,7 +2342,8 @@
     "verteidigung": 15,
     "krit": 0
    },
-   "value": 550
+   "value": 550,
+   "display": 24024
   },
   "13348": {
    "id": 13348,
@@ -2107,7 +2374,8 @@
     "verteidigung": 0,
     "krit": 0.7
    },
-   "value": 550
+   "value": 550,
+   "display": 23508
   },
   "13349": {
    "id": 13349,
@@ -2138,7 +2406,8 @@
     "verteidigung": 0,
     "krit": 0.7
    },
-   "value": 550
+   "value": 550,
+   "display": 19713
   },
   "13353": {
    "id": 13353,
@@ -2169,7 +2438,8 @@
     "verteidigung": 15,
     "krit": 0
    },
-   "value": 1100
+   "value": 1100,
+   "display": 23175
   },
   "13359": {
    "id": 13359,
@@ -2200,7 +2470,8 @@
     "verteidigung": 24,
     "krit": 1
    },
-   "value": 550
+   "value": 550,
+   "display": 21908
   },
   "13361": {
    "id": 13361,
@@ -2231,7 +2502,8 @@
     "verteidigung": 0,
     "krit": 0.7
    },
-   "value": 550
+   "value": 550,
+   "display": 25036
   },
   "13375": {
    "id": 13375,
@@ -2262,7 +2534,8 @@
     "verteidigung": 120,
     "krit": 0
    },
-   "value": 510
+   "value": 510,
+   "display": 23825
   },
   "13379": {
    "id": 13379,
@@ -2271,7 +2544,7 @@
    "icon": "inv_misc_flute_01",
    "itemLevel": 58,
    "requiredLevel": 53,
-   "slot": "trinket",
+   "slot": null,
    "type": "",
    "classes": null,
    "stats": {
@@ -2289,11 +2562,13 @@
    "unique": false,
    "game": {
     "leben": 0,
-    "angriff": 15,
+    "angriff": 0,
     "verteidigung": 0,
-    "krit": 1.2
+    "krit": 0
    },
-   "value": 485
+   "value": 485,
+   "display": null,
+   "retired": true
   },
   "13380": {
    "id": 13380,
@@ -2324,7 +2599,8 @@
     "verteidigung": 0,
     "krit": 0.6
    },
-   "value": 525
+   "value": 525,
+   "display": 18298
   },
   "13382": {
    "id": 13382,
@@ -2333,7 +2609,7 @@
    "icon": "inv_misc_bomb_04",
    "itemLevel": 61,
    "requiredLevel": 56,
-   "slot": "trinket",
+   "slot": null,
    "type": "",
    "classes": null,
    "stats": {
@@ -2351,11 +2627,45 @@
    "unique": false,
    "game": {
     "leben": 0,
-    "angriff": 15,
+    "angriff": 0,
     "verteidigung": 0,
-    "krit": 1.3
+    "krit": 0
    },
-   "value": 525
+   "value": 525,
+   "display": null,
+   "retired": true
+  },
+  "13393": {
+   "id": 13393,
+   "name": "Malowns Zerschmetterer",
+   "quality": "rare",
+   "icon": "inv_mace_01",
+   "itemLevel": 61,
+   "requiredLevel": 56,
+   "slot": "twohand",
+   "type": "Streitkolben",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 52.11,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 0,
+    "angriff": 90,
+    "verteidigung": 0,
+    "krit": 0.6
+   },
+   "value": 525,
+   "display": 25629
   },
   "13394": {
    "id": 13394,
@@ -2386,7 +2696,8 @@
     "verteidigung": 36,
     "krit": 0
    },
-   "value": 500
+   "value": 500,
+   "display": 21236
   },
   "13397": {
    "id": 13397,
@@ -2417,7 +2728,8 @@
     "verteidigung": 13,
     "krit": 0.3
    },
-   "value": 525
+   "value": 525,
+   "display": 24108
   },
   "13398": {
    "id": 13398,
@@ -2448,7 +2760,40 @@
     "verteidigung": 16,
     "krit": 0
    },
-   "value": 535
+   "value": 535,
+   "display": 9653
+  },
+  "13401": {
+   "id": 13401,
+   "name": "Die grausame Hand von Timmy",
+   "quality": "rare",
+   "icon": "inv_misc_bone_elfskull_01",
+   "itemLevel": 61,
+   "requiredLevel": 56,
+   "slot": "onehand",
+   "type": "Streitkolben",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 40,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 0,
+    "angriff": 63,
+    "verteidigung": 0,
+    "krit": 0.6
+   },
+   "value": 525,
+   "display": 5215
   },
   "13404": {
    "id": 13404,
@@ -2479,7 +2824,40 @@
     "verteidigung": 16,
     "krit": 1
    },
-   "value": 475
+   "value": 475,
+   "display": 18861
+  },
+  "13408": {
+   "id": 13408,
+   "name": "Seelenbrecher",
+   "quality": "rare",
+   "icon": "inv_weapon_halberd_05",
+   "itemLevel": 57,
+   "requiredLevel": 52,
+   "slot": "mainhand",
+   "type": "Axt",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 37.5,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 0,
+    "angriff": 59,
+    "verteidigung": 0,
+    "krit": 0.6
+   },
+   "value": 475,
+   "display": 23276
   },
   "13505": {
    "id": 13505,
@@ -2510,7 +2888,8 @@
     "verteidigung": 0,
     "krit": 0.8
    },
-   "value": 1100
+   "value": 1100,
+   "display": 3092
   },
   "14042": {
    "id": 14042,
@@ -2541,7 +2920,8 @@
     "verteidigung": 11,
     "krit": 0
    },
-   "value": 225
+   "value": 225,
+   "display": 15986
   },
   "14045": {
    "id": 14045,
@@ -2572,7 +2952,8 @@
     "verteidigung": 11,
     "krit": 0
    },
-   "value": 250
+   "value": 250,
+   "display": 15984
   },
   "14106": {
    "id": 14106,
@@ -2603,7 +2984,8 @@
     "verteidigung": 12,
     "krit": 0
    },
-   "value": 285
+   "value": 285,
+   "display": 24932
   },
   "15053": {
    "id": 15053,
@@ -2634,7 +3016,8 @@
     "verteidigung": 19,
     "krit": 0
    },
-   "value": 260
+   "value": 260,
+   "display": 13803
   },
   "15054": {
    "id": 15054,
@@ -2665,7 +3048,8 @@
     "verteidigung": 16,
     "krit": 0
    },
-   "value": 240
+   "value": 240,
+   "display": 5488
   },
   "15055": {
    "id": 15055,
@@ -2696,7 +3080,8 @@
     "verteidigung": 16,
     "krit": 0
    },
-   "value": 285
+   "value": 285,
+   "display": 23782
   },
   "15085": {
    "id": 15085,
@@ -2727,7 +3112,8 @@
     "verteidigung": 15,
     "krit": 0.8
    },
-   "value": 285
+   "value": 285,
+   "display": 1080
   },
   "15090": {
    "id": 15090,
@@ -2758,7 +3144,42 @@
     "verteidigung": 16,
     "krit": 0
    },
-   "value": 295
+   "value": 295,
+   "display": 25731
+  },
+  "16901": {
+   "id": 16901,
+   "name": "Beinschützer des Stormrage",
+   "quality": "epic",
+   "icon": "inv_pants_06",
+   "itemLevel": 76,
+   "requiredLevel": 60,
+   "slot": "legs",
+   "type": "Leder",
+   "classes": [
+    "DruideBenötigt Stufe 60"
+   ],
+   "stats": {
+    "sta": 17,
+    "str": 0,
+    "agi": 0,
+    "int": 26,
+    "spi": 16,
+    "armor": 197,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 48
+   },
+   "unique": false,
+   "game": {
+    "leben": 413,
+    "angriff": 22,
+    "verteidigung": 26,
+    "krit": 0
+   },
+   "value": 1460,
+   "display": 30540
   },
   "16922": {
    "id": 16922,
@@ -2791,7 +3212,8 @@
     "verteidigung": 22,
     "krit": 0
    },
-   "value": 1460
+   "value": 1460,
+   "display": 34049
   },
   "17063": {
    "id": 17063,
@@ -2800,7 +3222,7 @@
    "icon": "inv_jewelry_ring_15",
    "itemLevel": 78,
    "requiredLevel": 60,
-   "slot": "ring",
+   "slot": null,
    "type": "",
    "classes": null,
    "stats": {
@@ -2817,12 +3239,14 @@
    },
    "unique": true,
    "game": {
-    "leben": 100,
-    "angriff": 33,
+    "leben": 0,
+    "angriff": 0,
     "verteidigung": 0,
-    "krit": 2.6
+    "krit": 0
    },
-   "value": 1515
+   "value": 1515,
+   "display": null,
+   "retired": true
   },
   "17068": {
    "id": 17068,
@@ -2853,7 +3277,72 @@
     "verteidigung": 0,
     "krit": 1
    },
-   "value": 1430
+   "value": 1430,
+   "display": 29161
+  },
+  "17071": {
+   "id": 17071,
+   "name": "Räuderipper",
+   "quality": "epic",
+   "icon": "inv_weapon_shortblade_18",
+   "itemLevel": 69,
+   "requiredLevel": 60,
+   "slot": "onehand",
+   "type": "Dolch",
+   "classes": null,
+   "stats": {
+    "sta": 0,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 50.56,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 0,
+    "angriff": 84,
+    "verteidigung": 0,
+    "krit": 0.9
+   },
+   "value": 1260,
+   "display": 34111
+  },
+  "17072": {
+   "id": 17072,
+   "name": "Blasterwerfer",
+   "quality": "epic",
+   "icon": "inv_weapon_rifle_09",
+   "itemLevel": 70,
+   "requiredLevel": 60,
+   "slot": "ranged",
+   "type": "Schusswaffe",
+   "classes": null,
+   "stats": {
+    "sta": 6,
+    "str": 0,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 40.19,
+    "crit": 1,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 60,
+    "angriff": 74,
+    "verteidigung": 0,
+    "krit": 1.9
+   },
+   "value": 1290,
+   "display": 26385
   },
   "17075": {
    "id": 17075,
@@ -2884,7 +3373,8 @@
     "verteidigung": 0,
     "krit": 1
    },
-   "value": 1400
+   "value": 1400,
+   "display": 32197
   },
   "17076": {
    "id": 17076,
@@ -2915,7 +3405,8 @@
     "verteidigung": 28,
     "krit": 2
    },
-   "value": 1485
+   "value": 1485,
+   "display": 32199
   },
   "17103": {
    "id": 17103,
@@ -2946,7 +3437,8 @@
     "verteidigung": 0,
     "krit": 1.9
    },
-   "value": 1315
+   "value": 1315,
+   "display": 29677
   },
   "17104": {
    "id": 17104,
@@ -2977,7 +3469,8 @@
     "verteidigung": 0,
     "krit": 1
    },
-   "value": 1460
+   "value": 1460,
+   "display": 32200
   },
   "17106": {
    "id": 17106,
@@ -3008,7 +3501,40 @@
     "verteidigung": 173,
     "krit": 0
    },
-   "value": 1430
+   "value": 1430,
+   "display": 29702
+  },
+  "17107": {
+   "id": 17107,
+   "name": "Drachenblut-Cape",
+   "quality": "epic",
+   "icon": "inv_misc_cape_08",
+   "itemLevel": 73,
+   "requiredLevel": 60,
+   "slot": "back",
+   "type": "",
+   "classes": null,
+   "stats": {
+    "sta": 22,
+    "str": 9,
+    "agi": 0,
+    "int": 0,
+    "spi": 0,
+    "armor": 116,
+    "dps": 0,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 454,
+    "angriff": 9,
+    "verteidigung": 22,
+    "krit": 0
+   },
+   "value": 1370,
+   "display": 29827
   },
   "17182": {
    "id": 17182,
@@ -3039,7 +3565,8 @@
     "verteidigung": 0,
     "krit": 1.5
    },
-   "value": 4295
+   "value": 4295,
+   "display": 29698
   },
   "17204": {
    "id": 17204,
@@ -3070,7 +3597,9 @@
     "verteidigung": 0,
     "krit": 0
    },
-   "value": 2790
+   "value": 2790,
+   "display": null,
+   "retired": true
   },
   "18404": {
    "id": 18404,
@@ -3079,7 +3608,7 @@
    "icon": "inv_jewelry_necklace_09",
    "itemLevel": 74,
    "requiredLevel": 0,
-   "slot": "neck",
+   "slot": null,
    "type": "",
    "classes": null,
    "stats": {
@@ -3096,12 +3625,14 @@
    },
    "unique": false,
    "game": {
-    "leben": 90,
-    "angriff": 30,
+    "leben": 0,
+    "angriff": 0,
     "verteidigung": 0,
-    "krit": 3.4
+    "krit": 0
    },
-   "value": 1400
+   "value": 1400,
+   "display": null,
+   "retired": true
   },
   "18563": {
    "id": 18563,
@@ -3137,7 +3668,9 @@
     "verteidigung": 0,
     "krit": 0
    },
-   "value": 3515
+   "value": 3515,
+   "display": null,
+   "retired": true
   },
   "18564": {
    "id": 18564,
@@ -3173,7 +3706,9 @@
     "verteidigung": 0,
     "krit": 0
    },
-   "value": 3515
+   "value": 3515,
+   "display": null,
+   "retired": true
   },
   "18608": {
    "id": 18608,
@@ -3206,7 +3741,8 @@
     "verteidigung": 0,
     "krit": 1
    },
-   "value": 1430
+   "value": 1430,
+   "display": 31347
   },
   "18609": {
    "id": 18609,
@@ -3239,7 +3775,8 @@
     "verteidigung": 0,
     "krit": 1
    },
-   "value": 1430
+   "value": 1430,
+   "display": 31346
   },
   "18813": {
    "id": 18813,
@@ -3248,7 +3785,7 @@
    "icon": "inv_jewelry_ring_13",
    "itemLevel": 73,
    "requiredLevel": 60,
-   "slot": "ring",
+   "slot": null,
    "type": "",
    "classes": null,
    "stats": {
@@ -3266,11 +3803,13 @@
    "unique": true,
    "game": {
     "leben": 0,
-    "angriff": 23,
-    "verteidigung": 2,
-    "krit": 1.9
+    "angriff": 0,
+    "verteidigung": 0,
+    "krit": 0
    },
-   "value": 1370
+   "value": 1370,
+   "display": null,
+   "retired": true
   },
   "18814": {
    "id": 18814,
@@ -3279,7 +3818,7 @@
    "icon": "inv_jewelry_amulet_05",
    "itemLevel": 78,
    "requiredLevel": 60,
-   "slot": "neck",
+   "slot": null,
    "type": "",
    "classes": null,
    "stats": {
@@ -3296,12 +3835,14 @@
    },
    "unique": false,
    "game": {
-    "leben": 70,
-    "angriff": 47,
+    "leben": 0,
+    "angriff": 0,
     "verteidigung": 0,
-    "krit": 2.1
+    "krit": 0
    },
-   "value": 1515
+   "value": 1515,
+   "display": null,
+   "retired": true
   },
   "18820": {
    "id": 18820,
@@ -3310,7 +3851,7 @@
    "icon": "inv_misc_stonetablet_11",
    "itemLevel": 66,
    "requiredLevel": 60,
-   "slot": "trinket",
+   "slot": null,
    "type": "",
    "classes": null,
    "stats": {
@@ -3328,11 +3869,13 @@
    "unique": true,
    "game": {
     "leben": 0,
-    "angriff": 21,
+    "angriff": 0,
     "verteidigung": 0,
-    "krit": 1.8
+    "krit": 0
    },
-   "value": 1180
+   "value": 1180,
+   "display": null,
+   "retired": true
   },
   "18821": {
    "id": 18821,
@@ -3341,7 +3884,7 @@
    "icon": "inv_jewelry_ring_07",
    "itemLevel": 67,
    "requiredLevel": 60,
-   "slot": "ring",
+   "slot": null,
    "type": "",
    "classes": null,
    "stats": {
@@ -3358,12 +3901,14 @@
    },
    "unique": true,
    "game": {
-    "leben": 80,
-    "angriff": 26,
+    "leben": 0,
+    "angriff": 0,
     "verteidigung": 0,
-    "krit": 2.8
+    "krit": 0
    },
-   "value": 1205
+   "value": 1205,
+   "display": null,
+   "retired": true
   },
   "18832": {
    "id": 18832,
@@ -3394,7 +3939,8 @@
     "verteidigung": 0,
     "krit": 2.2
    },
-   "value": 1290
+   "value": 1290,
+   "display": 22366
   },
   "18842": {
    "id": 18842,
@@ -3425,7 +3971,8 @@
     "verteidigung": 0,
     "krit": 1.9
    },
-   "value": 1290
+   "value": 1290,
+   "display": 34114
   },
   "19019": {
    "id": 19019,
@@ -3456,7 +4003,8 @@
     "verteidigung": 0,
     "krit": 1.6
    },
-   "value": 4295
+   "value": 4295,
+   "display": 30606
   },
   "19137": {
    "id": 19137,
@@ -3487,7 +4035,72 @@
     "verteidigung": 38,
     "krit": 1
    },
-   "value": 1515
+   "value": 1515,
+   "display": 15571
+  },
+  "19346": {
+   "id": 19346,
+   "name": "Drachenzahnklinge",
+   "quality": "epic",
+   "icon": "inv_weapon_shortblade_29",
+   "itemLevel": 74,
+   "requiredLevel": 60,
+   "slot": "onehand",
+   "type": "Dolch",
+   "classes": null,
+   "stats": {
+    "sta": 13,
+    "str": 0,
+    "agi": 16,
+    "int": 0,
+    "spi": 0,
+    "armor": 0,
+    "dps": 55.28,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": true,
+   "game": {
+    "leben": 130,
+    "angriff": 99,
+    "verteidigung": 0,
+    "krit": 1.5
+   },
+   "value": 1400,
+   "display": 31864
+  },
+  "19347": {
+   "id": 19347,
+   "name": "Klaue von Chromaggus",
+   "quality": "epic",
+   "icon": "inv_weapon_shortblade_28",
+   "itemLevel": 77,
+   "requiredLevel": 60,
+   "slot": "onehand",
+   "type": "Dolch",
+   "classes": null,
+   "stats": {
+    "sta": 7,
+    "str": 0,
+    "agi": 0,
+    "int": 17,
+    "spi": 0,
+    "armor": 0,
+    "dps": 42.33,
+    "crit": 0,
+    "spell": 64,
+    "heal": 64
+   },
+   "unique": true,
+   "game": {
+    "leben": 70,
+    "angriff": 123,
+    "verteidigung": 0,
+    "krit": 1
+   },
+   "value": 1485,
+   "display": 31865
   },
   "19351": {
    "id": 19351,
@@ -3518,7 +4131,8 @@
     "verteidigung": 0,
     "krit": 1
    },
-   "value": 1430
+   "value": 1430,
+   "display": 31866
   },
   "19352": {
    "id": 19352,
@@ -3549,7 +4163,8 @@
     "verteidigung": 0,
     "krit": 1.5
    },
-   "value": 1485
+   "value": 1485,
+   "display": 31867
   },
   "19353": {
    "id": 19353,
@@ -3580,7 +4195,8 @@
     "verteidigung": 0,
     "krit": 1
    },
-   "value": 1430
+   "value": 1430,
+   "display": 31857
   },
   "19356": {
    "id": 19356,
@@ -3611,7 +4227,72 @@
     "verteidigung": 0,
     "krit": 3.1
    },
-   "value": 1605
+   "value": 1605,
+   "display": 31960
+  },
+  "19357": {
+   "id": 19357,
+   "name": "Herold des Leidens",
+   "quality": "epic",
+   "icon": "inv_mace_05",
+   "itemLevel": 75,
+   "requiredLevel": 60,
+   "slot": "twohand",
+   "type": "Streitkolben",
+   "classes": null,
+   "stats": {
+    "sta": 22,
+    "str": 31,
+    "agi": 0,
+    "int": 20,
+    "spi": 17,
+    "armor": 0,
+    "dps": 73.38,
+    "crit": 0,
+    "spell": 0,
+    "heal": 0
+   },
+   "unique": false,
+   "game": {
+    "leben": 220,
+    "angriff": 170,
+    "verteidigung": 0,
+    "krit": 1
+   },
+   "value": 1430,
+   "display": 31878
+  },
+  "19360": {
+   "id": 19360,
+   "name": "Lok'amir il Romathis",
+   "quality": "epic",
+   "icon": "inv_mace_06",
+   "itemLevel": 81,
+   "requiredLevel": 60,
+   "slot": "mainhand",
+   "type": "Streitkolben",
+   "classes": null,
+   "stats": {
+    "sta": 10,
+    "str": 0,
+    "agi": 0,
+    "int": 18,
+    "spi": 8,
+    "armor": 0,
+    "dps": 41.9,
+    "crit": 0,
+    "spell": 84,
+    "heal": 84
+   },
+   "unique": true,
+   "game": {
+    "leben": 100,
+    "angriff": 137,
+    "verteidigung": 0,
+    "krit": 1.1
+   },
+   "value": 1605,
+   "display": 31863
   },
   "19363": {
    "id": 19363,
@@ -3642,7 +4323,8 @@
     "verteidigung": 0,
     "krit": 1.1
    },
-   "value": 1605
+   "value": 1605,
+   "display": 31870
   },
   "19364": {
    "id": 19364,
@@ -3673,7 +4355,8 @@
     "verteidigung": 0,
     "krit": 1.1
    },
-   "value": 1605
+   "value": 1605,
+   "display": 32000
   },
   "21134": {
    "id": 21134,
@@ -3704,7 +4387,8 @@
     "verteidigung": 0,
     "krit": 1.8
    },
-   "value": 1695
+   "value": 1695,
+   "display": 33435
   },
   "22589": {
    "id": 22589,
@@ -3737,7 +4421,8 @@
     "verteidigung": 0,
     "krit": 3.7
    },
-   "value": 5125
+   "value": 5125,
+   "display": 35632
   },
   "22630": {
    "id": 22630,
@@ -3770,7 +4455,76 @@
     "verteidigung": 0,
     "krit": 3.7
    },
-   "value": 5125
+   "value": 5125,
+   "display": 35631
+  },
+  "22631": {
+   "id": 22631,
+   "name": "Atiesh, Hohestab des Wächters",
+   "quality": "legendary",
+   "icon": "inv_staff_medivh",
+   "itemLevel": 90,
+   "requiredLevel": 60,
+   "slot": "twohand",
+   "type": "Stab",
+   "classes": [
+    "PriesterBenötigt Stufe 60"
+   ],
+   "stats": {
+    "sta": 28,
+    "str": 0,
+    "agi": 0,
+    "int": 28,
+    "spi": 27,
+    "armor": 0,
+    "dps": 64.31,
+    "crit": 0,
+    "spell": 0,
+    "heal": 300
+   },
+   "unique": false,
+   "game": {
+    "leben": 280,
+    "angriff": 341,
+    "verteidigung": 0,
+    "krit": 1.7
+   },
+   "value": 5125,
+   "display": 35634
+  },
+  "22632": {
+   "id": 22632,
+   "name": "Atiesh, Hohestab des Wächters",
+   "quality": "legendary",
+   "icon": "inv_staff_medivh",
+   "itemLevel": 90,
+   "requiredLevel": 60,
+   "slot": "twohand",
+   "type": "Stab",
+   "classes": [
+    "DruideBenötigt Stufe 60"
+   ],
+   "stats": {
+    "sta": 28,
+    "str": 0,
+    "agi": 0,
+    "int": 28,
+    "spi": 27,
+    "armor": 0,
+    "dps": 64.31,
+    "crit": 0,
+    "spell": 0,
+    "heal": 300
+   },
+   "unique": false,
+   "game": {
+    "leben": 280,
+    "angriff": 341,
+    "verteidigung": 0,
+    "krit": 1.7
+   },
+   "value": 5125,
+   "display": 685048
   },
   "22691": {
    "id": 22691,
@@ -3801,7 +4555,8 @@
     "verteidigung": 0,
     "krit": 3.1
    },
-   "value": 1755
+   "value": 1755,
+   "display": 696447
   },
   "22798": {
    "id": 22798,
@@ -3832,7 +4587,8 @@
     "verteidigung": 0,
     "krit": 3.2
    },
-   "value": 1845
+   "value": 1845,
+   "display": 35239
   },
   "22954": {
    "id": 22954,
@@ -3841,7 +4597,7 @@
    "icon": "inv_trinket_naxxramas04",
    "itemLevel": 85,
    "requiredLevel": 60,
-   "slot": "trinket",
+   "slot": null,
    "type": "",
    "classes": null,
    "stats": {
@@ -3859,11 +4615,13 @@
    "unique": true,
    "game": {
     "leben": 0,
-    "angriff": 27,
+    "angriff": 0,
     "verteidigung": 0,
-    "krit": 3.3
+    "krit": 0
    },
-   "value": 1725
+   "value": 1725,
+   "display": null,
+   "retired": true
   }
  },
  "chests": [
@@ -3949,13 +4707,13 @@
       "weight": 10
      },
      {
-      "id": 1980,
+      "id": 812,
       "weight": 10
      }
     ],
     "legendary": [
      {
-      "id": 18563,
+      "id": 22632,
       "weight": 1
      }
     ]
@@ -4043,7 +4801,7 @@
       "weight": 10
      },
      {
-      "id": 942,
+      "id": 2244,
       "weight": 10
      },
      {
@@ -4057,7 +4815,7 @@
     ],
     "legendary": [
      {
-      "id": 18564,
+      "id": 22631,
       "weight": 1
      }
     ]
@@ -4161,7 +4919,7 @@
       "weight": 6
      },
      {
-      "id": 1443,
+      "id": 2243,
       "weight": 10
      }
     ],
@@ -4225,15 +4983,15 @@
       "weight": 10
      },
      {
-      "id": 11933,
+      "id": 11735,
       "weight": 10
      },
      {
-      "id": 11810,
+      "id": 11744,
       "weight": 10
      },
      {
-      "id": 11819,
+      "id": 11817,
       "weight": 10
      },
      {
@@ -4259,19 +5017,19 @@
       "weight": 10
      },
      {
-      "id": 17063,
+      "id": 17071,
       "weight": 10
      },
      {
-      "id": 18814,
+      "id": 17072,
       "weight": 10
      },
      {
-      "id": 18820,
+      "id": 16901,
       "weight": 10
      },
      {
-      "id": 18821,
+      "id": 17107,
       "weight": 10
      },
      {
@@ -4297,8 +5055,8 @@
     ],
     "legendary": [
      {
-      "id": 17204,
-      "weight": 3
+      "id": 19019,
+      "weight": 2
      },
      {
       "id": 17182,
@@ -4347,19 +5105,19 @@
       "weight": 10
      },
      {
-      "id": 11815,
+      "id": 13401,
       "weight": 10
      },
      {
-      "id": 13382,
+      "id": 13393,
+      "weight": 10
+     },
+     {
+      "id": 13408,
       "weight": 10
      },
      {
       "id": 13380,
-      "weight": 10
-     },
-     {
-      "id": 13379,
       "weight": 10
      },
      {
@@ -4409,7 +5167,7 @@
       "weight": 10
      },
      {
-      "id": 22954,
+      "id": 19347,
       "weight": 10
      },
      {
@@ -4429,11 +5187,15 @@
       "weight": 10
      },
      {
-      "id": 18404,
+      "id": 19357,
       "weight": 10
      },
      {
-      "id": 18813,
+      "id": 19346,
+      "weight": 10
+     },
+     {
+      "id": 19360,
       "weight": 10
      }
     ],
@@ -4444,6 +5206,10 @@
      },
      {
       "id": 19019,
+      "weight": 1
+     },
+     {
+      "id": 17182,
       "weight": 1
      }
     ]
@@ -4459,12 +5225,12 @@
   13375,
   9458,
   5443,
-  17063,
-  18821,
-  1156,
-  18820,
-  11810,
-  11815,
+  19347,
+  17071,
+  16901,
+  13401,
+  11735,
+  17107,
   12405,
   12410,
   15085,

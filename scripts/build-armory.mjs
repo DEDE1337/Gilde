@@ -5,18 +5,21 @@ import {writeFileSync,readFileSync,mkdirSync} from 'node:fs';
 // Five chests, each with its own items. weight: share inside the same rarity (famous items get less).
 export const CHESTS=[
  {id:'stormwind',name:'Schatztruhe von Sturmwind',price:100,icon:'inv_box_01',odds:{uncommon:50,rare:30,epic:17,legendary:3},
-  items:{uncommon:[6084,10400,10401,10402,10403,4243],rare:[2041,2042,1121,10399,5191,5193,5443],epic:[873,2164,2825,1980],legendary:[[18563,1]]}},
+  items:{uncommon:[6084,10400,10401,10402,10403,4243],rare:[2041,2042,1121,10399,5191,5193,5443],epic:[873,2164,2825,812],legendary:[[22632,1]]}},
  {id:'ironforge',name:'Schatztruhe von Ironforge',price:250,icon:'inv_box_02',odds:{uncommon:40,rare:35,epic:20,legendary:5},
-  items:{uncommon:[3481,3482,3483,3484,3485,3491,3492],rare:[9492,9454,9452,9458,9459,11745,11746],epic:[2099,11684,942,2915,943],legendary:[[18564,1]]}},
+  items:{uncommon:[3481,3482,3483,3484,3485,3491,3492],rare:[9492,9454,9452,9458,9459,11745,11746],epic:[2099,11684,2244,2915,943],legendary:[[22631,1]]}},
  {id:'stratholme',name:'Schatztruhe von Stratholme',price:500,icon:'inv_box_03',odds:{uncommon:30,rare:35,epic:27,legendary:8},
-  items:{uncommon:[10002,10004,10023,10025,10028,10031],rare:[13348,13349,13340,13346,13344,13361,13359,13375,13394,13404],epic:[[13505,4],13353,12590,[12592,6],1443],legendary:[[22630,1]]}},
+  items:{uncommon:[10002,10004,10023,10025,10028,10031],rare:[13348,13349,13340,13346,13344,13361,13359,13375,13394,13404],epic:[[13505,4],13353,12590,[12592,6],2243],legendary:[[22630,1]]}},
  {id:'moltencore',name:'Schatztruhe von Molten Core',price:1000,icon:'inv_box_04',odds:{uncommon:15,rare:30,epic:43,legendary:12},
-  items:{uncommon:[15053,15054,15055,14042,14045],rare:[11923,11926,11931,11932,11933,11810,11819,11816,11820],epic:[[17076,6],17103,17104,17063,18814,18820,18821,18832,18842,17106,16922,19137],legendary:[[17204,3],[17182,1]]}},
+  items:{uncommon:[15053,15054,15055,14042,14045],rare:[11923,11926,11931,11932,11735,11744,11817,11816,11820],epic:[[17076,6],17103,17104,17071,17072,16901,17107,18832,18842,17106,16922,19137],legendary:[[19019,2],[17182,1]]}},
  {id:'azeroth',name:'Legendäre Azeroth-Truhe',price:2500,icon:'inv_box_birdcage_01',odds:{uncommon:5,rare:20,epic:55,legendary:20},
-  items:{uncommon:[12422,12427,15090,15085,14106],rare:[12583,11815,13382,13380,13379,13398,13397],epic:[[19364,3],[18608,4],[18609,4],19352,19351,19353,17068,17075,21134,22954,[22691,3],[22798,4],19363,19356,18404,18813],legendary:[[22589,3],[19019,1]]}}
+  items:{uncommon:[12422,12427,15090,15085,14106],rare:[12583,13401,13393,13408,13380,13398,13397],epic:[[19364,3],[18608,4],[18609,4],19352,19351,19353,17068,17075,21134,19347,[22691,3],[22798,4],19363,19356,19357,19346,19360],legendary:[[22589,3],[19019,1],[17182,1]]}}
 ];
-// Shop stock: the famous weapons plus armour, shields, rings and trinkets across all rarities.
-export const SHOP=[19019,17182,19364,18608,17106,13375,9458,5443,17063,18821,1156,18820,11810,11815,12405,12410,15085,14106,10001,7930,3492,3487,13361,11923,17076,18832,2042,5193];
+// Shop stock: the famous weapons plus armour and shields. Only gear you can see on a character, no rings, necklaces or trinkets.
+export const SHOP=[19019,17182,19364,18608,17106,13375,9458,5443,19347,17071,16901,13401,11735,17107,12405,12410,15085,14106,10001,7930,3492,3487,13361,11923,17076,18832,2042,5193];
+// Items that were in chests or the shop before; kept so they stay valid in bags. Rings, necklaces, trinkets and quest trophies can only be sold.
+export const RETIRED=[1980,942,1443,11933,11810,11819,17063,18814,18820,18821,17204,11815,13382,13379,22954,18404,18813,18563,18564,1156];
+const HIDDEN_SLOTS=['ring','neck','trinket'];
 
 const QUALITY={2:'uncommon',3:'rare',4:'epic',5:'legendary'};
 const SLOT_TEXT={Kopf:'head',Hals:'neck',Schulter:'shoulders',Rücken:'back',Brust:'chest',Handgelenke:'wrists',Hände:'hands',Taille:'waist',Beine:'legs',Füße:'feet',Finger:'ring',Schmuck:'trinket',Waffenhand:'mainhand',Einhändig:'onehand',Zweihändig:'twohand',Schildhand:'offhand','In Schildhand geführt':'offhand',Distanz:'ranged'};
@@ -73,14 +76,24 @@ function gameStats(item){
  else{verteidigung+=base*.15;leben+=base*2}
  return{leben:Math.round(leben),angriff:Math.round(angriff),verteidigung:Math.round(verteidigung),krit:Math.round(krit*10)/10}
 }
+async function displayIds(){
+ const url=new URL('../data/armory-displays.json',import.meta.url);
+ try{return new Map(JSON.parse(readFileSync(url,'utf8')))}catch{}
+ const csv=async table=>(await (await fetch(`https://wago.tools/db2/${table}/csv?product=wow_classic_era`)).text()).trim().split('\n').slice(1).map(l=>l.split(','));
+ const modified=await csv('ItemModifiedAppearance'),appearance=new Map((await csv('ItemAppearance')).map(r=>[+r[0],+r[2]]));
+ const map=new Map(modified.filter(r=>r[2]==='0').map(r=>[+r[1],appearance.get(+r[3])]).filter(([,d])=>d));
+ writeFileSync(url,JSON.stringify([...map]));return map
+}
 const valueOf=item=>Math.round(Math.pow(Math.max(item.itemLevel,10),1.5)*VALUE_FACTOR[item.quality]/5)*5;
 
-const wanted=new Set([...SHOP]);
+// Item display IDs for the 3D viewer, from the game's ItemModifiedAppearance and ItemAppearance tables (wago.tools, Classic Era).
+const displays=await displayIds();
+const wanted=new Set([...SHOP,...RETIRED]);
 for(const chest of CHESTS)for(const list of Object.values(chest.items))for(const entry of list)wanted.add(Array.isArray(entry)?entry[0]:entry);
 const items={};
 for(const id of [...wanted].sort((a,b)=>a-b)){
- const item=parse(id,await tooltip(id));
- items[id]={...item,game:gameStats(item),value:valueOf(item)};
+ const item=parse(id,await tooltip(id));if(HIDDEN_SLOTS.includes(item.slot))item.slot=null;
+ items[id]={...item,game:gameStats(item),value:valueOf(item),display:displays.get(id)||null,...(RETIRED.includes(id)?{retired:true}:{})};
  process.stdout.write('.')
 }
 const chests=CHESTS.map(chest=>{

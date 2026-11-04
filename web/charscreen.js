@@ -10,6 +10,8 @@ const csMark=v=>{try{v?sessionStorage.setItem(CS_ENTERED,'1'):sessionStorage.rem
 async function openCharScreen(){
  if(!P.user||document.getElementById('charScreen'))return;
  const{characters}=await api('/api/characters');cs.chars=characters;
+ // Waffenkammer gear per character, so the model here wears what the character wears in the game.
+ cs.gear=(await api('/api/armory/gear').catch(()=>({gear:{}}))).gear||{};
  cs.sel=(P.activeChar&&characters.some(c=>c.id===P.activeChar.id))?P.activeChar.id:characters[0]?.id||null;
  cs.mode=characters.length?'select':'create';if(cs.mode==='create')csNewDraft();
  const el=document.createElement('div');el.id='charScreen';el.className='cs';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');el.setAttribute('aria-label','Charakterauswahl');
@@ -20,6 +22,7 @@ function closeCharScreen(){csDispose();document.getElementById('charScreen')?.re
 function csDispose(){cs.token++;if(cs.viewer){try{cs.viewer.destroy()}catch{}}cs.viewer=null;cs.modelId=null;cs.options=[]}
 function csNewDraft(){const race=['Mensch','Zwerg','Nachtelf','Gnom'][Math.floor(Math.random()*4)];cs.draft={race,gender:Math.random()<.5?0:1,classId:RACE_CLASSES[race][0],appearance:{},name:'',surname:''}}
 const csChar=()=>cs.chars.find(c=>c.id===cs.sel);
+const csGear=id=>typeof VIEW_SLOTS==='undefined'?[]:(cs.gear?.[id]||[]).filter(g=>VIEW_SLOTS[g.slot]).map(g=>[VIEW_SLOTS[g.slot],g.display]);
 function csLine(c){return `Stufe ${+c.level} ${esc(c.race)} ${esc(CLASS_INFO[c.classId]?.[0]||'')}`}
 
 function csRender(){
@@ -30,7 +33,7 @@ function csRender(){
   right.innerHTML=`<h2>Charaktere</h2><div class="cs-list">${cs.chars.map(x=>`<button type="button" class="cs-char ${x.id===cs.sel?'on':''}" onclick="csSelect('${esc(x.id)}')" ondblclick="csEnter()"><img src="icons/${charFaceIcon(x)}.jpg" alt="" onerror="this.onerror=null;this.src='icons/inv_misc_questionmark.jpg'"><span><strong style="color:${CLASS_INFO[x.classId]?.[1]||'#fff'}">${esc(x.fullName||x.name)}</strong><small>${csLine(x)}</small></span></button>`).join('')}</div>${cs.chars.length<10?`<button type="button" class="cs-new" onclick="csCreate()">＋ Neuen Charakter erstellen</button>`:''}`;
   plate.innerHTML=c?`<strong style="color:${CLASS_INFO[c.classId]?.[1]||'#fff'}">${esc(c.fullName||c.name)}</strong><small>${csLine(c)}</small>`:'';
   bottom.innerHTML=`<div class="cs-side"><button type="button" class="subtle" onclick="csDelete()">Charakter löschen</button></div><button type="button" class="primary cs-enter" onclick="csEnter()" ${c?'':'disabled'}>Betreten</button><div class="cs-side right"><button type="button" class="subtle" onclick="csSkip()">Ohne Charakter weiter</button><button type="button" class="subtle" onclick="logout()">Abmelden</button></div>`;
-  if(c)csModel(c.race,c.gender||0,c.appearance||{})
+  if(c)csModel(c.race,c.gender||0,c.appearance||{},csGear(c.id))
  }else{
   const d=cs.draft;
   left.innerHTML=`<h2>Volk</h2><div class="cs-grid races">${Object.keys(RACE_CLASSES).map(r=>`<button type="button" class="cs-pick ${d.race===r?'on':''}" onclick="csSetRace('${r}')"><img src="icons/${charFaceIcon({race:r,gender:d.gender})}.jpg" alt="" onerror="this.onerror=null;this.src='icons/inv_misc_questionmark.jpg'"><span>${r}</span></button>`).join('')}</div>
@@ -49,16 +52,17 @@ function csRenderLook(){
 }
 
 /* 3D model */
-async function csModel(race,gender,appearance){
+async function csModel(race,gender,appearance,items=[]){
  const host=document.getElementById('csModel'),status=document.getElementById('csStatus');if(!host)return;
  const look=RACE_LOOK[race],id=look?.model?look.model+gender:0;
  if(!id){csDispose();host.innerHTML=`<div class="cs-nomodel"><img src="icons/${charFaceIcon({race,gender})}.jpg" alt=""><p>${esc(race)}: noch kein 3D-Modell verfügbar</p></div>`;status.textContent='';csRenderLook();return}
- if(cs.viewer&&cs.modelId===id){csApply(appearance);return}
- csDispose();const token=cs.token;cs.modelId=id;host.replaceChildren();status.textContent='Modell wird geladen …';
+ const key=id+':'+JSON.stringify(items);
+ if(cs.viewer&&cs.modelId===key){csApply(appearance);return}
+ csDispose();const token=cs.token;cs.modelId=key;host.replaceChildren();status.textContent='Modell wird geladen …';
  try{
   const gl=document.createElement('canvas').getContext('webgl2');if(!gl)throw new Error('Dein Browser unterstützt kein WebGL2, deshalb gibt es hier nur die Vorschau ohne 3D.');
   await loadViewerLibraries();if(token!==cs.token)return;
-  cs.viewer=new window.ZamModelViewer({type:2,contentPath:new URL('/model/',location.href).href,container:window.jQuery('#csModel'),aspect:Math.max(.4,host.clientWidth/Math.max(1,host.clientHeight)),hd:false,dataEnv:'classic',env:'classic',gameDataEnv:'classic',models:{id,type:16},items:[],physics:false});
+  cs.viewer=new window.ZamModelViewer({type:2,contentPath:new URL('/model/',location.href).href,container:window.jQuery('#csModel'),aspect:Math.max(.4,host.clientWidth/Math.max(1,host.clientHeight)),hd:false,dataEnv:'classic',env:'classic',gameDataEnv:'classic',models:{id,type:16},items,physics:false});
   for(let i=0;i<120;i++){const a=cs.viewer?.renderer?.actors?.[0];if(token!==cs.token)return;if(a?.isLoaded?.()){cs.options=csPlayerOptions(a.getCustomizationOptions(true)||[]);status.textContent='Ziehen zum Drehen';
    // A new character starts on the first choice of every option, so the counters and the model agree.
    if(cs.mode==='create'&&appearance===cs.draft?.appearance)for(const o of cs.options)if(!o.Choices.some(c=>c.Id===appearance[o.Id]))appearance[o.Id]=o.Choices[0].Id;
@@ -73,7 +77,7 @@ function csApply(appearance){const a=cs.viewer?.renderer?.actors?.[0];if(!a)retu
 
 /* select mode */
 function csSelect(id){cs.sel=id;csRender()}
-const csEnter=act(async()=>{const c=csChar();if(!c)return;try{localStorage.setItem('modcheck-active-char',c.id)}catch{}csMark(true);closeCharScreen();await loadActiveCharacter();drawNav();redraw();toast(`Willkommen zurück, ${c.name}!`);setTimeout(()=>typeof checkPollPopup==='function'&&checkPollPopup(),800)});
+const csEnter=act(async()=>{const c=csChar();if(!c)return;try{localStorage.setItem('modcheck-active-char',c.id)}catch{}api('/api/armory/active','POST',{characterId:c.id}).catch(()=>{});csMark(true);closeCharScreen();await loadActiveCharacter();drawNav();redraw();toast(`Willkommen zurück, ${c.name}!`);setTimeout(()=>typeof checkPollPopup==='function'&&checkPollPopup(),800)});
 function csSkip(){csMark(true);closeCharScreen();setTimeout(()=>typeof checkPollPopup==='function'&&checkPollPopup(),500)}
 const csDelete=act(async()=>{const c=csChar();if(!c)return;const typed=prompt(`Zum Löschen den Vornamen „${c.name}“ eintippen. Ausrüstung, Berufe und Anmeldungen gehen dabei verloren.`);if(typed===null)return;if(typed.trim()!==c.name)return toast('Name stimmt nicht, nichts gelöscht.');await api('/api/characters/'+encodeURIComponent(c.id),'DELETE');cs.chars=cs.chars.filter(x=>x.id!==c.id);cs.sel=cs.chars[0]?.id||null;if(!cs.chars.length){cs.mode='create';csNewDraft()}csDispose();csRender();await loadActiveCharacter();drawNav();toast(`${c.fullName||c.name} wurde gelöscht.`)});
 

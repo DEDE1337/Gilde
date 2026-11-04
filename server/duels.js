@@ -1,9 +1,12 @@
-/* PvP duels: B accepts A's challenge, then both take turns (attack, strong attack, defend) with the values of their equipped gear.
-   The server rolls every hit. A player who lets the turn timer run out attacks automatically, so no duel hangs forever. */
+/* PvP duels in the style of old monster games: B accepts A's challenge, then both take turns with four class abilities (limited uses per duel),
+   potions from the bag or a defend move, using the values of their gear and level. The server rolls every hit.
+   A player who lets the turn timer run out uses the basic attack, so no duel hangs forever. */
 import {randomInt} from 'node:crypto';
-import {route,fail,now,id,oneOf,rateLimit,notify} from './core.js';
+import {route,fail,now,id,rateLimit,notify} from './core.js';
+import {grantXp,XP,POTIONS,POTIONS_PER_DUEL} from './progression.js';
 import {statsOf} from './armory.js';
-import {book,transaction} from './gold.js';
+import {book,transaction,potionsOf} from './gold.js';
+import {forfeitLine} from './sayings.js';
 
 const TURN_MS=45e3,PENDING_MS=24*3600e3,OPEN_CHALLENGES=3,LOG_KEPT=40;
 // Small reward, capped per day and per opponent, so two friends cannot farm gold by dueling each other in a loop.
@@ -11,25 +14,51 @@ export const DUEL_REWARD=25,REWARDS_PER_DAY=5;
 const berlinDay=(d=new Date())=>new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Berlin',year:'numeric',month:'2-digit',day:'2-digit'}).format(d);
 const DAMAGE_SCALE=2.5,STRONG_HIT=70,STRONG_FACTOR=1.7,CRIT_FACTOR=1.5,DEFEND_HEAL=.05;
 
-// One action. Returns the log entry; changes the fighters in place.
+const BUFF_CHARGES=2;
+const healBy=(f,amount)=>{const heal=Math.min(f.max-f.hp,Math.round(amount));f.hp+=heal;return heal};
+// One action. Returns the log entry; changes the fighters in place. Abilities are looked up on the attacker, unknown keys count as a normal attack.
 export function resolveAction(attacker,defender,action,rand=randomInt){
- if(action==='defend'){
-  const heal=Math.min(attacker.max-attacker.hp,Math.round(attacker.max*DEFEND_HEAL));attacker.hp+=heal;attacker.defending=true;
-  return{by:attacker.id,action,heal,damage:0,crit:false,miss:false}
- }
- if(action==='strong'&&rand(100)>=STRONG_HIT)return{by:attacker.id,action,damage:0,crit:false,miss:true};
+ const ability=(attacker.abilities||[]).find(a=>a.key===action);
+ const entry={by:attacker.id,action,damage:0,crit:false,miss:false,...(ability?{ability:ability.name,icon:ability.icon,kind:ability.kind}:{})};
+ if(action==='defend'){entry.heal=healBy(attacker,attacker.max*DEFEND_HEAL);attacker.defending=true;return entry}
+ if(ability?.kind==='heal'){entry.heal=healBy(attacker,attacker.max*ability.value);return entry}
+ if(ability?.kind==='shield'){attacker.shield=(attacker.shield||0)+Math.round(attacker.max*ability.value);entry.shield=attacker.shield;return entry}
+ if(ability?.kind==='buff'){attacker.buff=BUFF_CHARGES;entry.buff=ability.value;return entry}
+ if(action==='strong'&&rand(100)>=STRONG_HIT){entry.miss=true;return entry}
  const crit=rand(1000)<attacker.krit*10,spread=85+rand(31);
  let damage=attacker.angriff*DAMAGE_SCALE*spread/100*100/(100+defender.verteidigung);
  if(action==='strong')damage*=STRONG_FACTOR;
+ if(ability)damage*=ability.value;
+ if(attacker.buff>0){damage*=1.5;attacker.buff--;entry.empowered=true}
  if(crit)damage*=CRIT_FACTOR;
  const blocked=defender.defending;if(blocked){damage/=2;defender.defending=false}
- damage=Math.max(1,Math.round(damage));defender.hp=Math.max(0,defender.hp-damage);
- return{by:attacker.id,action,damage,crit,miss:false,blocked}
+ damage=Math.max(1,Math.round(damage));
+ if(defender.shield>0){const absorbed=Math.min(defender.shield,damage);defender.shield-=absorbed;damage-=absorbed;entry.absorbed=absorbed}
+ defender.hp=Math.max(0,defender.hp-damage);
+ if(ability?.kind==='stun'&&defender.hp>0)defender.stunned=true;
+ if(ability?.kind==='drain')entry.heal=healBy(attacker,damage/2);
+ Object.assign(entry,{damage,crit,blocked,stun:ability?.kind==='stun'});
+ return entry
+}
+// An ability is ready while it has uses left; null uses means unlimited (the basic attack of every class).
+export const ready=(f,action)=>['attack','strong','defend'].includes(action)||!!(f.abilities||[]).find(a=>a.key===action&&(a.ppLeft===null||a.ppLeft>0));
+// Potion effects; the bag count is checked and reduced in the database before this runs.
+export function drinkPotion(f,potion){
+ const entry={by:f.id,action:'potion',potion:potion.name,icon:potion.icon,damage:0};
+ if(potion.key==='heal')entry.heal=healBy(f,f.max*.35);
+ if(potion.key==='stone'){f.shield=(f.shield||0)+Math.round(f.max*.25);entry.shield=f.shield}
+ if(potion.key==='mana'){for(const a of f.abilities||[])if(a.pp!==null)a.ppLeft=a.pp;entry.restored=true}
+ return entry
 }
 
+// A fighter as both duels and dungeon runs use it: values of gear and level, abilities with uses, the look for the 3D model.
+export function fighterOf(db,userId){
+ const username=userId=>db.prepare('SELECT username FROM users WHERE id=?').get(userId)?.username||'?';
+ const {character,stats,progress,abilities,gear}=statsOf(db,userId);return{id:userId,characterId:character?.id??null,user:username(userId),name:character?[character.name,character.surname].filter(Boolean).join(' '):username(userId),classId:character?.class_id??null,race:character?.race??null,gender:character?.gender??0,level:progress.level,...stats,max:stats.leben,hp:stats.leben,defending:false,shield:0,buff:0,stunned:false,potionsUsed:0,model:{appearance:JSON.parse(character?.appearance_json||'{}'),gear},abilities:abilities.map(({key,name,icon,kind,value,pp,text,unlocked,unlockLevel})=>({key,name,icon,kind,value,pp,ppLeft:pp,text,unlocked,unlockLevel}))}
+}
 export function registerDuelRoutes(db){
  const username=userId=>db.prepare('SELECT username FROM users WHERE id=?').get(userId)?.username||'?';
- const fighter=userId=>{const {character,stats}=statsOf(db,userId);return{id:userId,user:username(userId),name:character?[character.name,character.surname].filter(Boolean).join(' '):username(userId),classId:character?.class_id??null,race:character?.race??null,gender:character?.gender??0,...stats,max:stats.leben,hp:stats.leben,defending:false}};
+ const fighter=userId=>fighterOf(db,userId);
  const rewardedToday=(userId,day)=>db.prepare(`SELECT COUNT(*) n FROM gold_ledger WHERE user_id=? AND reason='duel' AND substr(ref,1,10)=?`).get(userId,day).n;
 
  function finish(duel,state,winnerId){
@@ -41,13 +70,31 @@ export function registerDuelRoutes(db){
    db.prepare(`UPDATE duels SET status='done',state=?,winner_id=?,reward=?,turn_user_id=NULL,turn_deadline=NULL,updated_at=? WHERE id=? AND status='active'`).run(JSON.stringify(state),winnerId,reward,now(),duel.id);
    if(reward)book(db,winnerId,reward,'duel',day+':'+duel.id)
   });
+  grantXp(db,state.fighters[winnerId]?.characterId,XP.duelWin,'duel-win');grantXp(db,state.fighters[loserId]?.characterId,XP.duelLoss,'duel-loss');
   notify(db,loserId,`Duell verloren gegen ${username(winnerId)}.`,'duels','duel-end:'+duel.id);
  }
  function act(duel,userId,action){
   const state=JSON.parse(duel.state),me=state.fighters[userId],otherId=userId===duel.challenger_id?duel.opponent_id:duel.challenger_id,other=state.fighters[otherId];
-  state.moves=(state.moves||0)+1;const entry=resolveAction(me,other,action);entry.round=Math.ceil(state.moves/2);state.log.push(entry);state.log=state.log.slice(-LOG_KEPT);
-  if(other.hp<=0){finish(duel,state,userId);return}
-  db.prepare('UPDATE duels SET state=?,turn_user_id=?,turn_deadline=?,updated_at=? WHERE id=?').run(JSON.stringify(state),otherId,Date.now()+TURN_MS,now(),duel.id)
+  // 'attack' (also the timeout move) is the class's basic ability; locked or used-up abilities fall back to it.
+  if(action==='attack')action=me.abilities?.[0]?.key||'attack';
+  let entry;
+  if(action.startsWith('potion:')){
+   const potion=POTIONS[action.slice(7)];
+   const took=potion&&(me.potionsUsed||0)<POTIONS_PER_DUEL&&Number(db.prepare('UPDATE potions SET count=count-1 WHERE user_id=? AND potion=? AND count>0').run(userId,potion.key).changes)===1;
+   if(took){me.potionsUsed=(me.potionsUsed||0)+1;entry=drinkPotion(me,potion)}else action=me.abilities?.[0]?.key||'attack'
+  }
+  if(!entry){
+   if(!ready(me,action)||(me.abilities||[]).some(a=>a.key===action&&a.unlocked===false))action=me.abilities?.[0]?.key||'attack';
+   const used=(me.abilities||[]).find(a=>a.key===action);if(used&&used.ppLeft!==null)used.ppLeft--;
+   entry=resolveAction(me,other,action)
+  }
+  state.moves=(state.moves||0)+1;entry.round=Math.ceil(state.moves/2);state.log.push(entry);
+  if(other.hp<=0){state.log=state.log.slice(-LOG_KEPT);finish(duel,state,userId);return}
+  // A stunned fighter loses the next turn: it is logged and the turn comes straight back.
+  let next=otherId;
+  if(other.stunned){other.stunned=false;state.moves++;state.log.push({by:otherId,action:'stunned',round:Math.ceil(state.moves/2),damage:0});next=userId}
+  state.log=state.log.slice(-LOG_KEPT);
+  db.prepare('UPDATE duels SET state=?,turn_user_id=?,turn_deadline=?,updated_at=? WHERE id=?').run(JSON.stringify(state),next,Date.now()+TURN_MS,now(),duel.id)
  }
  // Lazily applies what the clock decided: expired challenges and missed turns.
  function settle(duel){
@@ -64,7 +111,7 @@ export function registerDuelRoutes(db){
   const state=duel.state?JSON.parse(duel.state):null;
   return{id:duel.id,status:duel.status,challenger:{id:duel.challenger_id,user:username(duel.challenger_id)},opponent:{id:duel.opponent_id,user:username(duel.opponent_id)},
    you:userId,yourTurn:duel.turn_user_id===userId,turnUser:duel.turn_user_id,turnLeft:duel.turn_deadline?Math.max(0,duel.turn_deadline-Date.now()):null,
-   fighters:state?.fighters||null,log:state?.log||[],round:Math.ceil(((state?.moves)||0)/2)+1,winner:duel.winner_id,reward:duel.reward,createdAt:duel.created_at}
+   fighters:state?.fighters||null,potions:potionsOf(db,userId),potionsPerDuel:POTIONS_PER_DUEL,log:state?.log||[],round:Math.ceil(((state?.moves)||0)/2)+1,winner:duel.winner_id,reward:duel.reward,createdAt:duel.created_at}
  };
 
  route('GET','/api/duels','member',({user})=>{
@@ -109,12 +156,30 @@ export function registerDuelRoutes(db){
   if(duel.status!=='pending')fail(409,'Diese Herausforderung ist nicht mehr offen.');
   db.prepare(`UPDATE duels SET status='declined',updated_at=? WHERE id=?`).run(now(),duel.id);return{ok:true}
  });
+ route('POST','/api/duels/:id/forfeit','member',({user,params})=>{
+  const duel=settle(mine(db.prepare('SELECT * FROM duels WHERE id=?').get(params.id),user.id));
+  if(duel.status!=='active')fail(409,'Das Duell ist vorbei.');
+  const state=JSON.parse(duel.state),winner=user.id===duel.challenger_id?duel.opponent_id:duel.challenger_id;
+  state.moves=(state.moves||0)+1;state.log.push({by:user.id,action:'forfeit',text:forfeitLine(state.fighters[user.id]?.name||user.username),round:Math.ceil(state.moves/2),damage:0});
+  finish(duel,state,winner);
+  return show(db.prepare('SELECT * FROM duels WHERE id=?').get(duel.id),user.id)
+ });
  route('POST','/api/duels/:id/action','member',({user,params,body})=>{
   rateLimit('duel-act:'+user.id,120,60e3);
-  const action=oneOf(body.action,['attack','strong','defend'],'Aktion');
+  const action=String(body.action||'').slice(0,40);
   const duel=settle(mine(db.prepare('SELECT * FROM duels WHERE id=?').get(params.id),user.id));
   if(duel.status!=='active')fail(409,'Das Duell ist vorbei.');
   if(duel.turn_user_id!==user.id)fail(409,'Du bist nicht am Zug.');
+  const f=JSON.parse(duel.state).fighters[user.id];
+  if(action.startsWith('potion:')){
+   const potion=POTIONS[action.slice(7)]||fail(400,'Diesen Trank gibt es nicht.');
+   if((f.potionsUsed||0)>=POTIONS_PER_DUEL)fail(409,`Mehr als ${POTIONS_PER_DUEL} Tränke pro Duell gehen nicht.`);
+   if(!(potionsOf(db,user.id)[potion.key]>0))fail(409,`Du hast keinen ${potion.name} mehr.`)
+  }else if(!['attack','strong','defend'].includes(action)){
+   const a=(f.abilities||[]).find(x=>x.key===action)||fail(400,'Diese Aktion kennst du nicht.');
+   if(a.unlocked===false)fail(409,`${a.name} lernst du erst auf Stufe ${a.unlockLevel}.`);
+   if(a.ppLeft!==null&&a.ppLeft<=0)fail(409,`${a.name} ist aufgebraucht. Ein Manatrank lädt sie wieder auf.`)
+  }
   act(duel,user.id,action);
   return show(db.prepare('SELECT * FROM duels WHERE id=?').get(duel.id),user.id)
  });

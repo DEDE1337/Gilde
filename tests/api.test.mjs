@@ -520,14 +520,14 @@ test('Waffenkammer: Startgold einmal, Truhen, Shop, Ausrüstung mit Klassenregel
  assert.equal((await ok('Truhenjaeger','GET','/api/armory')).balance,1400,'abgelehnte Truhe kostet nichts');
  // Shop: buy, wrong class refused, sell back.
  await denied(400,'Truhenjaeger','POST','/api/armory/buy',{itemId:5187});
- const ring=1156,bought=await ok('Truhenjaeger','POST','/api/armory/buy',{itemId:ring});
+ const ring=5193,bought=await ok('Truhenjaeger','POST','/api/armory/buy',{itemId:ring});
  assert.equal(bought.balance,1400-cat.items[ring].buy);
  const shieldBuy=await ok('Truhenjaeger','POST','/api/armory/buy',{itemId:5443});
  const shield=shieldBuy.inventory.find(i=>i.itemId===5443);assert.equal(shield.usable,false);
  await denied(400,'Truhenjaeger','POST','/api/armory/equip',{uid:shield.uid});
  const ringUid=bought.inventory.find(i=>i.itemId===ring).uid;
  a=await ok('Truhenjaeger','POST','/api/armory/equip',{uid:ringUid});
- assert.equal(a.inventory.find(i=>i.uid===ringUid).slot,'ring1');assert.equal(a.stats.angriff,a.base.angriff+cat.items[ring].game.angriff);
+ assert.equal(a.inventory.find(i=>i.uid===ringUid).slot,'back');assert.equal(a.stats.angriff,a.base.angriff+cat.items[ring].game.angriff);
  await denied(409,'Truhenjaeger','POST','/api/armory/sell',{uid:ringUid});
  await denied(404,'Mitglied','POST','/api/armory/equip',{uid:ringUid});
  await denied(404,'Mitglied','POST','/api/armory/sell',{uid:shield.uid});
@@ -546,7 +546,7 @@ test('Auktionshaus: anbieten, kaufen, zurückziehen, kein Doppelverkauf',async()
  const {resetRateLimits}=await import('../server/core.js');resetRateLimits();
  await makeUser('Haendlerin');await char('Haendlerin','Verka',1,'Zwerg');
  await makeUser('Kaeufer');await char('Kaeufer','Kaufo',1,'Zwerg');
- const item=(await ok('Haendlerin','POST','/api/armory/buy',{itemId:1156})).inventory[0].uid;
+ const item=(await ok('Haendlerin','POST','/api/armory/buy',{itemId:5193})).inventory[0].uid;
  const startSeller=(await ok('Haendlerin','GET','/api/armory')).balance,startBuyer=(await ok('Kaeufer','GET','/api/armory')).balance;
  await denied(400,'Haendlerin','POST','/api/auctions',{uid:item,price:0});
  const {id:auction}=await ok('Haendlerin','POST','/api/auctions',{uid:item,price:300});
@@ -602,4 +602,106 @@ test('Duelle: Herausforderung, Züge, Zeitlimit, Sieger, Belohnung mit Obergrenz
  const me=list.ranking.find(r=>r.username==='Duellant');assert.equal(me.wins+me.losses,2);assert.ok(list.players.some(p=>p.username==='Gegner'));
  const {id:third}=await ok('Gegner','POST','/api/duels',{opponentId:a});await ok('Duellant','POST',`/api/duels/${third}/decline`);
  assert.equal(sqlite.prepare('SELECT status FROM duels WHERE id=?').get(third).status,'declined');
+});
+
+test('Waffenkammer: Ausrüstung und Level pro Charakter, Login-Charakter spielt, Fähigkeiten im Duell',async()=>{
+ const {resetRateLimits}=await import('../server/core.js');resetRateLimits();
+ const {levelOf,abilitiesFor,LEVEL_CAP}=await import('../server/progression.js');
+ assert.deepEqual(levelOf(0),{level:1,xp:0,next:100,total:0});assert.equal(levelOf(99).level,1);assert.equal(levelOf(100).level,2);assert.equal(levelOf(1e9).level,LEVEL_CAP);
+ assert.deepEqual(abilitiesFor(1,4).map(a=>a.unlocked),[true,true,false,false]);
+ const uid=await makeUser('Zweichar');
+ const warrior=await char('Zweichar','Brann',1,'Zwerg'),mage=await char('Zweichar','Funki',8,'Gnom');
+ sqlite.prepare(`INSERT INTO gold_ledger(id,user_id,amount,reason,created_at) VALUES ('zweichar-gold',?,100000,'test',?)`).run(uid,new Date().toISOString());
+ // Gear belongs to the active character only.
+ const cape=(await ok('Zweichar','POST','/api/armory/buy',{itemId:5193})).inventory.find(i=>i.itemId===5193).uid;
+ let a=await ok('Zweichar','POST','/api/armory/active',{characterId:warrior});assert.equal(a.character.id,warrior);
+ a=await ok('Zweichar','POST','/api/armory/equip',{uid:cape});assert.equal(a.inventory.find(i=>i.uid===cape).slot,'back');assert.ok(a.gear.some(g=>g.slot==='back'&&g.display));
+ a=await ok('Zweichar','POST','/api/armory/active',{characterId:mage});assert.equal(a.character.className,'Magier');
+ assert.equal(a.inventory.find(i=>i.uid===cape).slot,null);assert.equal(a.inventory.find(i=>i.uid===cape).wornBy,'Brann');assert.equal(a.stats.leben,a.base.leben);
+ a=await ok('Zweichar','POST','/api/armory/equip',{uid:cape});assert.equal(a.inventory.find(i=>i.uid===cape).slot,'back');
+ a=await ok('Zweichar','POST','/api/armory/active',{characterId:warrior});assert.equal(a.inventory.find(i=>i.uid===cape).wornBy,'Funki');
+ await denied(404,'Mitglied','POST','/api/armory/active',{characterId:warrior});
+ // XP: a chest gives a tenth of its price, the level adds values.
+ const opened=await ok('Zweichar','POST','/api/armory/chest',{chest:'moltencore'});
+ assert.equal(opened.xpGained,15,'eine Truhe gibt nur wenig Erfahrung');assert.equal(opened.progress.level,1);assert.equal(opened.stats.angriff,opened.base.angriff);
+ assert.deepEqual(opened.potions,{heal:2,mana:1},'Starttränke');
+ assert.equal(opened.abilities.filter(x=>x.unlocked).length,1);
+ // Duel with abilities: a stun skips the enemy turn, cooldowns are enforced, both sides get XP.
+ const foe=await makeUser('Zielscheibe');await char('Zielscheibe','Ziel',1,'Mensch');
+ sqlite.prepare('UPDATE characters SET armory_xp=1000 WHERE id=?').run(warrior);
+ const {id:duel}=await ok('Zweichar','POST','/api/duels',{opponentId:foe});
+ let d=await ok('Zielscheibe','POST',`/api/duels/${duel}/accept`);
+ if(d.turnUser===foe)d=await ok('Zielscheibe','POST',`/api/duels/${duel}/action`,{action:'defend'});
+ assert.deepEqual(d.fighters[uid].abilities.filter(x=>x.unlocked).map(x=>x.key),['heroic','charge']);
+ await denied(409,'Zweichar','POST',`/api/duels/${duel}/action`,{action:'deathwish'});
+ await denied(400,'Zweichar','POST',`/api/duels/${duel}/action`,{action:'pyro'});
+ d=await ok('Zweichar','POST',`/api/duels/${duel}/action`,{action:'charge'});
+ assert.equal(d.log.at(-1).action,'stunned');assert.equal(d.turnUser,uid,'nach Betäubung bleibt der Zug beim Angreifer');
+ // Two uses of Sturmangriff, then it is used up until a mana potion restores it.
+ d=await ok('Zweichar','POST',`/api/duels/${duel}/action`,{action:'charge'});assert.equal(d.turnUser,uid);
+ await denied(409,'Zweichar','POST',`/api/duels/${duel}/action`,{action:'charge'});
+ d=await ok('Zweichar','POST',`/api/duels/${duel}/action`,{action:'potion:mana'});
+ assert.equal(d.log.at(-1).action,'potion');assert.equal(d.potions.mana,0);assert.equal(d.fighters[uid].abilities.find(x=>x.key==='charge').ppLeft,2);
+ for(let i=0;i<300&&d.status==='active';i++)d=await ok(d.turnUser===uid?'Zweichar':'Zielscheibe','POST',`/api/duels/${duel}/action`,{action:'attack'});
+ assert.equal(d.status,'done');
+ const xp=sqlite.prepare(`SELECT reason,amount FROM armory_xp_log WHERE character_id=? AND reason LIKE 'duel%'`).all(d.winner===uid?warrior:sqlite.prepare('SELECT id FROM characters WHERE user_id=?').get(foe).id);
+ assert.deepEqual(xp.map(x=>x.amount),[40]);
+});
+
+test('Instanzen: Lobby, Start nur durch Leiter, Kampf gegen alle Bosse, Beute, Tageslimit, Aufgeben mit Spruch',async()=>{
+ const {resetRateLimits}=await import('../server/core.js');resetRateLimits();
+ const {bossTurn}=await import('../server/dungeons.js');
+ const {FORFEIT_SAYINGS}=await import('../server/sayings.js');assert.ok(FORFEIT_SAYINGS.length>=10&&FORFEIT_SAYINGS.length<=15);
+ const party=[{id:'a',hp:500,max:500,verteidigung:0,defending:false},{id:'b',hp:500,max:500,verteidigung:0,defending:false}];
+ const boss={angriff:100,verteidigung:0,krit:0,stunned:false,turns:2};
+ const aoe=bossTurn(boss,party,()=>15);assert.equal(aoe[0].action,'aoe');assert.equal(aoe[0].hits.length,2);
+ boss.stunned=true;assert.equal(bossTurn(boss,party)[0].action,'stunned');
+ const host=await makeUser('Gruppenleiter');await char('Gruppenleiter','Leiter',1,'Zwerg');
+ const mate=await makeUser('Mitlaeufer');await char('Mitlaeufer','Laeufer',8,'Gnom');
+ await makeUser('Zuschauer');
+ await denied(400,'Zuschauer','POST','/api/dungeons',{dungeon:'deadmines'});
+ const lobby=await ok('Gruppenleiter','POST','/api/dungeons',{dungeon:'deadmines'});assert.equal(lobby.status,'lobby');
+ await denied(409,'Gruppenleiter','POST','/api/dungeons',{dungeon:'scarlet'});
+ assert.ok((await ok('Mitlaeufer','GET','/api/dungeons')).lobbies.some(l=>l.id===lobby.id&&l.host==='Gruppenleiter'));
+ await ok('Mitlaeufer','POST',`/api/dungeons/${lobby.id}/join`);
+ await denied(403,'Mitlaeufer','POST',`/api/dungeons/${lobby.id}/start`);
+ let r=await ok('Gruppenleiter','POST',`/api/dungeons/${lobby.id}/start`);
+ assert.equal(r.status,'active');assert.equal(r.boss.name,"Rhahk'Zor");assert.equal(r.boss.max,400,'Lebenspunkte wachsen mit der Gruppengröße');
+ await denied(409,'Mitlaeufer','POST',`/api/dungeons/${lobby.id}/join`);
+ const names={[host]:'Gruppenleiter',[mate]:'Mitlaeufer'};
+ for(let i=0;i<400&&r.status==='active';i++){
+  const who=names[r.turnUser];
+  if(!who){sqlite.prepare('UPDATE dungeon_runs SET turn_deadline=0 WHERE id=?').run(lobby.id);r=await ok('Gruppenleiter','GET',`/api/dungeons/${lobby.id}`);continue}
+  await denied(409,who==='Gruppenleiter'?'Mitlaeufer':'Gruppenleiter','POST',`/api/dungeons/${lobby.id}/action`,{action:'attack'});
+  // Make the party strong enough to clear the test run quickly.
+  sqlite.prepare('UPDATE dungeon_runs SET state=json_set(state,\'$.boss.hp\',MIN(json_extract(state,\'$.boss.hp\'),60)) WHERE id=?').run(lobby.id);
+  r=await ok(who,'POST',`/api/dungeons/${lobby.id}/action`,{action:'attack'})
+ }
+ assert.equal(r.status,'won');assert.equal(r.bossIndex,2);
+ const loot=r.log.filter(e=>e.action==='loot');assert.equal(loot.length,2);assert.ok(loot.every(e=>e.gold===40&&e.xp===30));
+ assert.ok(r.log.some(e=>e.action==='bossdown'&&e.name==='Edwin VanCleef'));
+ assert.equal(sqlite.prepare(`SELECT COUNT(*) n FROM gold_ledger WHERE user_id=? AND reason='dungeon'`).get(host).n,1);
+ // Daily limit: three dungeon runs, then no more.
+ for(let n=0;n<2;n++){const l=await ok('Gruppenleiter','POST','/api/dungeons',{dungeon:'deadmines'});await ok('Gruppenleiter','POST',`/api/dungeons/${l.id}/start`);await ok('Gruppenleiter','POST',`/api/dungeons/${l.id}/forfeit`)}
+ assert.equal((await ok('Gruppenleiter','GET','/api/dungeons')).runsLeft.dungeon,0);
+ await denied(409,'Gruppenleiter','POST','/api/dungeons',{dungeon:'deadmines'});
+ // Raids are scheduled: Wednesday and Sunday 19:00 Berlin, nobody opens them by hand.
+ const {raidSlots,berlinInstant}=await import('../server/dungeons.js');
+ await denied(400,'Mitlaeufer','POST','/api/dungeons',{dungeon:'onyxia'});
+ const slots=raidSlots(Date.parse('2026-11-04T10:00:00Z'));
+ assert.deepEqual(slots.slice(0,2).map(x=>[x.day,x.dungeon]),[['2026-11-04','onyxia'],['2026-11-05','moltencore']]);
+ assert.equal(new Date(slots[0].startsAt).toISOString(),'2026-11-04T18:00:00.000Z','19 Uhr Winterzeit');
+ assert.equal(new Date(berlinInstant(2026,7,1,19)).toISOString(),'2026-07-01T17:00:00.000Z','19 Uhr Sommerzeit');
+ const soon=Date.now()+30*60e3;
+ sqlite.prepare(`INSERT INTO dungeon_runs(id,dungeon,kind,host_id,starts_at,created_at,updated_at) VALUES ('raid-test','onyxia','raid',NULL,?,?,?)`).run(soon,new Date().toISOString(),new Date().toISOString());
+ await ok('Mitlaeufer','POST','/api/dungeons/raid-test/join');await ok('Gruppenleiter','POST','/api/dungeons/raid-test/join');
+ await denied(409,'Mitlaeufer','POST','/api/dungeons/raid-test/start');
+ sqlite.prepare('UPDATE dungeon_runs SET starts_at=? WHERE id=?').run(Date.now()-1000,'raid-test');
+ r=await ok('Mitlaeufer','GET','/api/dungeons/raid-test');assert.equal(r.status,'active','startet zur Raidzeit von selbst');assert.equal(r.boss.max,3200);
+ // Forfeit: a silly line, the leaver is out of the fight and free again; the rest fights on.
+ r=await ok('Mitlaeufer','POST','/api/dungeons/raid-test/forfeit');
+ assert.equal(r.status,'active');const line=r.log.find(e=>e.action==='forfeit');assert.ok(line.text.includes('Laeufer'));
+ assert.equal((await ok('Mitlaeufer','GET','/api/dungeons')).current,null,'wer aufgibt, ist raus');
+ await denied(409,'Mitlaeufer','POST','/api/dungeons/raid-test/action',{action:'attack'});
+ r=await ok('Gruppenleiter','POST','/api/dungeons/raid-test/forfeit');assert.equal(r.status,'wiped');
 });

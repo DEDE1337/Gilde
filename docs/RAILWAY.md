@@ -23,7 +23,7 @@ Ohne Volume ist die Datenbank bei jedem Deploy weg: Konten, Raids, Forum, Gold, 
 | `MODCHECK_DOMAIN` | `modcheck.de` | Link in den Discord-Meldungen |
 | `MODCHECK_DISCORD_WEBHOOKS` | der Inhalt von `data/discord-webhooks.json` als eine Zeile | Meldungen und Umfragen in Discord |
 
-Optional: `MODCHECK_DISCORD_BOT_TOKEN` (Freischalten per Emoji, siehe unten), `MODCHECK_IMPRESSUM` (Zeilen mit `\n` trennen) und `MODCHECK_CF_ANALYTICS_TOKEN`.
+Optional: `MODCHECK_DISCORD_BOT_TOKEN` (Freischalten per Emoji, siehe unten), `MODCHECK_IMPRESSUM` (Zeilen mit `\n` trennen), `MODCHECK_CF_ANALYTICS_TOKEN` und `MODCHECK_TWITCH_CHANNEL` (Twitch-Kanalname für das Stream-Fenster auf der Startseite).
 
 Schon im Dockerfile gesetzt, nichts zu tun: `HOST`, `MODCHECK_DATA=/data`, `MODCHECK_HTTPS=1`, `MODCHECK_TRUST_PROXY=proxy`. Den Port setzt Railway selbst.
 

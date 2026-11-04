@@ -4,7 +4,8 @@ import {readFileSync} from 'node:fs';
 import {randomInt} from 'node:crypto';
 import {route,fail,now,id,int,rateLimit,notify,CLASSES} from './core.js';
 import {discord} from './discord.js';
-import {balanceOf,book,transaction,grantStartGold,START_GOLD} from './gold.js';
+import {balanceOf,book,transaction,grantStartGold,START_GOLD,addPotions,potionsOf} from './gold.js';
+import {progressOf,levelBonus,abilitiesFor,grantXp,XP,POTIONS} from './progression.js';
 
 const DATA=JSON.parse(readFileSync(new URL('./armory-items.json',import.meta.url),'utf8'));
 export const ITEMS=DATA.items,CHESTS=DATA.chests,SHOP=new Set(DATA.shop);
@@ -12,7 +13,7 @@ const RARITIES=['uncommon','rare','epic','legendary'];
 export const BASE_STATS={leben:400,angriff:20,verteidigung:5,krit:5};
 const BAG_LIMIT=200,OPEN_LISTINGS=20,MAX_PRICE=1000000;
 export const buyPrice=item=>item.value*(item.quality==='legendary'?6:3);
-export const sellPrice=item=>Math.max(1,Math.floor(item.value/3));
+export const sellPrice=item=>Math.max(1,Math.floor(item.value/4));
 
 // Classic proficiencies, kept simple: armour type and weapon type decide who may wear what.
 const ALL=Object.keys(CLASSES).map(Number);
@@ -34,33 +35,35 @@ export function allowedClasses(item){
 // Equipment slots an item may go into, in order of preference.
 export function slotsFor(item,classId){
  switch(item.slot){
-  case 'ring':return['ring1','ring2'];
-  case 'trinket':return['trinket1','trinket2'];
   case 'onehand':return DUAL_WIELD.includes(classId)?['mainhand','offhand']:['mainhand'];
   case 'twohand':return['mainhand'];
   default:return item.slot?[item.slot]:[]
  }
 }
 
+// The game plays with the character picked at login, then the main character, then the oldest one.
+const CHARACTER_COLUMNS='id,name,surname,class_id,race,level,gender,appearance_json';
 export function characterOf(db,userId){
- const user=db.prepare('SELECT main_character_id FROM users WHERE id=?').get(userId);
- return db.prepare('SELECT id,name,surname,class_id,race,level,gender FROM characters WHERE id=? AND user_id=?').get(user?.main_character_id,userId)
-  ||db.prepare('SELECT id,name,surname,class_id,race,level,gender FROM characters WHERE user_id=? ORDER BY created_at LIMIT 1').get(userId)
+ const user=db.prepare('SELECT game_character_id,main_character_id FROM users WHERE id=?').get(userId);
+ const own=cid=>cid&&db.prepare(`SELECT ${CHARACTER_COLUMNS} FROM characters WHERE id=? AND user_id=?`).get(cid,userId);
+ return own(user?.game_character_id)||own(user?.main_character_id)||db.prepare(`SELECT ${CHARACTER_COLUMNS} FROM characters WHERE user_id=? ORDER BY created_at LIMIT 1`).get(userId)
 }
-// Base values plus every equipped item the character's class may actually use.
+// Base values, the level bonus and every item this character wears and its class may use.
 export function statsOf(db,userId){
- const character=characterOf(db,userId),stats={...BASE_STATS};
- for(const row of db.prepare('SELECT item_id FROM inventory WHERE user_id=? AND slot IS NOT NULL').all(userId)){
-  const item=ITEMS[row.item_id];if(!item||!character||!allowedClasses(item).includes(character.class_id))continue;
+ const character=characterOf(db,userId),stats={...BASE_STATS},progress=character?progressOf(db,character.id):{level:1,xp:0,next:0,total:0};
+ const bonus=levelBonus(progress.level);for(const k of Object.keys(stats))stats[k]+=bonus[k];
+ const worn=character?db.prepare('SELECT item_id,slot FROM inventory WHERE character_id=? AND slot IS NOT NULL').all(character.id):[];
+ for(const row of worn){
+  const item=ITEMS[row.item_id];if(!item?.slot||!allowedClasses(item).includes(character.class_id))continue;
   for(const k of Object.keys(stats))stats[k]+=item.game[k]
  }
  stats.krit=Math.min(50,Math.round(stats.krit*10)/10);
- return{character,stats}
+ return{character,stats,progress,abilities:character?abilitiesFor(character.class_id,progress.level):[],gear:worn.filter(r=>ITEMS[r.item_id]?.display).map(r=>({slot:r.slot,itemId:r.item_id,display:ITEMS[r.item_id].display,twohand:ITEMS[r.item_id].slot==='twohand',shield:ITEMS[r.item_id].type==='Schild'}))}
 }
 const ownItem=(db,userId,uid)=>db.prepare('SELECT * FROM inventory WHERE id=? AND user_id=?').get(String(uid||''),userId)||fail(404,'Diesen Gegenstand hast du nicht.');
-const bagFull=(db,userId)=>db.prepare('SELECT COUNT(*) n FROM inventory WHERE user_id=?').get(userId).n>=BAG_LIMIT;
-const giveItem=(db,userId,itemId,source)=>{const uid=id();db.prepare('INSERT INTO inventory(id,user_id,item_id,source,created_at) VALUES (?,?,?,?,?)').run(uid,userId,itemId,source,now());return uid};
-function drawFrom(chest){
+export const bagFull=(db,userId)=>db.prepare('SELECT COUNT(*) n FROM inventory WHERE user_id=?').get(userId).n>=BAG_LIMIT;
+export const giveItem=(db,userId,itemId,source)=>{const uid=id();db.prepare('INSERT INTO inventory(id,user_id,item_id,source,created_at) VALUES (?,?,?,?,?)').run(uid,userId,itemId,source,now());return uid};
+export function drawFrom(chest){
  let roll=randomInt(100),rarity='uncommon';
  for(const r of RARITIES){if((roll-=chest.odds[r])<0){rarity=r;break}}
  const pool=chest.items[rarity],total=pool.reduce((a,p)=>a+p.weight,0);let pick=randomInt(total);
@@ -70,15 +73,35 @@ function drawFrom(chest){
 
 export function registerArmoryRoutes(db){
  const view=userId=>{
-  const welcome=grantStartGold(db,userId),{character,stats}=statsOf(db,userId);
-  const inventory=db.prepare('SELECT id,item_id,slot,listed,source,created_at FROM inventory WHERE user_id=? ORDER BY created_at DESC').all(userId)
-   .map(r=>({uid:r.id,itemId:r.item_id,slot:r.slot,listed:!!r.listed,source:r.source,usable:!!character&&allowedClasses(ITEMS[r.item_id]).includes(character.class_id)}));
-  return{balance:balanceOf(db,userId),welcome:welcome?START_GOLD:0,character:character&&{name:[character.name,character.surname].filter(Boolean).join(' '),classId:character.class_id,className:CLASSES[character.class_id],race:character.race,gender:character.gender??0},stats,base:BASE_STATS,inventory}
+  const welcome=grantStartGold(db,userId),{character,stats,progress,abilities,gear}=statsOf(db,userId);
+  // Items worn by another character of the account carry that character's name; the bag holds only items nobody wears.
+  const names=Object.fromEntries(db.prepare('SELECT id,name FROM characters WHERE user_id=?').all(userId).map(c=>[c.id,c.name]));
+  const inventory=db.prepare('SELECT id,item_id,slot,character_id,listed,source,created_at FROM inventory WHERE user_id=? ORDER BY created_at DESC').all(userId)
+   .map(r=>{const mine=!!r.slot&&r.character_id===character?.id;return{uid:r.id,itemId:r.item_id,slot:mine?r.slot:null,wornBy:r.slot&&!mine?names[r.character_id]||'?':null,listed:!!r.listed,source:r.source,usable:!!character&&allowedClasses(ITEMS[r.item_id]).includes(character.class_id)}});
+  return{balance:balanceOf(db,userId),welcome:welcome?START_GOLD:0,character:character&&{id:character.id,name:[character.name,character.surname].filter(Boolean).join(' '),classId:character.class_id,className:CLASSES[character.class_id],race:character.race,gender:character.gender??0,appearance:JSON.parse(character.appearance_json||'{}')},stats,base:BASE_STATS,progress,abilities,gear,inventory,potions:potionsOf(db,userId)}
  };
  // Static data: items with their prices, chests with all odds, shop stock. Same for every player.
  const catalog={items:Object.fromEntries(Object.values(ITEMS).map(i=>[i.id,{id:i.id,name:i.name,quality:i.quality,icon:i.icon,itemLevel:i.itemLevel,requiredLevel:i.requiredLevel,slot:i.slot,type:i.type,game:i.game,value:i.value,buy:buyPrice(i),sell:sellPrice(i),classes:allowedClasses(i)}])),
   chests:CHESTS.map(c=>({id:c.id,name:c.name,price:c.price,icon:c.icon,odds:c.odds,items:Object.fromEntries(RARITIES.map(r=>{const pool=c.items[r],total=pool.reduce((a,p)=>a+p.weight,0);return[r,pool.map(p=>({id:p.id,chance:Math.round(c.odds[r]*p.weight/total*100)/100}))]}))})),
-  shop:[...SHOP],base:BASE_STATS,source:DATA.source};
+  shop:[...SHOP],potions:Object.values(POTIONS),base:BASE_STATS,source:DATA.source};
+ route('POST','/api/armory/potion','member',({user,body})=>{
+  rateLimit('shop:'+user.id,60,60e3);
+  const potion=POTIONS[body.potion]||fail(400,'Diesen Trank führt der Händler nicht.'),count=int(body.count??1,'Anzahl',1,20),price=potion.price*count;
+  transaction(db,()=>{if(balanceOf(db,user.id)<price)fail(400,`Dafür fehlen dir ${price-balanceOf(db,user.id)} Gold.`);book(db,user.id,-price,'potion',potion.key+':'+count);addPotions(db,user.id,potion.key,count)});
+  return view(user.id)
+ });
+ // Visible gear of every own character, for the 3D model on the character screen after login.
+ route('GET','/api/armory/gear','member',({user})=>{
+  const gear={};
+  for(const r of db.prepare('SELECT i.character_id,i.slot,i.item_id FROM inventory i JOIN characters c ON c.id=i.character_id WHERE i.user_id=? AND c.user_id=? AND i.slot IS NOT NULL').all(user.id,user.id)){
+   const item=ITEMS[r.item_id];if(item?.display)(gear[r.character_id]||=[]).push({slot:r.slot,display:item.display})
+  }
+  return{gear}
+ });
+ route('POST','/api/armory/active','member',({user,body})=>{
+  const c=db.prepare('SELECT id FROM characters WHERE id=? AND user_id=?').get(String(body.characterId||''),user.id)||fail(404,'Diesen Charakter hast du nicht.');
+  db.prepare('UPDATE users SET game_character_id=? WHERE id=?').run(c.id,user.id);return view(user.id)
+ });
  route('GET','/api/armory/catalog','member',()=>catalog);
  route('GET','/api/armory','member',({user})=>view(user.id));
 
@@ -93,9 +116,10 @@ export function registerArmoryRoutes(db){
    db.prepare('INSERT INTO chest_opens(id,user_id,chest,item_id,rarity,created_at) VALUES (?,?,?,?,?,?)').run(id(),user.id,chest.id,draw.itemId,draw.rarity,now());
    return{...draw,uid}
   });
+  const character=characterOf(db,user.id),levelUp=character?grantXp(db,character.id,XP.chest(chest.price),'chest'):0;
   const item=ITEMS[won.itemId];
   if(won.rarity==='legendary')discord('spielunke',{title:`🟠 LEGENDÄR aus der Truhe: ${item.name}`,text:`**${user.username}** hat die ${chest.name} geöffnet und **${item.name}** gezogen!`,color:0xff8000});
-  return{...view(user.id),won:{uid:won.uid,itemId:won.itemId,rarity:won.rarity}}
+  return{...view(user.id),won:{uid:won.uid,itemId:won.itemId,rarity:won.rarity},xpGained:character?XP.chest(chest.price):0,levelUp}
  });
 
  route('POST','/api/armory/buy','member',({user,body})=>{
@@ -127,19 +151,20 @@ export function registerArmoryRoutes(db){
   const options=slotsFor(item,character.class_id);
   let slot=body.slot;
   if(slot!==undefined&&!options.includes(slot))fail(400,'In diesen Platz passt das Item nicht.');
-  if(slot===undefined)slot=options.find(s=>!db.prepare('SELECT 1 FROM inventory WHERE user_id=? AND slot=?').get(user.id,s))||options[0];
+  if(slot===undefined)slot=options.find(s=>!db.prepare('SELECT 1 FROM inventory WHERE character_id=? AND slot=?').get(character.id,s))||options[0];
+  // An item worn by another character of the account moves over to this one.
   transaction(db,()=>{
-   const clear=s=>db.prepare('UPDATE inventory SET slot=NULL WHERE user_id=? AND slot=?').run(user.id,s);
-   db.prepare('UPDATE inventory SET slot=NULL WHERE id=?').run(row.id);
+   const clear=s=>db.prepare('UPDATE inventory SET slot=NULL,character_id=NULL WHERE character_id=? AND slot=?').run(character.id,s);
+   db.prepare('UPDATE inventory SET slot=NULL,character_id=NULL WHERE id=?').run(row.id);
    clear(slot);
    if(item.slot==='twohand')clear('offhand');
-   if(slot==='offhand'){const main=db.prepare(`SELECT item_id FROM inventory WHERE user_id=? AND slot='mainhand'`).get(user.id);if(main&&ITEMS[main.item_id].slot==='twohand')clear('mainhand')}
-   db.prepare('UPDATE inventory SET slot=? WHERE id=?').run(slot,row.id)
+   if(slot==='offhand'){const main=db.prepare(`SELECT item_id FROM inventory WHERE character_id=? AND slot='mainhand'`).get(character.id);if(main&&ITEMS[main.item_id].slot==='twohand')clear('mainhand')}
+   db.prepare('UPDATE inventory SET slot=?,character_id=? WHERE id=?').run(slot,character.id,row.id)
   });
   return view(user.id)
  });
  route('POST','/api/armory/unequip','member',({user,body})=>{
-  const row=ownItem(db,user.id,body.uid);db.prepare('UPDATE inventory SET slot=NULL WHERE id=?').run(row.id);return view(user.id)
+  const row=ownItem(db,user.id,body.uid);db.prepare('UPDATE inventory SET slot=NULL,character_id=NULL WHERE id=?').run(row.id);return view(user.id)
  });
 
  // Auction house: fixed buy-out prices, no bids, no run time, no mailbox.
@@ -167,7 +192,7 @@ export function registerArmoryRoutes(db){
    if(balanceOf(db,user.id)<a.price)fail(400,`Dafür fehlen dir ${a.price-balanceOf(db,user.id)} Gold.`);
    if(bagFull(db,user.id))fail(400,'Deine Taschen sind voll.');
    if(Number(db.prepare(`UPDATE auctions SET status='sold',buyer_id=?,closed_at=? WHERE id=? AND status='open'`).run(user.id,now(),a.id).changes)!==1)fail(409,'Jemand war schneller.');
-   db.prepare(`UPDATE inventory SET user_id=?,listed=0,slot=NULL,source='auction' WHERE id=?`).run(user.id,a.inventory_id);
+   db.prepare(`UPDATE inventory SET user_id=?,listed=0,slot=NULL,character_id=NULL,source='auction' WHERE id=?`).run(user.id,a.inventory_id);
    book(db,user.id,-a.price,'auction-buy',a.id);book(db,a.seller_id,a.price,'auction-sale',a.id);
    return a
   });

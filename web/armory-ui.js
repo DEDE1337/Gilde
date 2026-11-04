@@ -7,16 +7,22 @@ const SLOT_ICONS={head:'inv_helmet_03',neck:'inv_jewelry_necklace_09',shoulders:
 const RARITY_LABEL={uncommon:'Grün',rare:'Blau',epic:'Episch',legendary:'Legendär'},RARITIES=['uncommon','rare','epic','legendary'];
 const STAT_NAMES=[['leben','Leben'],['angriff','Angriff'],['verteidigung','Verteidigung'],['krit','Kritische Trefferchance']];
 const CHEST_TINT={stormwind:['#2f5fb0','#c9a24a'],ironforge:['#8a5a2b','#c0c6cf'],stratholme:['#4b3a5e','#9fb46b'],moltencore:['#8e2a12','#ffb347'],azeroth:['#6a2b9a','#ff9a2e']};
-const LEFT_SLOTS=['head','neck','shoulders','back','chest','wrists'],RIGHT_SLOTS=['hands','waist','legs','feet','ring1','ring2','trinket1','trinket2'],BOTTOM_SLOTS=['mainhand','offhand','ranged'];
+const LEFT_SLOTS=['head','shoulders','back','chest','wrists'],RIGHT_SLOTS=['hands','waist','legs','feet'],BOTTOM_SLOTS=['mainhand','offhand','ranged'];
+const VIEW_SLOTS={head:1,shoulders:3,chest:5,waist:6,legs:7,feet:8,wrists:9,hands:10,back:16,mainhand:21,offhand:22,ranged:26},MODEL_RACE={Mensch:1,Zwerg:5,Nachtelf:7,Gnom:13};
 
 const goldText=n=>`<span class="ak-gold">${Number(n).toLocaleString('de-DE')}<i aria-hidden="true"></i><span class="visually-hidden"> Gold</span></span>`;
 const itemOf=id=>AK.catalog.items[id];
-const armoryTabs=active=>`<nav class="tavern-tabs ak-tabs" aria-label="Waffenkammer">${[['chests','Schatztruhen'],['armory','Charakter'],['shop','Händler'],['auctions','Auktionshaus'],['duels','Duelle']].map(([id,label])=>`<button class="${id===active?'selected':''}" onclick="openPage('${id}')">${label}</button>`).join('')}</nav>`;
+const armoryTabs=active=>`<nav class="tavern-tabs ak-tabs" aria-label="Waffenkammer">${[['armory','Charakter'],['shop','Händler'],['auctions','Auktionshaus'],['duels','Duelle'],['dungeons','Instanzen']].map(([id,label])=>`<button class="${id===active?'selected':''}" onclick="openPage('${id}')">${label}</button>`).join('')}</nav>`;
 const akHead=(title,text)=>head(title,text,`<span class="pill ak-purse" id="akPurse">${goldText(AK.state?.balance??0)}</span>`);
 const akIcon=(id,{uid='',size='',extra=''}={})=>{const i=itemOf(id);return `<button type="button" class="ak-icon ${size} q-${i.quality}" data-item="${i.id}" ${uid?`data-uid="${esc(uid)}"`:''} aria-label="${esc(i.name)}" ${extra}><img src="icons/${esc(i.icon)}.jpg" alt="" loading="lazy" onerror="this.onerror=null;this.src='icons/inv_misc_questionmark.jpg'"></button>`};
 const akName=id=>{const i=itemOf(id);return `<span class="quality-${i.quality}">${esc(i.name)}</span>`};
 const statLine=g=>STAT_NAMES.filter(([k])=>g[k]).map(([k,n])=>`+${String(g[k]).replace('.',',')}${k==='krit'?' %':''} ${n}`).join(' · ');
-async function akLoad(){AK.catalog||=await api('/api/armory/catalog');const s=await api('/api/armory');akSet(s);return s}
+// The game plays with the character chosen at login; the server is told when the browser has another one active.
+async function akLoad(){
+ AK.catalog||=await api('/api/armory/catalog');let s=await api('/api/armory');
+ if(typeof P!=='undefined'&&P.activeChar?.id&&s.character&&s.character.id!==P.activeChar.id)s=await api('/api/armory/active','POST',{characterId:P.activeChar.id}).catch(()=>s);
+ if(page!=='armory')stopArmoryModel();akSet(s);return s
+}
 function akSet(s){
  AK.state=s;const purse=$('#akPurse');if(purse)purse.innerHTML=goldText(s.balance);
  if(s.welcome){ArmorySound.coins(20);akDialog('legendary',`<p class="win-rarity">Willkommen in der Waffenkammer</p><h2 id="akDlgTitle">${s.welcome.toLocaleString('de-DE')} Startgold</h2><p class="win-name">Für deinen ersten Charakter. Öffne Truhen, kauf beim Händler und fordere die Gilde zum Duell.</p><button class="primary" onclick="this.closest('dialog').remove()">Los geht's</button>`)}
@@ -89,7 +95,7 @@ function chestArt(id){
 }
 pageViews.chests=async()=>{
  await akLoad();
- $('#content').innerHTML=akHead('Schatztruhen','Öffne Truhen aus ganz Azeroth. Jede Truhe enthält echte Classic-Gegenstände, die Chancen stehen offen dran.')+armoryTabs('chests')+
+ $('#content').innerHTML=akHead('Schatztruhen','Gib dein Spielunken-Gold für Truhen aus ganz Azeroth aus. Jede Truhe enthält echte Classic-Ausrüstung, die Chancen stehen offen dran.')+tavernTabs('chests')+
   `<div class="ak-chests">${AK.catalog.chests.map(c=>`<article class="ak-chest wow-frame" data-chest="${c.id}">${chestArt(c.id)}<h3>${esc(c.name)}</h3><p class="ak-chest-price">${goldText(c.price)}</p><div class="ak-odds" aria-label="Chancen">${RARITIES.map(r=>`<span class="ak-odd q-${r}" style="flex:${c.odds[r]}" title="${RARITY_LABEL[r]}: ${c.odds[r]} %"></span>`).join('')}</div><ul class="ak-odds-list">${RARITIES.map(r=>`<li class="quality-${r}">${RARITY_LABEL[r]} <b>${c.odds[r]} %</b></li>`).join('')}</ul><div class="ak-row"><button class="primary" onclick="openChest('${c.id}')" ${AK.state.balance<c.price?'disabled':''}>Öffnen</button><button class="subtle" onclick="showChestContents('${c.id}')">Inhalt und Chancen</button></div></article>`).join('')}</div>`+
   frame('So funktionieren die Truhen',`<p>Der Server zieht zuerst die Seltenheit nach den Chancen der Truhe, dann ein Item dieser Stufe. Berühmte Stücke wie Donnerzorn oder Sulfuras sind innerhalb ihrer Stufe seltener, das steht bei jedem Item im Inhalt. Gewonnene Items landen sofort in deinem Inventar.</p><p class="muted">Gildengold ist Spielgeld nur für diese Seite: kein Echtgeld, keine Käufe, keine Auszahlung. Itemdaten: ${esc(AK.catalog.source)}.</p>`)
 };
@@ -123,7 +129,8 @@ const openChest=act(async id=>{
   ArmorySound.reveal(won.quality);if(won.quality==='legendary'){ArmorySound.fanfare();ArmorySound.coins(30)}else if(won.quality==='epic')ArmorySound.coins(12);
   const result=d.querySelector('.ak-result');result.hidden=false;
   const canEquip=won.slot&&AK.state.character&&won.classes.includes(AK.state.character.classId);
-  result.innerHTML=`${won.quality==='legendary'||won.quality==='epic'?`<div class="ak-rays" aria-hidden="true"></div><div class="win-coins" aria-hidden="true">${Array.from({length:won.quality==='legendary'?36:18},(_,i)=>`<i style="left:${Math.random()*100}%;animation-delay:${(i*.07).toFixed(2)}s;animation-duration:${(1.4+Math.random()*1.2).toFixed(2)}s"></i>`).join('')}</div>`:''}<p class="win-rarity">${RARITY_LABEL[won.quality]}!</p>${akIcon(won.id,{uid:r.won.uid,size:'xl'})}<h3 class="quality-${won.quality}">${esc(won.name)}</h3><p class="muted">${won.slot?`${ITEM_SLOT[won.slot]} ${esc(won.type||'')} · ${statLine(won.game)}`:'Trophäe, nicht anlegbar'} · Wert ${goldText(won.sell)}</p><div class="ak-row center">${canEquip?`<button class="primary" onclick="equipItem('${esc(r.won.uid)}',true)">Anlegen</button>`:''}<button class="${canEquip?'subtle':'primary'}" onclick="this.closest('dialog').close();openChest('${chest.id}')" ${r.balance<chest.price?'disabled':''}>Nochmal (${chest.price} Gold)</button><button class="subtle" onclick="this.closest('dialog').close()">Ins Inventar</button></div>`;
+  result.innerHTML=`${won.quality==='legendary'||won.quality==='epic'?`<div class="ak-rays" aria-hidden="true"></div><div class="win-coins" aria-hidden="true">${Array.from({length:won.quality==='legendary'?36:18},(_,i)=>`<i style="left:${Math.random()*100}%;animation-delay:${(i*.07).toFixed(2)}s;animation-duration:${(1.4+Math.random()*1.2).toFixed(2)}s"></i>`).join('')}</div>`:''}<p class="win-rarity">${RARITY_LABEL[won.quality]}!</p>${akIcon(won.id,{uid:r.won.uid,size:'xl'})}<h3 class="quality-${won.quality}">${esc(won.name)}</h3><p class="muted">${won.slot?`${ITEM_SLOT[won.slot]} ${esc(won.type||'')} · ${statLine(won.game)}`:'Trophäe, nicht anlegbar'} · Wert ${goldText(won.sell)}</p>${r.xpGained?`<p class="ak-xp-gain">+${r.xpGained} Erfahrung${r.levelUp?` · <b>Stufe ${r.levelUp} erreicht!</b>`:''}</p>`:''}<div class="ak-row center">${canEquip?`<button class="primary" onclick="equipItem('${esc(r.won.uid)}',true)">Anlegen</button>`:''}<button class="${canEquip?'subtle':'primary'}" onclick="this.closest('dialog').close();openChest('${chest.id}')" ${r.balance<chest.price?'disabled':''}>Nochmal (${chest.price} Gold)</button><button class="subtle" onclick="this.closest('dialog').close()">Ins Inventar</button></div>`;
+  if(r.levelUp)setTimeout(()=>ArmorySound.fanfare(),600);
   akSet(r);if(page==='chests')document.querySelectorAll('.ak-chest').forEach(el=>{const c=AK.catalog.chests.find(x=>x.id===el.dataset.chest);el.querySelector('.primary').disabled=r.balance<c.price})
  }finally{AK.opening=false}
 });
@@ -134,6 +141,25 @@ function slotBox(slot){
  const it=equipped(slot);
  return `<div class="ak-slot" data-slot="${slot}">${it?akIcon(it.itemId,{uid:it.uid,extra:`onclick="itemMenu(event,'${esc(it.uid)}')"`}):`<span class="ak-slot-empty" title="${AK_SLOT_NAMES[slot]}"><img src="icons/${SLOT_ICONS[slot]}.jpg" alt=""></span>`}<small>${AK_SLOT_NAMES[slot]}</small></div>`
 }
+// A character without saved looks would render black: fall back to the first choice of every option.
+function applyLook(actor,look){let options=Object.entries(look||{}).map(([o,v])=>({optionId:+o,choiceId:+v}));if(!options.length)try{options=(actor.getCustomizationOptions(true)||[]).filter(o=>o.Choices?.length).map(o=>({optionId:o.Id,choiceId:o.Choices[0].Id}))}catch{}try{actor.setAppearance({options,sheathMain:-1,sheathOff:-1})}catch{}}
+function stopArmoryModel(){AK.modelToken=(AK.modelToken||0)+1;try{AK.viewer?.destroy()}catch{}AK.viewer=null}
+// The character as a 3D model wearing its gear. Uses the viewer of the gear planner (tank-ui.js); items without display data stay off the model.
+async function startArmoryModel(s){
+ stopArmoryModel();const token=AK.modelToken,host=$('#akModel'),status=$('#akModelStatus'),c=s.character;if(!host||!c)return;
+ const say=t=>{if(token===AK.modelToken&&status)status.textContent=t},race=MODEL_RACE[c.race];
+ if(!race)return say('Für dieses Volk gibt es kein Classic-Modell, die Ausrüstung siehst du in den Plätzen.');
+ const probe=document.createElement('canvas').getContext('webgl2');if(!probe)return say('Das 3D-Modell braucht WebGL2 in deinem Browser.');probe.getExtension('WEBGL_lose_context')?.loseContext();
+ try{
+  await loadViewerLibraries();if(token!==AK.modelToken||!host.isConnected)return;
+  const items=s.gear.filter(g=>VIEW_SLOTS[g.slot]).map(g=>[VIEW_SLOTS[g.slot],g.display]);
+  host.replaceChildren();
+  AK.viewer=new window.ZamModelViewer({type:2,contentPath:new URL('/model/',location.href).href,container:window.jQuery('#akModel'),aspect:Math.max(.4,host.clientWidth/Math.max(1,host.clientHeight)),hd:false,dataEnv:'classic',env:'classic',gameDataEnv:'classic',models:{id:race+(c.gender?1:0),type:16},items,physics:false});
+  let tries=0;const check=()=>{if(token!==AK.modelToken)return;const actor=AK.viewer?.renderer?.actors?.[0];if(actor?.isLoaded?.()){applyLook(actor,c.appearance);try{AK.viewer.method('setAnimation',['Stand'])}catch{}say(items.length?'Ziehen zum Drehen':'Noch keine sichtbare Ausrüstung angelegt');return}if(++tries>120)return say('Der Modellanbieter liefert gerade keine Grafikdaten.');setTimeout(check,500)};check()
+ }catch(e){say('Das 3D-Modell konnte nicht geladen werden.');console.warn('Waffenkammer 3D:',e.message)}
+}
+function levelPanel(s){const p=s.progress;return `<div class="ak-level"><div class="ak-level-head"><b>Stufe ${p.level}</b><small class="muted">${p.next?`${p.xp} / ${p.next} Erfahrung`:'Höchststufe erreicht'}</small></div><div class="ak-xp" role="meter" aria-label="Erfahrung" aria-valuemin="0" aria-valuemax="${p.next||1}" aria-valuenow="${p.next?p.xp:1}"><i style="width:${p.next?p.xp/p.next*100:100}%"></i></div></div>`}
+function abilityPanel(s){return s.abilities.length?`<div class="ak-abilities">${s.abilities.map(a=>`<div class="ak-ability ${a.unlocked?'':'locked'}" title="${esc(a.text)}"><img src="icons/${esc(a.icon)}.jpg" alt="" onerror="this.onerror=null;this.src='icons/inv_misc_questionmark.jpg'"><span><b>${esc(a.name)}</b><small>${a.unlocked?esc(a.text):`ab Stufe ${a.unlockLevel}`}</small></span></div>`).join('')}</div>`:''}
 function portrait(c){
  if(!c)return `<div class="ak-portrait empty"><p>Noch kein Charakter</p><button class="primary" onclick="openPage('characters')">Charakter anlegen</button></div>`;
  return `<div class="ak-portrait" style="--class:${CLASS_INFO[c.classId]?.[1]||'#fff'}"><img class="ak-face" src="icons/${charFaceIcon({race:c.race,gender:c.gender})}.jpg" alt="" onerror="this.onerror=null;this.src='icons/inv_misc_questionmark.jpg'"><h3>${esc(c.name)}</h3><p>${classIcon(c.classId)} ${esc(c.race)} · ${esc(c.className)}</p></div>`
@@ -142,10 +168,11 @@ function statPanel(s){
  return `<dl class="ak-stats">${STAT_NAMES.map(([k,n])=>{const extra=Math.round((s.stats[k]-s.base[k])*10)/10;return `<div><dt>${n}</dt><dd>${String(s.stats[k]).replace('.',',')}${k==='krit'?' %':''}${extra?`<small class="up">+${String(extra).replace('.',',')}</small>`:''}</dd></div>`}).join('')}</dl>`
 }
 pageViews.armory=async()=>{
- const s=await akLoad(),bag=s.inventory.filter(i=>!i.slot),gear=s.inventory.filter(i=>i.slot);
+ const s=await akLoad(),bag=s.inventory.filter(i=>!i.slot),gear=s.inventory.filter(i=>i.slot),c=s.character;
  $('#content').innerHTML=akHead('Charakter','Leg deine Beute an. Bessere Ausrüstung bringt mehr Leben, Angriff, Verteidigung und kritische Treffer im Duell.')+armoryTabs('armory')+
-  `<div class="ak-armory"><section class="ak-charwin wow-frame" aria-label="Ausrüstung"><div class="ak-col">${LEFT_SLOTS.map(slotBox).join('')}</div><div class="ak-center">${portrait(s.character)}${statPanel(s)}<p class="muted">Werte: Grundwerte plus alle angelegten Items, die deine Klasse tragen darf. Grundlage ist dein Hauptcharakter.</p></div><div class="ak-col">${RIGHT_SLOTS.map(slotBox).join('')}</div><div class="ak-bottom">${BOTTOM_SLOTS.map(slotBox).join('')}</div></section>`+
-  `<section class="ak-bags wow-frame" aria-label="Taschen"><h3 class="wow-title">Taschen <small class="muted">${bag.length} Items · ${gear.length} angelegt</small></h3>${bag.length?`<div class="ak-bag-grid">${bag.map(i=>`<div class="ak-bag-cell ${i.usable?'':'unusable'} ${i.listed?'listed':''}">${akIcon(i.itemId,{uid:i.uid,extra:`onclick="itemMenu(event,'${esc(i.uid)}')"`})}${i.listed?'<span class="ak-badge">AH</span>':''}</div>`).join('')}</div>`:emptyBox('Deine Taschen sind leer. Öffne eine <button class="link" onclick="openPage(\'chests\')">Schatztruhe</button> oder geh zum <button class="link" onclick="openPage(\'shop\')">Händler</button>.')}<p class="muted">Klick auf ein Item für Anlegen, Verkaufen oder Auktionshaus. Rot umrandet: deine Klasse kann es nicht tragen.</p></section></div>`
+  `<div class="ak-armory"><section class="ak-charwin wow-frame" aria-label="Ausrüstung"><div class="ak-col">${LEFT_SLOTS.map(slotBox).join('')}</div><div class="ak-center">${c?`<div class="ak-model-wrap" style="--class:${CLASS_INFO[c.classId]?.[1]||'#fff'}"><div id="akModel" class="ak-model"></div><p id="akModelStatus" class="ak-model-status">3D-Modell wird geladen …</p></div><h3 class="ak-char-name" style="color:${CLASS_INFO[c.classId]?.[1]||'#fff'}">${esc(c.name)}</h3><p class="muted">${classIcon(c.classId)} ${esc(c.race)} · ${esc(c.className)} · <button class="link" onclick="openCharScreen()">Charakter wechseln</button></p>${levelPanel(s)}`:portrait(null)}${statPanel(s)}</div><div class="ak-col">${RIGHT_SLOTS.map(slotBox).join('')}</div><div class="ak-bottom">${BOTTOM_SLOTS.map(slotBox).join('')}</div></section>`+
+  `<section class="ak-bags wow-frame" aria-label="Taschen"><h3 class="wow-title">Taschen <small class="muted">${bag.length} Items · ${gear.length} angelegt</small></h3>${bag.length?`<div class="ak-bag-grid">${bag.map(i=>`<div class="ak-bag-cell ${i.usable?'':'unusable'} ${i.listed||i.wornBy?'listed':''}">${akIcon(i.itemId,{uid:i.uid,extra:`onclick="itemMenu(event,'${esc(i.uid)}')"`})}${i.listed?'<span class="ak-badge">AH</span>':i.wornBy?`<span class="ak-badge" title="Trägt ${esc(i.wornBy)}">${esc(i.wornBy.slice(0,6))}</span>`:''}</div>`).join('')}</div>`:emptyBox('Deine Taschen sind leer. Öffne eine <button class="link" onclick="openPage(\'chests\')">Schatztruhe</button> oder geh zum <button class="link" onclick="openPage(\'shop\')">Händler</button>.')}<p class="muted">Klick auf ein Item für Anlegen, Verkaufen oder Auktionshaus. Rot getönt: deine Klasse kann es nicht tragen. Mit Namen markiert: trägt gerade ein anderer Charakter von dir.</p></section></div>`+(c?frame(`Fähigkeiten der Klasse ${esc(c.className)}`,`${abilityPanel(s)}<p class="muted">Fähigkeiten setzt du im Duell ein. Erfahrung gibt es vor allem in Duellen (Sieg 40, Niederlage 15, bis zu 10 Duelle am Tag) und ein wenig für Truhen. Jede Stufe bringt +25 Leben, +2 Angriff und +1 Verteidigung, Höchststufe ist 20.</p>`):'');
+ startArmoryModel(s)
 };
 function closeItemMenu(){AK.menu?.remove();AK.menu=null}
 document.addEventListener('pointerdown',e=>{if(AK.menu&&!e.target.closest('.ak-menu')&&!e.target.closest('[data-uid]'))closeItemMenu()});
@@ -153,8 +180,8 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeItemMenu()});
 function itemMenu(e,uid){
  e.stopPropagation();closeItemMenu();
  const it=AK.state.inventory.find(i=>i.uid===uid);if(!it)return;const item=itemOf(it.itemId),menu=document.createElement('div');menu.className='ak-menu wow-frame';menu.setAttribute('role','menu');
- const ringSlots=item.slot==='ring'?['ring1','ring2']:item.slot==='trinket'?['trinket1','trinket2']:item.slot==='onehand'&&[1,3,4].includes(AK.state.character?.classId)?['mainhand','offhand']:null;
- menu.innerHTML=`<p class="quality-${item.quality}"><b>${esc(item.name)}</b></p>${it.slot?`<button role="menuitem" onclick="unequipItem('${esc(uid)}')">Ablegen</button>`:it.listed?`<button role="menuitem" onclick="openPage('auctions')">Steht im Auktionshaus</button>`:`${item.slot&&it.usable?(ringSlots?ringSlots.map(s=>`<button role="menuitem" onclick="equipItem('${esc(uid)}',false,'${s}')">Anlegen: ${s==='offhand'?'Schildhand':AK_SLOT_NAMES[s]} ${s.endsWith('2')?'2':s.endsWith('1')?'1':''}</button>`).join(''):`<button role="menuitem" onclick="equipItem('${esc(uid)}')">Anlegen</button>`):`<small class="muted">${item.slot?'Deine Klasse kann das nicht tragen.':'Trophäe, nicht anlegbar.'}</small>`}<button role="menuitem" onclick="if(armed(this,'Wirklich für ${item.sell} Gold verkaufen?'))sellItem('${esc(uid)}')">An Händler verkaufen: ${item.sell} Gold</button><button role="menuitem" onclick="closeItemMenu();openPage('auctions','${esc(uid)}')">Im Auktionshaus anbieten</button>`}`;
+ const ringSlots=item.slot==='onehand'&&[1,3,4].includes(AK.state.character?.classId)?['mainhand','offhand']:null;
+ menu.innerHTML=`<p class="quality-${item.quality}"><b>${esc(item.name)}</b></p>${it.wornBy?`<small class="muted">Trägt gerade ${esc(it.wornBy)}.</small>${item.slot&&it.usable?`<button role="menuitem" onclick="equipItem('${esc(uid)}')">Hierher übernehmen und anlegen</button>`:''}`:it.slot?`<button role="menuitem" onclick="unequipItem('${esc(uid)}')">Ablegen</button>`:it.listed?`<button role="menuitem" onclick="openPage('auctions')">Steht im Auktionshaus</button>`:`${item.slot&&it.usable?(ringSlots?ringSlots.map(s=>`<button role="menuitem" onclick="equipItem('${esc(uid)}',false,'${s}')">Anlegen: ${s==='offhand'?'Schildhand':AK_SLOT_NAMES[s]} ${s.endsWith('2')?'2':s.endsWith('1')?'1':''}</button>`).join(''):`<button role="menuitem" onclick="equipItem('${esc(uid)}')">Anlegen</button>`):`<small class="muted">${item.slot?'Deine Klasse kann das nicht tragen.':'Trophäe, nicht anlegbar.'}</small>`}<button role="menuitem" onclick="if(armed(this,'Wirklich für ${item.sell} Gold verkaufen?'))sellItem('${esc(uid)}')">An Händler verkaufen: ${item.sell} Gold</button><button role="menuitem" onclick="closeItemMenu();openPage('auctions','${esc(uid)}')">Im Auktionshaus anbieten</button>`}`;
  document.body.append(menu);AK.menu=menu;
  const r=e.currentTarget.getBoundingClientRect(),w=menu.offsetWidth,h=menu.offsetHeight;
  menu.style.left=Math.max(8,Math.min(innerWidth-w-8,r.left+scrollX))+'px';menu.style.top=(r.bottom+h+8>innerHeight?r.top+scrollY-h-6:r.bottom+scrollY+6)+'px';
@@ -175,8 +202,10 @@ pageViews.shop=async()=>{
  $('#content').innerHTML=akHead('Händler','Thunderfury, Sulfuras, Ashkandi und mehr: kauf direkt mit deinem Gildengold oder verkauf, was du nicht brauchst.')+armoryTabs('shop')+
   `<div class="rank-tabs" role="group" aria-label="Warengruppe">${SHOP_FILTERS.map(([k,l])=>`<button class="${k===shopFilter?'selected':''}" aria-pressed="${k===shopFilter}" onclick="shopFilter='${k}';redraw()">${l}</button>`).join('')}</div>`+
   `<div class="ak-shop">${stock.map(i=>{const usable=AK.state.character&&i.classes.includes(AK.state.character.classId);return `<div class="ak-shop-row wow-frame q-${i.quality}">${akIcon(i.id)}<span class="ak-shop-name">${akName(i.id)}<small class="muted">${ITEM_SLOT[i.slot]||''} ${esc(i.type||'')} · Stufe ${i.itemLevel}${usable?'':' · <span class="tt-bad">nicht für deine Klasse</span>'}</small><small>${statLine(i.game)}</small></span><span class="ak-shop-buy">${goldText(i.buy)}<button class="primary" ${AK.state.balance<i.buy?'disabled':''} onclick="if(armed(this,'Kaufen?'))buyItem(${i.id})">Kaufen</button></span></div>`}).join('')}</div>`+
-  frame('Ankauf',sellable.length?`<p class="muted">Der Händler zahlt ein Drittel des Werts. Mehr holst du oft im <button class="link" onclick="openPage('auctions')">Auktionshaus</button>.</p><div class="ak-sell-list">${sellable.map(i=>`<div class="list-row">${akIcon(i.itemId,{uid:i.uid,size:'sm'})}<span>${akName(i.itemId)}</span><span>${goldText(itemOf(i.itemId).sell)} <button class="subtle" onclick="if(armed(this,'Sicher?'))sellItem('${esc(i.uid)}')">Verkaufen</button></span></div>`).join('')}</div>`:emptyBox('Nichts zu verkaufen. Angelegte Items leg erst im Charakterfenster ab.'))
+  frame('Tränke für den Beutel',`<p class="muted">Im Duell trinkst du sie über den Beutel, höchstens drei pro Duell.</p>${AK.catalog.potions.map(p=>`<div class="list-row ak-potion-row"><img src="icons/${esc(p.icon)}.jpg" alt=""><span><b>${esc(p.name)}</b><small class="muted">${esc(p.text)} · im Beutel: ${AK.state.potions?.[p.key]||0}</small></span><span>${goldText(p.price)} <button class="subtle" ${AK.state.balance<p.price?'disabled':''} onclick="buyPotion('${p.key}',1)">1 kaufen</button><button class="subtle" ${AK.state.balance<p.price*5?'disabled':''} onclick="buyPotion('${p.key}',5)">5 kaufen</button></span></div>`).join('')}`)+
+  frame('Ankauf',sellable.length?`<p class="muted">Der Händler zahlt ein Viertel des Werts. Mehr holst du oft im <button class="link" onclick="openPage('auctions')">Auktionshaus</button>.</p><div class="ak-sell-list">${sellable.map(i=>`<div class="list-row">${akIcon(i.itemId,{uid:i.uid,size:'sm'})}<span>${akName(i.itemId)}</span><span>${goldText(itemOf(i.itemId).sell)} <button class="subtle" onclick="if(armed(this,'Sicher?'))sellItem('${esc(i.uid)}')">Verkaufen</button></span></div>`).join('')}</div>`:emptyBox('Nichts zu verkaufen. Angelegte Items leg erst im Charakterfenster ab.'))
 };
+const buyPotion=act(async(potion,count)=>{const s=await api('/api/armory/potion','POST',{potion,count});ArmorySound.coins(4);akSet(s);toast('Trank im Beutel.');redraw()});
 const buyItem=act(async itemId=>{const s=await api('/api/armory/buy','POST',{itemId});ArmorySound.coins(8);akSet(s);toast(`${itemOf(itemId).name} gekauft. Liegt in deinen Taschen.`);redraw()});
 
 /* Auction house */
@@ -199,8 +228,14 @@ const withdrawAuction=act(async id=>{await api(`/api/auctions/${id}`,'DELETE');t
 
 /* Duels */
 const ACTIONS=[['attack','Angriff','Normaler Schlag','ability_warrior_cleave'],['strong','Starker Angriff','70 % Trefferchance, 1,7-facher Schaden','ability_warrior_decisivestrike'],['defend','Verteidigen','Nächster Treffer halbiert, heilt 5 %','ability_defend']];
-const fighterCard=(f,side,turn)=>`<div class="ak-fighter ${side} ${turn?'turn':''} ${f.hp<=0?'down':''}" style="--class:${CLASS_INFO[f.classId]?.[1]||'#ddd'}" data-fighter="${esc(f.id)}"><div class="ak-fighter-face"><img src="icons/${charFaceIcon({race:f.race,gender:f.gender})}.jpg" alt="" onerror="this.onerror=null;this.src='icons/inv_misc_questionmark.jpg'">${f.defending?'<span class="ak-shield-up" title="Verteidigt">🛡</span>':''}</div><h3>${esc(f.name)}</h3><p class="muted">${classIcon(f.classId)} ${esc(f.user)}</p><div class="ak-hp" role="meter" aria-label="Leben" aria-valuemin="0" aria-valuemax="${f.max}" aria-valuenow="${f.hp}"><i style="width:${Math.max(0,f.hp/f.max*100)}%"></i><span>${f.hp} / ${f.max}</span></div><p class="ak-fstats"><span>⚔ ${f.angriff}</span><span>🛡 ${f.verteidigung}</span><span>✶ ${String(f.krit).replace('.',',')} %</span></p></div>`;
-const logLine=(e,d)=>{const by=d.fighters[e.by]?.name||'?',other=Object.values(d.fighters).find(f=>f.id!==e.by)?.name||'?';return e.action==='defend'?`<li class="heal"><b>${esc(by)}</b> geht in Deckung${e.heal?` und heilt ${e.heal}`:''}.</li>`:e.miss?`<li class="miss"><b>${esc(by)}</b> holt zum starken Schlag aus und verfehlt.</li>`:`<li class="${e.crit?'crit':''}"><b>${esc(by)}</b> trifft ${esc(other)}${e.action==='strong'?' mit voller Wucht':''}: <b>${e.damage}</b>${e.crit?' kritisch!':''}${e.blocked?' (abgewehrt)':''}</li>`};
+const fighterCard=(f,side,turn)=>`<div class="ak-fighter ${side} ${turn?'turn':''} ${f.hp<=0?'down':''}" style="--class:${CLASS_INFO[f.classId]?.[1]||'#ddd'}" data-fighter="${esc(f.id)}"><div class="ak-fighter-face"><img src="icons/${charFaceIcon({race:f.race,gender:f.gender})}.jpg" alt="" onerror="this.onerror=null;this.src='icons/inv_misc_questionmark.jpg'"><span class="ak-lvl" title="Stufe">${f.level||1}</span>${f.defending?'<span class="ak-shield-up" title="Verteidigt">🛡</span>':''}</div><h3>${esc(f.name)}</h3><p class="muted">${classIcon(f.classId)} ${esc(f.user)}</p>${f.shield>0?`<p class="ak-status shield">Schild ${f.shield}</p>`:''}${f.buff>0?`<p class="ak-status buff">Gestärkt ×${f.buff}</p>`:''}${f.stunned?'<p class="ak-status stun">Betäubt</p>':''}<div class="ak-hp" role="meter" aria-label="Leben" aria-valuemin="0" aria-valuemax="${f.max}" aria-valuenow="${f.hp}"><i style="width:${Math.max(0,f.hp/f.max*100)}%"></i><span>${f.hp} / ${f.max}</span></div><p class="ak-fstats"><span>⚔ ${f.angriff}</span><span>🛡 ${f.verteidigung}</span><span>✶ ${String(f.krit).replace('.',',')} %</span></p></div>`;
+const logLine=(e,d)=>{const by=d.fighters[e.by]?.name||'?',other=Object.values(d.fighters).find(f=>f.id!==e.by)?.name||'?',spell=e.ability?`<img class="ak-log-icon" src="icons/${esc(e.icon)}.jpg" alt=""> ${esc(e.ability)}`:'';
+ if(e.action==='stunned')return `<li class="miss"><b>${esc(by)}</b> ist außer Gefecht und setzt aus.</li>`;
+ if(e.kind==='heal')return `<li class="heal"><b>${esc(by)}</b> wirkt ${spell} und heilt ${e.heal}.</li>`;
+ if(e.kind==='shield')return `<li class="heal"><b>${esc(by)}</b> wirkt ${spell}: Schild hält ${e.shield}.</li>`;
+ if(e.kind==='buff')return `<li class="crit"><b>${esc(by)}</b> wirkt ${spell}: die nächsten zwei Angriffe treffen härter.</li>`;
+ if(e.ability)return `<li class="${e.crit?'crit':''}"><b>${esc(by)}</b> trifft ${esc(other)} mit ${spell}: <b>${e.damage}</b>${e.crit?' kritisch!':''}${e.absorbed?` (${e.absorbed} vom Schild)`:''}${e.stun?' · betäubt!':''}${e.heal?` · heilt ${e.heal}`:''}</li>`;
+ return e.action==='defend'?`<li class="heal"><b>${esc(by)}</b> geht in Deckung${e.heal?` und heilt ${e.heal}`:''}.</li>`:e.miss?`<li class="miss"><b>${esc(by)}</b> holt zum starken Schlag aus und verfehlt.</li>`:`<li class="${e.crit?'crit':''}"><b>${esc(by)}</b> trifft ${esc(other)}${e.action==='strong'?' mit voller Wucht':''}: <b>${e.damage}</b>${e.crit?' kritisch!':''}${e.blocked?' (abgewehrt)':''}${e.absorbed?` (${e.absorbed} vom Schild)`:''}${e.empowered?' · gestärkt':''}</li>`};
 pageViews.duels=async()=>{
  await akLoad();const d=await api('/api/duels');stopDuelPolling();
  const incoming=d.duels.filter(x=>x.status==='pending'&&x.opponent.id===x.you),outgoing=d.duels.filter(x=>x.status==='pending'&&x.challenger.id===x.you),active=d.duels.filter(x=>x.status==='active');
@@ -215,36 +250,251 @@ pageViews.duels=async()=>{
 const acceptDuel=act(async id=>{const d=await api(`/api/duels/${id}/accept`,'POST',{});openPage('duel',d.id)});
 const declineDuel=act(async id=>{await api(`/api/duels/${id}/decline`,'POST',{});redraw()});
 function stopDuelPolling(){clearTimeout(AK.duelTimer);AK.duelTimer=null}
+// Battle screen in the style of old monster games: the foe stands top right, your character bottom left, both as 3D models with their gear.
+// The menu offers Kampf (four class abilities with uses), Beutel (potions), Verteidigen and Aufgeben; a text box tells what happens.
 pageViews.duel=async id=>{
- stopDuelPolling();if(!id)return openPage('duels');
- const d=await api('/api/duels/'+encodeURIComponent(id));AK.duel={id,seen:d.log.length};drawDuel(d,true)
+ stopDuelPolling();stopBattleModels();if(!id)return openPage('duels');
+ AK.catalog||=await api('/api/armory/catalog');
+ const d=await api('/api/duels/'+encodeURIComponent(id));AK.duel={id,seen:d.log.length,menu:'main',busy:false};drawDuel(d,true)
 };
-function drawDuel(d,first){
- const ids=[d.challenger.id,d.opponent.id],[left,right]=d.fighters?ids.map(k=>d.fighters[k]):[null,null];
- if(!left){$('#content').innerHTML=akHead('Duell','Die Herausforderung ist noch offen.')+armoryTabs('duels')+frame('',`<p>${esc(d.challenger.user)} gegen ${esc(d.opponent.user)}: ${d.status==='pending'?'wartet auf Annahme.':'kam nicht zustande.'}</p><button class="primary" onclick="openPage('duels')">Zurück</button>`);return}
- const over=d.status==='done',won=d.winner===d.you,secs=Math.ceil((d.turnLeft||0)/1000);
- $('#content').innerHTML=akHead('Duell',`${esc(left.name)} gegen ${esc(right.name)} · Runde ${d.round}`)+armoryTabs('duels')+
-  `<section class="ak-arena wow-frame ${over?'over':''}">${fighterCard(left,'left',d.turnUser===left.id)}<div class="ak-vs"><span>VS</span>${over?`<p class="ak-verdict ${won?'up':'down'}">${won?'Sieg!':'Niederlage'}</p>${won&&d.reward?`<p>+${d.reward} Gold</p>`:''}<button class="primary" onclick="openPage('duels')">Zur Übersicht</button>`:d.yourTurn?`<p class="ak-turn">Du bist am Zug</p><p class="muted" id="duelClock">${secs} s</p>`:`<p class="ak-turn">Gegner ist am Zug</p><p class="muted" id="duelClock">${secs} s</p>`}</div>${fighterCard(right,'right',d.turnUser===right.id)}</section>`+
-  (over||!d.yourTurn?'':`<div class="ak-actions">${ACTIONS.map(([k,l,t,icon])=>`<button class="ak-action" onclick="duelAction('${k}')"><img src="icons/${icon}.jpg" alt="" onerror="this.onerror=null;this.src='icons/inv_misc_questionmark.jpg'"><b>${l}</b><small>${t}</small></button>`).join('')}</div>`)+
-  frame('Kampfverlauf',d.log.length?`<ol class="ak-log" reversed>${[...d.log].reverse().map(e=>logLine(e,d)).join('')}</ol>`:'<p class="muted">Der erste Schlag steht noch aus. Wer nicht innerhalb von 45 Sekunden handelt, greift automatisch an.</p>');
- if(!first){const fresh=d.log.slice(AK.duel.seen);fresh.forEach((e,i)=>setTimeout(()=>animateHit(e,d),i*450))}
- AK.duel.seen=d.log.length;
- if(over){if(!first&&won){ArmorySound.fanfare();ArmorySound.coins(10)}return}
- const clock=$('#duelClock');let left2=d.turnLeft||0;const t0=performance.now();const run=()=>{if(!clock.isConnected)return;const s=Math.max(0,Math.ceil((left2-(performance.now()-t0))/1000));clock.textContent=`${s} s`;if(s>0)requestAnimationFrame(run)};requestAnimationFrame(run);
- AK.duelTimer=setTimeout(pollDuel,d.yourTurn?4000:1500)
+function stopBattleModels(){AK.battleToken=(AK.battleToken||0)+1;for(const v of AK.battleViewers||[])try{v.destroy()}catch{}AK.battleViewers=[]}
+async function battleModel(hostId,f){
+ const host=document.getElementById(hostId),token=AK.battleToken,race=MODEL_RACE[f.race];if(!host)return;
+ const fallback=()=>{host.innerHTML=`<img class="ak-actor-face" src="icons/${charFaceIcon({race:f.race,gender:f.gender})}.jpg" alt="" onerror="this.onerror=null;this.src='icons/inv_misc_questionmark.jpg'">`};
+ const probe=race&&document.createElement('canvas').getContext('webgl2');if(!probe)return fallback();probe.getExtension('WEBGL_lose_context')?.loseContext();
+ try{
+  await loadViewerLibraries();if(token!==AK.battleToken||!host.isConnected)return;
+  const items=(f.model?.gear||[]).filter(g=>VIEW_SLOTS[g.slot]).map(g=>[VIEW_SLOTS[g.slot],g.display]);
+  const viewer=new window.ZamModelViewer({type:2,contentPath:new URL('/model/',location.href).href,container:window.jQuery('#'+hostId),aspect:Math.max(.4,host.clientWidth/Math.max(1,host.clientHeight)),hd:false,dataEnv:'classic',env:'classic',gameDataEnv:'classic',models:{id:race+(f.gender?1:0),type:16},items,physics:false});
+  AK.battleViewers.push(viewer);
+  let tries=0;const check=()=>{if(token!==AK.battleToken)return;const actor=viewer?.renderer?.actors?.[0];if(actor?.isLoaded?.()){applyLook(actor,f.model?.appearance);try{viewer.method('setAnimation',['Stand'])}catch{}return}if(++tries>80)return;setTimeout(check,500)};check()
+ }catch{fallback()}
 }
-async function pollDuel(){if(page!=='duel'||!AK.duel)return;try{const d=await api('/api/duels/'+encodeURIComponent(AK.duel.id));drawDuel(d,false)}catch{AK.duelTimer=setTimeout(pollDuel,3000)}}
+const hpClass=f=>f.hp/f.max>.5?'':f.hp/f.max>.2?'mid':'low';
+function battlePlate(f,side){
+ return `<div class="ak-plate ${side}" data-plate="${esc(f.id)}"><div class="ak-plate-head"><b style="color:${CLASS_INFO[f.classId]?.[1]||'#fff'}">${esc(f.name)}</b><span>Stufe ${f.level||1}</span></div><div class="ak-plate-hp"><small>LP</small><div class="ak-hp ${hpClass(f)}"><i style="width:${Math.max(0,f.hp/f.max*100)}%"></i></div></div>${side==='me'?`<p class="ak-plate-num">${f.hp} / ${f.max}</p>`:''}<p class="ak-plate-state">${f.shield>0?`<span class="ak-status shield">Schild ${f.shield}</span>`:''}${f.buff>0?`<span class="ak-status buff">Gestärkt ×${f.buff}</span>`:''}${f.stunned?'<span class="ak-status stun">Betäubt</span>':''}${f.defending?'<span class="ak-status shield">Deckung</span>':''}</p></div>`
+}
+function battleText(e,d){
+ const by=d.fighters[e.by]?.name||'?',other=Object.values(d.fighters).find(f=>f.id!==e.by)?.name||'?';
+ if(e.action==='stunned')return `${by} ist außer Gefecht und setzt aus!`;
+ if(e.action==='forfeit')return e.text||`${by} gibt auf!`;
+ if(e.action==='potion')return `${by} trinkt ${e.potion}. ${e.heal?`+${e.heal} Leben.`:e.restored?'Alle Fähigkeiten sind wieder aufgeladen!':e.shield?`Ein Schild von ${e.shield} umgibt ${by}.`:''}`;
+ if(e.action==='defend')return `${by} geht in Deckung${e.heal?` und heilt ${e.heal}`:''}.`;
+ if(e.kind==='heal')return `${by} wirkt ${e.ability}! +${e.heal} Leben.`;
+ if(e.kind==='shield')return `${by} wirkt ${e.ability}! Ein Schild hält ${e.shield} Schaden ab.`;
+ if(e.kind==='buff')return `${by} wirkt ${e.ability}! Die nächsten zwei Angriffe treffen härter.`;
+ if(e.miss)return `${by} verfehlt ${other}!`;
+ return `${by} setzt ${e.ability||'einen Angriff'} ein! ${e.crit?'Volltreffer! ':''}${other} verliert ${e.damage} Leben.${e.absorbed?` ${e.absorbed} fängt der Schild ab.`:''}${e.stun?` ${other} ist betäubt!`:''}${e.heal?` ${by} heilt ${e.heal}.`:''}`
+}
+function battleMenu(d){
+ // Shared by duels and dungeon runs: AK.duel holds the running battle with its action and forfeit handlers.
+ const me=d.fighters[d.you],over=['done','won','wiped','abandoned'].includes(d.status),actFn=AK.duel.act||'duelAction',quitFn=AK.duel.forfeit||'forfeitDuel';
+ if(over)return `<div class="ak-menu-grid one"><button class="ak-cmd" onclick="openPage('${AK.duel.back||'duels'}')">Zur Übersicht</button></div>`;
+ if(!d.yourTurn)return `<p class="ak-wait">Warte auf ${esc(d.fighters[d.turnUser]?.name||Object.values(d.fighters).find(f=>f.id!==d.you)?.name||'?')} … <span id="duelClock"></span></p>`;
+ const menu=AK.duel.menu;
+ if(menu==='fight')return `<div class="ak-menu-grid moves">${me.abilities.map(a=>{const out=a.unlocked&&a.ppLeft!==null&&a.ppLeft<=0;return `<button class="ak-move ${a.unlocked?'':'locked'}" ${!a.unlocked||out?'disabled':''} onclick="${actFn}('${esc(a.key)}')" title="${esc(a.text)}"><img src="icons/${esc(a.icon)}.jpg" alt="" onerror="this.onerror=null;this.src='icons/inv_misc_questionmark.jpg'"><b>${esc(a.name)}</b><small>${a.unlocked?(a.pp===null?'AP ∞':`AP ${a.ppLeft}/${a.pp}`):`ab Stufe ${a.unlockLevel}`}</small></button>`}).join('')}</div><button class="ak-back" onclick="battleSwitch('main')">Zurück</button>`;
+ if(menu==='bag'){
+  const left=d.potionsPerDuel-(me.potionsUsed||0);
+  return `<div class="ak-menu-grid bag">${(AK.catalog?.potions||[]).map(p=>{const n=d.potions?.[p.key]||0;return `<button class="ak-move" ${!n||left<=0?'disabled':''} onclick="${actFn}('potion:${p.key}')"><img src="icons/${esc(p.icon)}.jpg" alt=""><b>${esc(p.name)}</b><small>${n}× · ${esc(p.text)}</small></button>`}).join('')}</div><p class="ak-bag-note">Noch ${left} von ${d.potionsPerDuel} Tränken in diesem Duell. Nachschub beim <button class="link" onclick="openPage('shop')">Händler</button>.</p><button class="ak-back" onclick="battleSwitch('main')">Zurück</button>`
+ }
+ return `<div class="ak-menu-grid"><button class="ak-cmd fight" onclick="battleSwitch('fight')">Kampf</button><button class="ak-cmd bag" onclick="battleSwitch('bag')">Beutel</button><button class="ak-cmd guard" onclick="${actFn}('defend')">Verteidigen</button><button class="ak-cmd flee" onclick="if(armed(this,'Wirklich aufgeben?'))${quitFn}()">Aufgeben</button></div>`
+}
+function battleSwitch(menu){AK.duel.menu=menu;const box=$('#akMenu');if(box&&AK.duel.last)box.innerHTML=battleMenu(AK.duel.last)}
+function drawDuel(d,first){
+ const ids=[d.challenger.id,d.opponent.id];
+ if(!d.fighters){$('#content').innerHTML=akHead('Duell','Die Herausforderung ist noch offen.')+armoryTabs('duels')+frame('',`<p>${esc(d.challenger.user)} gegen ${esc(d.opponent.user)}: ${d.status==='pending'?'wartet auf Annahme.':'kam nicht zustande.'}</p><button class="primary" onclick="openPage('duels')">Zurück</button>`);return}
+ const meId=ids.includes(d.you)?d.you:ids[0],foeId=ids.find(x=>x!==meId),me=d.fighters[meId],foe=d.fighters[foeId],over=d.status==='done';
+ AK.duel.last=d;
+ if(first||!$('#akBattle')){
+  stopBattleModels();
+  $('#content').innerHTML=akHead('Duell',`${esc(me.name)} gegen ${esc(foe.name)}`)+armoryTabs('duels')+
+   `<section class="ak-battle" id="akBattle"><div class="ak-field"><div id="akFoePlate"></div><div class="ak-actor foe" data-fighter="${esc(foeId)}"><div class="ak-pad"></div><div class="ak-actor-model" id="akFoeModel"></div></div><div class="ak-actor me" data-fighter="${esc(meId)}"><div class="ak-pad"></div><div class="ak-actor-model" id="akMeModel"></div></div><div id="akMePlate"></div></div><div class="ak-console"><p class="ak-text" id="akBattleText" aria-live="polite"></p><div class="ak-menu-box" id="akMenu"></div></div></section>`+
+   frame('Kampfverlauf','<ol class="ak-log" id="akLog" reversed></ol>');
+  battleModel('akFoeModel',foe);battleModel('akMeModel',me)
+ }
+ const fresh=first?[]:d.log.slice(AK.duel.seen);AK.duel.seen=d.log.length;
+ const finish=()=>{
+  $('#akFoePlate').innerHTML=battlePlate(foe,'foe');$('#akMePlate').innerHTML=battlePlate(me,'me');
+  const last=d.log.at(-1);
+  $('#akBattleText').textContent=over?(d.winner===d.you?`Sieg! ${foe.name} ist besiegt.${d.reward?` +${d.reward} Gold.`:''}`:`${me.name} wurde besiegt.`):last?battleText(last,d):`${foe.name} stellt sich zum Duell! Was soll ${me.name} tun?`;
+  if(!over&&d.yourTurn&&last&&!fresh.length)$('#akBattleText').textContent=`Was soll ${me.name} tun?`;
+  $('#akMenu').innerHTML=battleMenu(d);
+  $('#akLog').innerHTML=[...d.log].reverse().map(e=>`<li>${esc(battleText(e,d))}</li>`).join('');
+  document.querySelector('.ak-actor.foe')?.classList.toggle('down',foe.hp<=0);document.querySelector('.ak-actor.me')?.classList.toggle('down',me.hp<=0);
+  AK.duel.busy=false;
+  if(over){if(fresh.length&&d.winner===d.you){ArmorySound.fanfare();ArmorySound.coins(10)}return}
+  const clock=$('#duelClock');if(clock){const until=performance.now()+(d.turnLeft||0);const run=()=>{if(!clock.isConnected)return;const s=Math.max(0,Math.ceil((until-performance.now())/1000));clock.textContent=`(${s} s)`;if(s>0)requestAnimationFrame(run)};run()}
+  AK.duelTimer=setTimeout(pollDuel,d.yourTurn?4000:1500)
+ };
+ if(!fresh.length)return finish();
+ AK.duel.busy=true;$('#akMenu').innerHTML='';
+ fresh.forEach((e,i)=>setTimeout(()=>{$('#akBattleText').textContent=battleText(e,d);animateHit(e,d)},i*1300));
+ setTimeout(finish,fresh.length*1300)
+}
+async function pollDuel(){if(page!=='duel'||!AK.duel||AK.duel.busy)return;try{const d=await api('/api/duels/'+encodeURIComponent(AK.duel.id));if(d.log.length!==AK.duel.seen||d.status!==AK.duel.last?.status||d.yourTurn!==AK.duel.last?.yourTurn)drawDuel(d,false);else AK.duelTimer=setTimeout(pollDuel,d.yourTurn?4000:1500)}catch{AK.duelTimer=setTimeout(pollDuel,3000)}}
 function animateHit(e,d){
- const attacker=document.querySelector(`[data-fighter="${CSS.escape(e.by)}"]`),target=[...document.querySelectorAll('[data-fighter]')].find(el=>el.dataset.fighter!==e.by);if(!attacker||!target)return;
- if(e.action==='defend'){attacker.classList.add('guard');ArmorySound.heal();float(attacker,e.heal?`+${e.heal}`:'Deckung','heal');setTimeout(()=>attacker.classList.remove('guard'),700);return}
- attacker.classList.add('lunge');ArmorySound.swing();setTimeout(()=>attacker.classList.remove('lunge'),500);
- if(e.miss){ArmorySound.miss();setTimeout(()=>float(target,'Verfehlt','miss'),180);return}
+ const attacker=document.querySelector(`.ak-actor[data-fighter="${CSS.escape(e.by)}"]`),target=[...document.querySelectorAll('.ak-actor[data-fighter]')].find(el=>el.dataset.fighter!==e.by);if(!attacker||!target)return;
+ if(e.action==='stunned'){float(attacker,'Betäubt','miss');return}
+ if(e.action==='forfeit')return;
+ if(e.action==='potion'||e.kind==='heal'||e.kind==='shield'||e.kind==='buff'||e.action==='defend'){attacker.classList.add('glow');ArmorySound.heal();float(attacker,e.heal?`+${e.heal}`:e.kind==='buff'?'Gestärkt':e.restored?'Aufgeladen':e.shield?'Schild':'Deckung','heal');setTimeout(()=>attacker.classList.remove('glow'),900);return}
+ attacker.classList.add('lunge');ArmorySound.swing();setTimeout(()=>attacker.classList.remove('lunge'),600);
+ if(e.miss){ArmorySound.miss();setTimeout(()=>float(target,'Verfehlt','miss'),250);return}
  if(e.blocked)ArmorySound.block();else ArmorySound.hit(e.crit);
- setTimeout(()=>{target.classList.add('struck');float(target,`-${e.damage}${e.crit?'!':''}`,e.crit?'crit':'dmg');setTimeout(()=>target.classList.remove('struck'),450)},150)
+ setTimeout(()=>{target.classList.add('struck');float(target,`-${e.damage}${e.crit?'!':''}`,e.crit?'crit':'dmg');setTimeout(()=>target.classList.remove('struck'),500)},220)
 }
 function float(el,text,kind){const s=document.createElement('span');s.className=`ak-float ${kind}`;s.textContent=text;el.append(s);setTimeout(()=>s.remove(),1400)}
 const duelAction=act(async action=>{
- document.querySelectorAll('.ak-action').forEach(b=>b.disabled=true);stopDuelPolling();
+ if(AK.duel.busy)return;AK.duel.busy=true;stopDuelPolling();$('#akMenu').innerHTML='';AK.duel.menu='main';
  try{const d=await api(`/api/duels/${encodeURIComponent(AK.duel.id)}/action`,'POST',{action});drawDuel(d,false)}
- catch(e){pollDuel();throw e}
+ catch(e){AK.duel.busy=false;pollDuel();if(AK.duel.last)$('#akMenu').innerHTML=battleMenu(AK.duel.last);throw e}
 });
+const forfeitDuel=act(async()=>{stopDuelPolling();const d=await api(`/api/duels/${encodeURIComponent(AK.duel.id)}/forfeit`,'POST',{});const line=[...d.log].reverse().find(e=>e.action==='forfeit');showForfeit(line?.text);openPage('duels')});
+
+/* Spielunke tutorial: shows on every way into the Spielunke until "Nicht mehr anzeigen" is ticked. */
+const TAVERN_PAGES=new Set(['bonus','roulette','blackjack','chests','ranking']),TUTORIAL_OFF='modcheck-tavern-tutorial-off';
+function tavernTutorialOff(){try{return localStorage.getItem(TUTORIAL_OFF)==='1'}catch{return false}}
+function showTavernTutorial(){
+ if(tavernTutorialOff()||document.querySelector('dialog.ak-tutorial'))return;
+ const step=(n,icon,title,text,target)=>`<button type="button" class="ak-step" onclick="this.closest('dialog').close();openPage('${target}')"><span class="ak-step-n">${n}</span><img src="icons/${icon}.jpg" alt=""><b>${title}</b><small>${text}</small></button>`;
+ const d=akDialog('epic',`<p class="win-rarity">Willkommen in der Spielunke</p><h2 id="akDlgTitle">So läuft das Spiel</h2>
+ <div class="ak-steps">${step(1,'inv_misc_coin_02','Gold verdienen','Hier in der Spielunke: drei Drehs am Automaten pro Tag, Roulette und Blackjack. Alles zahlt auf dasselbe Gildengold ein.','bonus')}
+ ${step(2,'inv_box_01','Truhen öffnen','Gib das Gold für Schatztruhen aus. Darin steckt echte Classic-Ausrüstung, jede Truhe bringt auch Erfahrung.','chests')}
+ ${step(3,'inv_chest_plate04','In der Waffenkammer ausrüsten','Leg die Beute deinem Charakter an, kauf beim Händler oder handel im Auktionshaus.','armory')}
+ ${step(4,'ability_dualwield','Im Duell antreten','Fordere Gildenmitglieder heraus. Siege bringen Gold und Erfahrung, ab Stufe 4, 8 und 12 kommen neue Klassenfähigkeiten. Höchststufe ist 20.','duels')}</div>
+ <label class="ak-tutorial-off"><input type="checkbox" id="akTutorialOff"> Nicht mehr anzeigen</label>
+ <button class="primary" onclick="this.closest('dialog').close()">Los geht's</button>`,'ak-wide ak-tutorial');
+ d.querySelector('#akTutorialOff').addEventListener('change',e=>{try{localStorage.setItem(TUTORIAL_OFF,e.target.checked?'1':'0')}catch{}})
+}
+// go() from app.js drives every page change; wrapping it catches the step into the Spielunke from anywhere else.
+const goBeforeTutorial=go;
+go=function(id){const was=page;if(id!=='duel'&&typeof stopBattleModels==='function')stopBattleModels();if(!['duel','run','duels'].includes(id))stopDuelPolling();goBeforeTutorial(id);if(TAVERN_PAGES.has(id)&&!TAVERN_PAGES.has(was)&&typeof P!=='undefined'&&P.user)setTimeout(showTavernTutorial,400)};
+
+/* Dungeons and raids: list with lobbies, lobby view, and the party battle against the bosses. */
+pageViews.dungeons=async()=>{
+ await akLoad();const d=await api('/api/dungeons');stopDuelPolling();
+ if(d.current&&P.arg!=='list')return openPage('run',d.current);
+ const card=x=>{const left=d.runsLeft[x.kind];if(x.kind==='raid')return '';return `<article class="ak-dungeon wow-frame ${x.kind}"><div class="ak-dungeon-head"><img src="icons/${esc(x.icon)}.jpg" alt=""><div><h3>${esc(x.name)}</h3><p class="muted">${x.kind==='raid'?`Schlachtzug bis ${x.party} Spieler`:`Instanz bis ${x.party} Spieler`} · empfohlen ab Stufe ${x.level}</p></div></div><div class="ak-boss-row">${x.bosses.map(b=>`<span title="${esc(b.name)}"><img src="icons/${esc(b.icon)}.jpg" alt=""><small>${esc(b.name)}</small></span>`).join('')}</div><p class="ak-dungeon-loot">${goldText(x.gold)} · ${x.xp} Erfahrung · ${x.lootChance}% Chance auf Beute</p><button class="primary" ${left&&!d.current?'':'disabled'} onclick="openLobby('${x.id}')">Gruppe eröffnen</button></article>`};
+ const when=iso=>new Date(iso).toLocaleString('de-DE',{timeZone:'Europe/Berlin',weekday:'long',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+' Uhr';
+ const raidRow=x=>{const open=Date.now()>=Date.parse(x.signupAt),dungeon=d.dungeons.find(y=>y.id===x.dungeon);return `<article class="ak-raid-slot wow-frame"><img src="icons/${esc(dungeon.icon)}.jpg" alt=""><div><h3>${esc(x.name)}</h3><p>${when(x.startsAt)} · bis ${x.max} Spieler</p><p class="muted">${x.status==='active'?'Der Kampf läuft.':open?`Anmeldung offen: ${x.count} von ${x.max} eingetragen. Start um 19 Uhr von selbst.`:`Anmeldung ab ${when(x.signupAt)}.`}</p></div><div class="ak-raid-act">${x.status==='active'?(x.signedUp?`<button class="primary" onclick="openPage('run','${esc(x.runId)}')">Zum Kampf</button>`:`<button class="subtle" onclick="openPage('run','${esc(x.runId)}')">Zuschauen</button>`):x.signedUp?`<button class="primary" onclick="openPage('run','${esc(x.runId)}')">Eingetragen</button>`:`<button class="primary" ${open&&x.runId&&!d.current?'':'disabled'} onclick="joinRun('${esc(x.runId||'')}')">Eintragen</button>`}</div></article>`};
+ $('#content').innerHTML=akHead('Instanzen & Schlachtzüge',`Eröffne eine Gruppe, warte auf Mitstreiter und zieht gemeinsam gegen die Bosse. Heute noch ${d.runsLeft.dungeon} von ${d.perDay.dungeon} Instanzen. Schlachtzüge gibt es jeden Tag um 19 Uhr.`)+armoryTabs('dungeons')+
+  (d.lobbies.filter(l=>l.kind==='dungeon').length?frame('Offene Gruppen',d.lobbies.filter(l=>l.kind==='dungeon').map(l=>`<div class="list-row"><span><b>${esc(l.name)}</b> <small class="muted">von ${esc(l.host)} · ${l.members.length}/${l.max} · ${l.members.map(esc).join(', ')}</small></span>${l.status==='lobby'?`<button class="primary" ${d.runsLeft[l.kind]&&!d.current&&l.members.length<l.max?'':'disabled'} onclick="joinRun('${esc(l.id)}')">Beitreten</button>`:'<span class="pill">im Kampf</span>'}</div>`).join('')):'')+
+  `<h3 class="ak-section">Instanzen</h3><div class="ak-dungeons">${d.dungeons.filter(x=>x.kind==='dungeon').map(card).join('')}</div><h3 class="ak-section">Schlachtzüge: jeden Tag um 19 Uhr</h3>${d.raids.map(raidRow).join('')}<p class="muted">Eintragen geht ab 18 Uhr, bis zu 25 Spieler. Um 19 Uhr startet der Kampf von selbst mit allen, die eingetragen sind. Die Termine stehen auch im Kalender.</p>`+
+  (d.recent.length?frame('Deine letzten Läufe',d.recent.map(r=>`<div class="list-row read"><span>${esc(r.name)}</span><span>${r.status==='won'?'<b class="up">geschafft</b>':r.status==='wiped'?'<b class="down">gescheitert</b>':'abgebrochen'} · ${dateText(r.at)} <button class="subtle" onclick="openPage('run','${esc(r.id)}')">Ansehen</button></span></div>`).join('')):'')
+};
+const openLobby=act(async dungeon=>{const r=await api('/api/dungeons','POST',{dungeon});openPage('run',r.id)});
+const joinRun=act(async runId=>{await api(`/api/dungeons/${runId}/join`,'POST',{});openPage('run',runId)});
+const leaveRun=act(async runId=>{await api(`/api/dungeons/${runId}/leave`,'POST',{});stopDuelPolling();openPage('dungeons','list')});
+const startRun=act(async runId=>{const r=await api(`/api/dungeons/${runId}/start`,'POST',{});AK.duel={id:runId,seen:r.log.length,menu:'main',busy:false,act:'runAction',forfeit:'forfeitRun',back:'dungeons',run:true};drawRun(r,true)});
+pageViews.run=async runId=>{
+ stopDuelPolling();stopBattleModels();if(!runId)return openPage('dungeons');
+ AK.catalog||=await api('/api/armory/catalog');
+ const r=await api('/api/dungeons/'+encodeURIComponent(runId));
+ AK.duel={id:runId,seen:r.log.length,menu:'main',busy:false,act:'runAction',forfeit:'forfeitRun',back:'dungeons',run:true};
+ r.status==='lobby'?drawLobby(r):drawRun(r,true)
+};
+function drawLobby(r){
+ const mine=r.members.some(m=>m.id===r.you),host=r.host&&r.host===r.you,raid=!!r.startsAt;
+ $('#content').innerHTML=akHead(esc(r.name),`${r.kind==='raid'?'Schlachtzug':'Instanz'}: ${r.members.length} von ${r.max} Plätzen belegt. ${raid?`Start um 19 Uhr von selbst <span id="akRaidCountdown"></span>`:host?'Starte, sobald alle da sind.':'Der Gruppenleiter startet.'}`)+armoryTabs('dungeons')+
+  frame('Gruppe',`<div class="ak-lobby">${r.members.map(m=>`<div class="ak-lobby-member ${m.id===r.host?'host':''}" style="--class:${CLASS_INFO[m.preview?.classId]?.[1]||'#ddd'}"><img src="icons/${charFaceIcon({race:m.preview?.race,gender:m.preview?.gender})}.jpg" alt="" onerror="this.onerror=null;this.src='icons/inv_misc_questionmark.jpg'"><b>${esc(m.preview?.name||m.username)}</b><small>${m.preview?.classId?`${CLASS_INFO[m.preview.classId][0]} · Stufe ${m.preview.level}`:''}${m.id===r.host?' · Leiter':''}</small></div>`).join('')}${Array.from({length:Math.max(0,Math.min(raid?5:r.max,r.max-r.members.length))},()=>'<div class="ak-lobby-member empty"><span>?</span><small>frei</small></div>').join('')}</div><div class="ak-row">${host?`<button class="primary" onclick="startRun('${esc(r.id)}')">Losziehen</button>`:''}${mine?`<button class="subtle" onclick="leaveRun('${esc(r.id)}')">Gruppe verlassen</button>`:`<button class="primary" onclick="joinRun('${esc(r.id)}')">Beitreten</button>`}<button class="subtle" onclick="openPage('dungeons','list')">Alle Gruppen</button></div><p class="muted">Die Lebenspunkte der Bosse wachsen mit der Gruppe. Jeder Lauf zählt für alle Mitglieder gegen das Tageslimit, sobald er startet.</p>`);
+ const cd=$('#akRaidCountdown');if(cd&&r.startsAt){const tickCd=()=>{if(!cd.isConnected)return;const left=Math.max(0,Date.parse(r.startsAt)-Date.now()),m=Math.floor(left/60e3),sec=Math.floor(left%60e3/1000);cd.textContent=`(noch ${m}:${String(sec).padStart(2,'0')})`;setTimeout(tickCd,1000)};tickCd()}
+ AK.duelTimer=setTimeout(async()=>{if(page!=='run')return;try{const n=await api('/api/dungeons/'+encodeURIComponent(r.id));if(n.status==='lobby')drawLobby(n);else{AK.duel.seen=n.log.length;drawRun(n,true)}}catch{}},3000)
+}
+const bossText=(e,d)=>{const boss=d.boss?.name||'Der Boss',target=d.fighters?.[e.target]?.name||'?';
+ if(e.action==='bossup')return `${e.name} stellt sich der Gruppe!`;
+ if(e.action==='bossdown')return `${e.name} ist besiegt!`;
+ if(e.action==='wipe')return 'Die Gruppe ist gefallen. Ab zum Geistheiler …';
+ if(e.action==='stunned')return `${boss} ist betäubt und setzt aus!`;
+ if(e.action==='aoe')return `${boss} entfesselt einen Flächenangriff! Die ganze Gruppe verliert zusammen ${e.damage} Leben.`;
+ if(e.action==='heavy')return `${boss} holt zu einem gewaltigen Schlag aus! ${target} verliert ${e.damage} Leben.`;
+ return `${boss} greift ${target} an! ${e.crit?'Volltreffer! ':''}${e.damage} Schaden.${e.absorbed?` ${e.absorbed} fängt der Schild ab.`:''}`};
+function runText(e,d){
+ if(e.by==='boss')return bossText(e,d);
+ if(e.action==='loot'){const n=d.fighters[e.by]?.name||'?';return `${n} erhält ${e.gold} Gold und ${e.xp} Erfahrung${e.itemName?` sowie ${e.itemName}`:''}!${e.levelUp?` Stufe ${e.levelUp}!`:''}`}
+ if(e.action==='forfeit')return e.text||`${d.fighters[e.by]?.name||'?'} gibt auf.`;
+ // The player always hits the boss: hand battleText only these two, so the target is named correctly.
+ return battleText(e,{...d,fighters:{[e.by]:d.fighters[e.by],boss:d.boss}})
+}
+function runPlate(f,d){const out=d.left.includes(f.id),dead=f.hp<=0,turn=d.turnUser===f.id;return `<div class="ak-member ${turn?'turn':''} ${dead||out?'down':''}" data-fighter="${esc(f.id)}" style="--class:${CLASS_INFO[f.classId]?.[1]||'#ddd'}"><img src="icons/${charFaceIcon({race:f.race,gender:f.gender})}.jpg" alt="" onerror="this.onerror=null;this.src='icons/inv_misc_questionmark.jpg'"><span class="ak-member-info"><b>${esc(f.name)}</b><small>Stufe ${f.level}${out?' · aufgegeben':dead?' · gefallen':''}</small><span class="ak-hp ${hpClass(f)}"><i style="width:${Math.max(0,f.hp/f.max*100)}%"></i></span><small>${f.hp} / ${f.max}${f.shield>0?` · Schild ${f.shield}`:''}</small></span></div>`}
+function drawRun(d,first){
+ AK.duel.last=d;const over=['won','wiped','abandoned'].includes(d.status);
+ if(first||!$('#akRun')){
+  $('#content').innerHTML=akHead(esc(d.name),`${d.kind==='raid'?'Schlachtzug':'Instanz'} · Boss <span id="akBossNo">${d.bossIndex+1}</span> von ${d.bossCount}`)+armoryTabs('dungeons')+
+   `<section class="ak-battle ak-run" id="akRun"><div class="ak-field"><div id="akBossPlate"></div><div class="ak-actor foe ak-boss" data-fighter="boss"><div class="ak-pad"></div><div class="ak-actor-model"><img class="ak-boss-art" id="akBossArt" alt=""></div></div><div class="ak-party" id="akParty"></div></div><div class="ak-console"><p class="ak-text" id="akBattleText" aria-live="polite"></p><div class="ak-menu-box" id="akMenu"></div></div></section>`+frame('Kampfverlauf','<ol class="ak-log" id="akLog" reversed></ol>')
+ }
+ const fresh=first?[]:d.log.slice(AK.duel.seen);AK.duel.seen=d.log.length;
+ const paint=()=>{
+  const b=d.boss;$('#akBossArt').src=`icons/${b.icon}.jpg`;$('#akBossNo').textContent=d.bossIndex+1;
+  $('#akBossPlate').innerHTML=`<div class="ak-plate foe"><div class="ak-plate-head"><b style="color:#7a1a0a">${esc(b.name)}</b><span>Boss</span></div><div class="ak-plate-hp"><small>LP</small><div class="ak-hp ${hpClass(b)}"><i style="width:${Math.max(0,b.hp/b.max*100)}%"></i></div></div><p class="ak-plate-num">${b.hp} / ${b.max}</p><p class="ak-plate-state">${b.stunned?'<span class="ak-status stun">Betäubt</span>':''}</p></div>`;
+  $('#akParty').innerHTML=d.order.map(uid=>runPlate(d.fighters[uid],d)).join('');
+  document.querySelector('.ak-boss')?.classList.toggle('down',b.hp<=0&&d.status!=='active')
+ };
+ const finish=()=>{
+  paint();const last=d.log.at(-1);
+  $('#akBattleText').textContent=d.status==='won'?`Geschafft! ${d.name} ist bezwungen.`:d.status==='wiped'?'Die Gruppe ist gefallen.':d.yourTurn?`Du bist dran, ${d.fighters[d.you]?.name}! Was tust du?`:last?runText(last,d):'';
+  $('#akMenu').innerHTML=d.left.includes(d.you)&&!over?'<p class="ak-wait">Du hast aufgegeben und schaust zu.</p>':battleMenu(d);
+  $('#akLog').innerHTML=[...d.log].reverse().map(e=>`<li class="${e.action==='loot'?'heal':e.by==='boss'?'crit':''}">${esc(runText(e,d))}</li>`).join('');
+  AK.duel.busy=false;
+  if(over){if(fresh.length&&d.status==='won'){ArmorySound.fanfare();ArmorySound.coins(14)}return}
+  const clock=$('#duelClock');if(clock){const until=performance.now()+(d.turnLeft||0);const run=()=>{if(!clock.isConnected)return;const s=Math.max(0,Math.ceil((until-performance.now())/1000));clock.textContent=`(${s} s)`;if(s>0)requestAnimationFrame(run)};run()}
+  AK.duelTimer=setTimeout(pollRun,d.yourTurn?4000:1500)
+ };
+ if(!fresh.length)return finish();
+ AK.duel.busy=true;$('#akMenu').innerHTML='';paint();
+ fresh.forEach((e,i)=>setTimeout(()=>{$('#akBattleText').textContent=runText(e,d);runAnimate(e,d)},i*1100));
+ setTimeout(finish,fresh.length*1100)
+}
+function runAnimate(e,d){
+ const boss=document.querySelector('.ak-boss'),member=id=>document.querySelector(`.ak-member[data-fighter="${CSS.escape(id)}"]`);
+ if(e.by==='boss'){
+  if(['bossup','bossdown','wipe','stunned'].includes(e.action)){if(e.action==='bossdown')ArmorySound.fanfare();return}
+  boss?.classList.add('lunge');ArmorySound.swing();setTimeout(()=>boss?.classList.remove('lunge'),600);ArmorySound.hit(e.crit||e.action==='heavy');
+  const hits=e.action==='aoe'?e.hits:[{target:e.target,damage:e.damage}];
+  setTimeout(()=>hits.forEach(h=>{const el=member(h.target);if(!el)return;el.classList.add('struck');float(el,`-${h.damage}`,'dmg');setTimeout(()=>el.classList.remove('struck'),500)}),250);return
+ }
+ const el=member(e.by);if(!el||e.action==='loot'||e.action==='forfeit')return;
+ if(e.action==='potion'||['heal','shield','buff'].includes(e.kind)||e.action==='defend'){el.classList.add('glow');ArmorySound.heal();float(el,e.heal?`+${e.heal}`:'✦','heal');setTimeout(()=>el.classList.remove('glow'),900);return}
+ el.classList.add('lunge');ArmorySound.swing();setTimeout(()=>el.classList.remove('lunge'),500);
+ if(e.miss){ArmorySound.miss();return}
+ ArmorySound.hit(e.crit);setTimeout(()=>{boss?.classList.add('struck');float(boss,`-${e.damage}${e.crit?'!':''}`,e.crit?'crit':'dmg');setTimeout(()=>boss?.classList.remove('struck'),500)},200)
+}
+async function pollRun(){if(page!=='run'||!AK.duel?.run||AK.duel.busy)return;try{const d=await api('/api/dungeons/'+encodeURIComponent(AK.duel.id));if(d.log.length!==AK.duel.seen||d.status!==AK.duel.last?.status||d.turnUser!==AK.duel.last?.turnUser)drawRun(d,false);else AK.duelTimer=setTimeout(pollRun,d.yourTurn?4000:1500)}catch{AK.duelTimer=setTimeout(pollRun,3000)}}
+const runAction=act(async action=>{
+ if(AK.duel.busy)return;AK.duel.busy=true;stopDuelPolling();$('#akMenu').innerHTML='';AK.duel.menu='main';
+ try{const d=await api(`/api/dungeons/${encodeURIComponent(AK.duel.id)}/action`,'POST',{action});drawRun(d,false)}
+ catch(e){AK.duel.busy=false;pollRun();if(AK.duel.last)$('#akMenu').innerHTML=battleMenu(AK.duel.last);throw e}
+});
+// Giving up leaves the fight for good: the silly line shows, then it is back to the list.
+const forfeitRun=act(async()=>{stopDuelPolling();const d=await api(`/api/dungeons/${encodeURIComponent(AK.duel.id)}/forfeit`,'POST',{});const line=[...d.log].reverse().find(e=>e.action==='forfeit'&&e.by===d.you);showForfeit(line?.text);openPage('dungeons','list')});
+function showForfeit(text){if(!text)return;ArmorySound.miss();akDialog('poor',`<p class="win-rarity">Aufgegeben</p><h2 id="akDlgTitle">Ab nach Hause</h2><p class="win-name">${esc(text)}</p><button class="primary" onclick="this.closest('dialog').close()">Peinlich …</button>`)}
+
+/* Live stream box on the start page: preview from our server, the Twitch player only after a click. Closing hides it for this browser session. */
+const STREAM_CLOSED='modcheck-stream-closed';
+async function streamBox(){
+ const old=document.getElementById('streamBox');
+ if(page!=='home'){old?.remove();return}
+ let s;try{s=await (await fetch('/stream/status',{cache:'no-store'})).json()}catch{return}
+ let closed=false;try{closed=sessionStorage.getItem(STREAM_CLOSED)==='1'}catch{}
+ if(!s.live||closed){document.getElementById('streamBox')?.remove();return}
+ if(document.getElementById('streamBox'))return;
+ const box=document.createElement('div');box.id='streamBox';box.className='stream-box';box.setAttribute('role','complementary');box.setAttribute('aria-label','Livestream');
+ box.innerHTML=`<div class="stream-head"><span class="stream-live">● LIVE</span><b>${esc(s.title||'Wir sind live!')}</b><button class="stream-close" aria-label="Stream ausblenden" title="Ausblenden">✕</button></div><button class="stream-preview" aria-label="Stream ansehen"><img src="/stream/preview.jpg?t=${Date.now()}" alt=""><span>▶ Stream ansehen</span></button><small>Twitch lädt erst nach dem Klick.</small>`;
+ box.querySelector('.stream-close').onclick=()=>{try{sessionStorage.setItem(STREAM_CLOSED,'1')}catch{}box.remove()};
+ box.querySelector('.stream-preview').onclick=()=>{const frame=document.createElement('iframe');frame.src=`https://player.twitch.tv/?channel=${encodeURIComponent(s.channel)}&parent=${encodeURIComponent(location.hostname)}&autoplay=true`;frame.allow='autoplay; fullscreen';frame.allowFullscreen=true;frame.title='Twitch-Stream';box.querySelector('.stream-preview').replaceWith(frame);box.querySelector('small')?.remove();box.classList.add('playing')};
+ document.body.append(box)
+}
+setInterval(()=>{if(page==='home')streamBox()},120e3);
+{const goBeforeStream=go;go=function(id){goBeforeStream(id);streamBox()}}
+setTimeout(streamBox,1500);
+
+/* Release countdown in the start page hero. */
+const RELEASE_AT=Date.parse('2026-11-04T23:00:00Z');
+(function releaseCountdown(){
+ const box=document.getElementById('releaseCountdown');if(!box)return;
+ const left=RELEASE_AT-Date.now();
+ if(left<-864e5){box.hidden=true;return}
+ box.hidden=false;
+ if(left<=0){if(!box.dataset.live){box.dataset.live='1';box.innerHTML='<p class="release-title">World of Warcraft: Forever</p><p class="release-live">ist live! Für die Allianz!</p>'}return setTimeout(releaseCountdown,60e3)}
+ const parts=[[Math.floor(left/864e5),'Tage'],[Math.floor(left/36e5)%24,'Stunden'],[Math.floor(left/6e4)%60,'Minuten'],[Math.floor(left/1e3)%60,'Sekunden']];
+ box.innerHTML=`<p class="release-title">Release von World of Warcraft: Forever</p><div class="release-units">${parts.map(([n,l])=>`<span><b>${String(n).padStart(2,'0')}</b><small>${l}</small></span>`).join('')}</div><p class="release-when">05.11.2026 · 0:00 Uhr</p>`;
+ setTimeout(releaseCountdown,1000-Date.now()%1000)
+})();

@@ -8,7 +8,7 @@ import {handleWowheadData,refreshWowheadData,fetchWowheadIcon,parseTalentSeed} f
 import {createPlatform} from './server/index.js';
 import {can,hashPassword,id as newId,now as nowIso} from './server/core.js';
 import {randomBytes} from 'node:crypto';
-import {configureDiscord} from './server/discord.js';
+import {configureDiscord,discord} from './server/discord.js';
 const root=path.dirname(fileURLToPath(import.meta.url));const web=path.join(root,'web');
 const dataDir=process.env.MODCHECK_DATA?path.resolve(process.env.MODCHECK_DATA):path.join(root,'data');
 await mkdir(dataDir,{recursive:true});
@@ -33,6 +33,13 @@ for(const name of (await readdir(path.join(root,'drizzle'))).filter(n=>n.endsWit
 *** Administrator "${wanted}" angelegt. Einmaliges Passwort: ${password}
 *** Jetzt anmelden, das Passwort unter Einstellungen ändern und die Variable MODCHECK_BOOTSTRAP_ADMIN löschen.
 `)}}}
+// WoW Forever release in the guild calendar (05.11.2026, 0:00 Berlin). Runs once; an existing release entry is moved instead of duplicated.
+export const RELEASE_AT='2026-11-04T23:00:00.000Z';
+if(!sqlite.prepare("SELECT 1 FROM discord_sent WHERE key='release-calendar-2026-11-05'").get()){
+ const moved=Number(sqlite.prepare("UPDATE guild_events SET starts_at=? WHERE title LIKE '%RELEASE%World of Warcraft Forever%' AND raid_id IS NULL").run(RELEASE_AT).changes);
+ if(!moved)sqlite.prepare("INSERT OR IGNORE INTO guild_events(id,title,starts_at,duration,category,description,created_at) VALUES ('wow-forever-release','⚔️ RELEASE: World of Warcraft Forever',?,240,'guild','Der Server öffnet um Mitternacht. Für die Allianz!',?)").run(RELEASE_AT,new Date().toISOString());
+ sqlite.prepare("INSERT INTO discord_sent(key,sent_at) VALUES ('release-calendar-2026-11-05',?)").run(new Date().toISOString())
+}
 const DB={prepare(sql){const statement=sqlite.prepare(sql);let args=[];return{bind(...values){args=values;return this},async all(){return{results:statement.all(...args)}},async run(){const r=statement.run(...args);return{meta:{changes:Number(r.changes)}}}}}};
 const dataEnv={DB,refreshLimit:1000,seedCatalog:async()=>JSON.parse(await readFile(path.join(web,'seed-catalog.json'),'utf8')),seedTalents:async()=>parseTalentSeed(await readFile(path.join(web,'forever-talents.js'),'utf8')),seedAbilities:async()=>JSON.parse(await readFile(path.join(web,'seed-abilities.json'),'utf8'))};
 const backgroundTasks={waitUntil(){}};
@@ -50,7 +57,28 @@ async function legalPage(bytes){
  return Buffer.from(bytes.toString('utf8').replace('<!--IMPRESSUM-->',impressum).replace('<!--ANALYTICS-->',analyticsTag?analyticsNote:''))
 }
 // Inline onclick handlers need 'unsafe-inline'; the 3D viewer needs WebAssembly and eval. The policy still blocks foreign scripts, framing and exfiltration targets.
-const csp=["default-src 'self'","script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' https://static.cloudflareinsights.com","style-src 'self' 'unsafe-inline'","img-src 'self' data: blob: https://wow.zamimg.com","media-src 'self' blob:","font-src 'self'","connect-src 'self' https://cloudflareinsights.com","frame-src https://www.youtube-nocookie.com","worker-src 'self' blob:","object-src 'none'","base-uri 'self'","form-action 'self'","frame-ancestors 'none'"].join('; ');
+// Twitch live box on the start page. The server asks decapi.me whether the channel is live (no visitor data leaves); the browser loads
+// the Twitch player only after a click. Channel from data/twitch-channel.txt or MODCHECK_TWITCH_CHANNEL.
+const twitchName=(await readFile(path.join(dataDir,'twitch-channel.txt'),'utf8').catch(()=>process.env.MODCHECK_TWITCH_CHANNEL||'')).trim(),twitchChannel=twitchName.toLowerCase();
+const twitchOk=/^[a-z0-9_]{3,25}$/.test(twitchChannel),stream={live:false,title:'',checked:0};
+if(twitchChannel&&!twitchOk)console.warn('Twitch-Kanal ist ungültig, das Stream-Fenster bleibt aus.');
+// One Discord post per stream: the start time (now minus uptime, rounded to 15 minutes) is remembered in discord_sent.
+function announceStream(uptime){
+ const unit={day:86400,hour:3600,minute:60,second:1},seconds=[...uptime.matchAll(/(\d+)\s*(day|hour|minute|second)/g)].reduce((a,[,n,u])=>a+Number(n)*unit[u],0);
+ const started=Math.round((Date.now()-seconds*1000)/9e5)*9e5,key='twitch-live:'+new Date(started).toISOString();
+ if(Number(sqlite.prepare('INSERT OR IGNORE INTO discord_sent(key,sent_at) VALUES (?,?)').run(key,new Date().toISOString()).changes)!==1)return;
+ discord('ankuendigungen',{title:`🔴 ${twitchName} ist jetzt live auf Twitch!`,text:`**${stream.title||'Livestream'}**\nhttps://www.twitch.tv/${twitchChannel}`,color:0x9146ff})
+}
+async function checkStream(){
+ if(!twitchOk)return;
+ try{
+  const ask=async what=>(await (await fetch(`https://decapi.me/twitch/${what}/${twitchChannel}`,{signal:AbortSignal.timeout(10000)})).text()).trim();
+  const uptime=await ask('uptime');stream.live=!/offline|not found|error|invalid/i.test(uptime)&&/\d/.test(uptime);
+  stream.title=stream.live?(await ask('title')).slice(0,200):'';stream.checked=Date.now();
+  if(stream.live)announceStream(uptime)
+ }catch(e){console.warn('Twitch-Status:',e.message)}
+}
+const csp=["default-src 'self'","script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' https://static.cloudflareinsights.com","style-src 'self' 'unsafe-inline'","img-src 'self' data: blob: https://wow.zamimg.com","media-src 'self' blob:","font-src 'self'","connect-src 'self' https://cloudflareinsights.com","frame-src https://www.youtube-nocookie.com https://player.twitch.tv","worker-src 'self' blob:","object-src 'none'","base-uri 'self'","form-action 'self'","frame-ancestors 'none'"].join('; ');
 const securityHeaders={'X-Content-Type-Options':'nosniff','Referrer-Policy':'same-origin','X-Frame-Options':'DENY','Content-Security-Policy':csp,'Permissions-Policy':'camera=(), microphone=(), geolocation=(), payment=(), usb=()','Cross-Origin-Opener-Policy':'same-origin',...(process.env.MODCHECK_HTTPS==='1'?{'Strict-Transport-Security':'max-age=31536000'}:{})};
 const modelPath=/^\/(?:meta\/[a-z]+(?:\/\d+){1,3}\.json|(?:m2|skin|skel|anim|bone|phys)\/\d+\.(?:m2|skin|skel|anim|bone|phys)|textures\/\d+\.(?:webp|png))$/;
 const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json','.jpg':'image/jpeg','.jpeg':'image/jpeg','.png':'image/png','.webp':'image/webp','.svg':'image/svg+xml','.woff2':'font/woff2','.mp4':'video/mp4'};
@@ -67,6 +95,13 @@ const server=http.createServer(async(req,res)=>{
   if(['/api/catalog','/api/talents'].includes(url.pathname)){await respond(res,await handleWowheadData(new Request(url,{method:req.method}),dataEnv,url,backgroundTasks));return}
   if(url.pathname.startsWith('/api/')||url.pathname.startsWith('/uploads/')){await platform.handle(req,res,url);return}
   if(!['GET','HEAD'].includes(req.method)){res.writeHead(405);res.end();return}
+  if(url.pathname==='/stream/status'){res.writeHead(200,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(twitchOk?{channel:twitchChannel,live:stream.live,title:stream.title,since:stream.checked}:{channel:null,live:false}));return}
+  if(url.pathname==='/stream/preview.jpg'){
+   if(!twitchOk||!stream.live){res.writeHead(404);res.end();return}
+   const response=await fetch(`https://static-cdn.jtvnw.net/previews-ttv/live_user_${twitchChannel}-640x360.jpg`,{signal:AbortSignal.timeout(15000)});
+   if(!response.ok){res.writeHead(404);res.end();return}
+   res.writeHead(200,{'Content-Type':'image/jpeg','Cache-Control':'public, max-age=60','X-Content-Type-Options':'nosniff'});res.end(req.method==='HEAD'?undefined:Buffer.from(await response.arrayBuffer()));return
+  }
   const yt=url.pathname.match(/^\/yt\/([\w-]{11})\.jpg$/);
   if(yt){
    if(!platform.userOf(req)){res.writeHead(401);res.end();return}
@@ -87,6 +122,6 @@ const server=http.createServer(async(req,res)=>{
  }catch(error){console.error(error.message);if(!res.headersSent)res.writeHead(500,{'Content-Type':'application/json'});res.end(JSON.stringify({error:'Die Anfrage konnte nicht verarbeitet werden.'}))}
 });
 const host=process.env.HOST||'127.0.0.1';
-if(process.env.MODCHECK_TEST_MODE!=='1')server.listen(port,host,()=>{console.log('\nModCheck ist bereit: http://'+host+':'+port+'/\nZum Beenden Strg+C drücken.\n');refreshAll();setInterval(refreshAll,3600*1000).unref();if(discordChannels.length){console.log('Discord verbunden: '+discordChannels.join(', '));setInterval(()=>{try{platform.remindRaids()}catch(e){console.warn(e.message)}},300e3).unref();setInterval(()=>platform.syncPolls().catch(e=>console.warn(e.message)),120e3).unref();if(process.env.MODCHECK_DISCORD_BOT_TOKEN){console.log('Discord-Bot: Registrierungen lassen sich per Emoji entscheiden.');setInterval(()=>platform.syncApprovals().catch(e=>console.warn(e.message)),15e3).unref()}}});
+if(process.env.MODCHECK_TEST_MODE!=='1')server.listen(port,host,()=>{console.log('\nModCheck ist bereit: http://'+host+':'+port+'/\nZum Beenden Strg+C drücken.\n');refreshAll();setInterval(refreshAll,3600*1000).unref();checkStream();setInterval(checkStream,60e3).unref();const raidTick=()=>{try{platform.tickRaids()}catch(e){console.warn('Raids:',e.message)}};raidTick();setInterval(raidTick,30e3).unref();if(discordChannels.length){console.log('Discord verbunden: '+discordChannels.join(', '));setInterval(()=>{try{platform.remindRaids()}catch(e){console.warn(e.message)}},300e3).unref();setInterval(()=>platform.syncPolls().catch(e=>console.warn(e.message)),120e3).unref();if(process.env.MODCHECK_DISCORD_BOT_TOKEN){console.log('Discord-Bot: Registrierungen lassen sich per Emoji entscheiden.');setInterval(()=>platform.syncApprovals().catch(e=>console.warn(e.message)),15e3).unref()}}});
 
 export {server,sqlite,DB};
