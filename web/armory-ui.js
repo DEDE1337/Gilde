@@ -79,8 +79,8 @@ function tooltipHtml(id,uid){
 (()=>{
  const tip=document.createElement('div');tip.id='akTip';tip.className='ak-tip';tip.setAttribute('role','tooltip');document.body.append(tip);
  const place=e=>{const pad=16,w=tip.offsetWidth,h=tip.offsetHeight;let x=e.clientX+pad,y=e.clientY+pad;if(x+w>innerWidth-8)x=e.clientX-w-pad;if(y+h>innerHeight-8)y=Math.max(8,innerHeight-h-8);tip.style.transform=`translate(${x}px,${y}px)`};
- document.addEventListener('pointerover',e=>{const el=e.target.closest?.('[data-item]');if(!el||e.pointerType!=='mouse'||!AK.catalog)return;tip.innerHTML=tooltipHtml(+el.dataset.item,el.dataset.uid);tip.classList.add('show');place(e)});
- document.addEventListener('pointermove',e=>{if(tip.classList.contains('show'))place(e)});
+ document.addEventListener('pointerover',e=>{const el=e.target.closest?.('[data-item]');if(!el||e.pointerType!=='mouse'||!AK.catalog||AK.menu)return;tip.innerHTML=tooltipHtml(+el.dataset.item,el.dataset.uid);tip.classList.add('show');place(e)});
+ document.addEventListener('pointermove',e=>{if(!tip.classList.contains('show'))return;if(AK.menu)tip.classList.remove('show');else place(e)});
  document.addEventListener('pointerout',e=>{if(e.target.closest?.('[data-item]')&&!e.relatedTarget?.closest?.('[data-item]'))tip.classList.remove('show')});
  document.addEventListener('scroll',()=>tip.classList.remove('show'),{passive:true});
 })();
@@ -178,7 +178,7 @@ function closeItemMenu(){AK.menu?.remove();AK.menu=null}
 document.addEventListener('pointerdown',e=>{if(AK.menu&&!e.target.closest('.ak-menu')&&!e.target.closest('[data-uid]'))closeItemMenu()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeItemMenu()});
 function itemMenu(e,uid){
- e.stopPropagation();closeItemMenu();
+ e.stopPropagation();closeItemMenu();document.getElementById('akTip')?.classList.remove('show');
  const it=AK.state.inventory.find(i=>i.uid===uid);if(!it)return;const item=itemOf(it.itemId),menu=document.createElement('div');menu.className='ak-menu wow-frame';menu.setAttribute('role','menu');
  const ringSlots=item.slot==='onehand'&&[1,3,4].includes(AK.state.character?.classId)?['mainhand','offhand']:null;
  menu.innerHTML=`<p class="quality-${item.quality}"><b>${esc(item.name)}</b></p>${it.wornBy?`<small class="muted">Trägt gerade ${esc(it.wornBy)}.</small>${item.slot&&it.usable?`<button role="menuitem" onclick="equipItem('${esc(uid)}')">Hierher übernehmen und anlegen</button>`:''}`:it.slot?`<button role="menuitem" onclick="unequipItem('${esc(uid)}')">Ablegen</button>`:it.listed?`<button role="menuitem" onclick="openPage('auctions')">Steht im Auktionshaus</button>`:`${item.slot&&it.usable?(ringSlots?ringSlots.map(s=>`<button role="menuitem" onclick="equipItem('${esc(uid)}',false,'${s}')">Anlegen: ${s==='offhand'?'Schildhand':AK_SLOT_NAMES[s]} ${s.endsWith('2')?'2':s.endsWith('1')?'1':''}</button>`).join(''):`<button role="menuitem" onclick="equipItem('${esc(uid)}')">Anlegen</button>`):`<small class="muted">${item.slot?'Deine Klasse kann das nicht tragen.':'Trophäe, nicht anlegbar.'}</small>`}<button role="menuitem" onclick="if(armed(this,'Wirklich für ${item.sell} Gold verkaufen?'))sellItem('${esc(uid)}')">An Händler verkaufen: ${item.sell} Gold</button><button role="menuitem" onclick="closeItemMenu();openPage('auctions','${esc(uid)}')">Im Auktionshaus anbieten</button>`}`;
@@ -187,8 +187,10 @@ function itemMenu(e,uid){
  menu.style.left=Math.max(8,Math.min(innerWidth-w-8,r.left+scrollX))+'px';menu.style.top=(r.bottom+h+8>innerHeight?r.top+scrollY-h-6:r.bottom+scrollY+6)+'px';
  menu.querySelector('button')?.focus()
 }
-const equipItem=act(async(uid,fromDialog,slot)=>{closeItemMenu();const s=await api('/api/armory/equip','POST',slot?{uid,slot}:{uid});ArmorySound.equip();akSet(s);if(fromDialog){document.querySelector('dialog.ak-dialog')?.close();toast(`${itemOf(s.inventory.find(i=>i.uid===uid).itemId).name} angelegt.`)}if(page==='armory')redraw()});
-const unequipItem=act(async uid=>{closeItemMenu();const s=await api('/api/armory/unequip','POST',{uid});ArmorySound.equip();akSet(s);if(page==='armory')redraw()});
+// After equipping the character window redraws in place (no loading flash, same scroll position) and the changed slot lights up.
+async function showGearChange(slot){if(page!=='armory')return;await openView(pageViews.armory,{quiet:true});const box=slot&&document.querySelector(`.ak-slot[data-slot="${slot}"]`);if(box){box.classList.remove('ak-changed');void box.offsetWidth;box.classList.add('ak-changed')}}
+const equipItem=act(async(uid,fromDialog,slot)=>{closeItemMenu();const s=await api('/api/armory/equip','POST',slot?{uid,slot}:{uid});ArmorySound.equip();akSet(s);const it=s.inventory.find(i=>i.uid===uid);if(fromDialog)document.querySelector('dialog.ak-dialog')?.close();toast(`${itemOf(it.itemId).name} angelegt${it.slot?': '+AK_SLOT_NAMES[it.slot]:''}.`);await showGearChange(it.slot)});
+const unequipItem=act(async uid=>{closeItemMenu();const was=AK.state?.inventory.find(i=>i.uid===uid);const s=await api('/api/armory/unequip','POST',{uid});ArmorySound.equip();akSet(s);if(was)toast(`${itemOf(was.itemId).name} abgelegt, liegt jetzt in den Taschen.`);await showGearChange(was?.slot)});
 const sellItem=act(async uid=>{closeItemMenu();const s=await api('/api/armory/sell','POST',{uid});ArmorySound.coins(5);akSet(s);toast(`Verkauft für ${s.sold} Gold.`);redraw()});
 
 /* Merchant */

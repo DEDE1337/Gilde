@@ -428,3 +428,7 @@ button.armed{background:#b3261e!important;color:#fff!important}
 .news-item span{display:flex;flex-direction:column}
 .news-item b{color:var(--cream)}
 .news-item small{color:var(--soft);font-size:14px;line-height:1.3}
+/* A slot that just changed glows briefly */
+.ak-slot.ak-changed .ak-icon,.ak-slot.ak-changed .ak-slot-empty{animation:ak-changed 1.4s ease-out}
+@keyframes ak-changed{0%{box-shadow:0 0 0 3px #ffd100,0 0 18px 6px #ffb347}100%{box-shadow:0 0 0 0 #ffd10000,0 0 0 0 #ffb34700}}
+@media(prefers-reduced-motion:reduce){.ak-slot.ak-changed .ak-icon,.ak-slot.ak-changed .ak-slot-empty{animation:none;outline:2px solid #ffd100}}

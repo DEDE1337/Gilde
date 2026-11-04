@@ -13,6 +13,7 @@ import {syncApprovals} from './approvals.js';
 import {registerArmoryRoutes} from './armory.js';
 import {registerDuelRoutes} from './duels.js';
 import {registerDungeonRoutes} from './dungeons.js';
+import {registerLiveRoutes,noteWrite} from './live.js';
 
 const MAX_BODY=64*1024,MAX_UPLOAD=3*1024*1024,OPEN_API=new Set(['/api/me','/api/register','/api/login']);
 const IMAGE_TYPES=[['image/png',b=>b.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10]))],['image/jpeg',b=>b[0]===0xff&&b[1]===0xd8&&b[2]===0xff],['image/webp',b=>b.toString('latin1',0,4)==='RIFF'&&b.toString('latin1',8,12)==='WEBP']];
@@ -21,7 +22,7 @@ const sameOrigin=(req,url)=>{const origin=req.headers.origin;if(!origin)return !
 async function readBody(req,limit){const chunks=[];let size=0;for await(const c of req){size+=c.length;if(size>limit)fail(413,'Die Anfrage ist zu groß.');chunks.push(c)}return Buffer.concat(chunks)}
 
 export function createPlatform({db,env,uploadDir}){
- registerAccountRoutes(db);registerRaidRoutes(db);registerGearRoutes(db,env);registerBonusRoutes(db);registerPollRoutes(db);registerArmoryRoutes(db);registerDuelRoutes(db);const dungeons=registerDungeonRoutes(db);
+ registerAccountRoutes(db);registerRaidRoutes(db);registerGearRoutes(db,env);registerBonusRoutes(db);registerPollRoutes(db);registerArmoryRoutes(db);registerDuelRoutes(db);registerLiveRoutes(db);const dungeons=registerDungeonRoutes(db);
  const forum=registerForumRoutes(db),progress=registerProgressRoutes(db,env,forum);
  let ipDebug=()=>({});
  const secure=process.env.MODCHECK_HTTPS==='1';
@@ -58,6 +59,7 @@ export function createPlatform({db,env,uploadDir}){
    let body={};
    if(req.method!=='GET'&&req.method!=='DELETE'){const raw=await readBody(req,MAX_BODY);if(raw.length){if(!String(req.headers['content-type']||'').startsWith('application/json'))fail(415,'Es wird JSON erwartet.');try{body=JSON.parse(raw.toString('utf8'))}catch{fail(400,'Die Anfrage ist kein gültiges JSON.')}}if(!body||typeof body!=='object')fail(400,'Die Anfrage ist ungültig.')}
    const result=await match.route.handler({user,token,ip,body,params:match.params,query:url.searchParams,setSession:t=>cookies.push(cookie(t,SESSION_DAYS*86400)),clearSession:()=>cookies.push(cookie('',0))});
+   if(req.method!=='GET')noteWrite(url.pathname);
    send(res,200,result,cookies.length?{'Set-Cookie':cookies}:{})
   }catch(e){
    if(e instanceof ApiError)return send(res,e.status,{error:e.message});

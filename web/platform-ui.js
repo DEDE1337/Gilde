@@ -46,13 +46,22 @@ function drawNav(){
  document.body.classList.toggle('guest-mode',!P.user);$('#heroCta').textContent=P.user?'Antreten zum Raid':'Anmelden';
  $('#nav').innerHTML=!P.user?`<button class="${page==='home'?'active':''}" onclick="openPage('home')">⌂ &nbsp; Start</button><button class="${page==='login'?'active':''}" onclick="openPage('login')">✦ &nbsp; Anmelden</button>`:NAV.map(([name,icon,items])=>`<div class="nav-group ${name===openGroup?'current':''}" onpointerleave="if(event.pointerType==='mouse')closeNav()"><button aria-haspopup="true" aria-expanded="false" onclick="openSection('${name}')">${icon} &nbsp; ${name}</button><div class="nav-menu">${items.filter(([, ,auth])=>!auth||P.user).map(([id,label])=>`<button class="${page===id?'active':''}" onclick="closeNav();openPage('${id}')">${label}</button>`).join('')}</div></div>`).join('');
  const unread=P.unread||0;
- document.querySelector('header .badge').outerHTML=`<span class="badge account-box">${P.user?`<button onclick="openPage('notifications')" class="bell" aria-label="${unread} ungelesene Benachrichtigungen">✉ ${unread||''}</button>${isAdmin()?`<button onclick="showIntro()">Trailer</button>`:''}${P.bonusOpen?`<button class="bonus-ready" onclick="openPage('bonus')">Bonus bereit</button>`:''}${typeof openCharScreen==='function'?(P.activeChar?`<button class="char-face" onclick="openCharScreen()" title="Charakter wechseln" aria-label="Charakter wechseln, aktiv: ${esc(P.activeChar.name)}"><img src="icons/${charFaceIcon(P.activeChar)}.jpg" alt="" onerror="this.onerror=null;this.src='icons/inv_misc_questionmark.jpg'"><span style="color:${CLASS_INFO[P.activeChar.classId]?.[1]||'#fff'}">${esc(P.activeChar.name)}</span></button>`:`<button onclick="openCharScreen()">Charakter wählen</button>`):''}<button onclick="openPage('dashboard')">${esc(P.user.username)}</button><button onclick="logout()">Abmelden</button>`:`<button onclick="openPage('login')">Anmelden</button>`}</span>`
+ document.querySelector('header .badge').outerHTML=`<span class="badge account-box">${P.user?`<button id="noteBell" onclick="toggleNotes(event)" class="bell ${unread?'has-unread':''}" aria-haspopup="true" aria-expanded="${!!noteDrop.isConnected&&!noteDrop.hidden}" aria-label="Benachrichtigungen, ${unread} ungelesen"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22Zm7-6V11a7 7 0 0 0-5.5-6.84V3.5a1.5 1.5 0 0 0-3 0v.66A7 7 0 0 0 5 11v5l-2 2v1h18v-1Z"/></svg>${unread?`<span class="bell-count">${unread>99?'99+':unread}</span>`:''}</button>${isAdmin()?`<button onclick="showIntro()">Trailer</button>`:''}${P.bonusOpen?`<button class="bonus-ready" onclick="openPage('bonus')">Bonus bereit</button>`:''}${typeof openCharScreen==='function'?(P.activeChar?`<button class="char-face" onclick="openCharScreen()" title="Charakter wechseln" aria-label="Charakter wechseln, aktiv: ${esc(P.activeChar.name)}"><img src="icons/${charFaceIcon(P.activeChar)}.jpg" alt="" onerror="this.onerror=null;this.src='icons/inv_misc_questionmark.jpg'"><span style="color:${CLASS_INFO[P.activeChar.classId]?.[1]||'#fff'}">${esc(P.activeChar.name)}</span></button>`:`<button onclick="openCharScreen()">Charakter wählen</button>`):''}<button onclick="openPage('dashboard')">${esc(P.user.username)}</button><button onclick="logout()">Abmelden</button>`:`<button onclick="openPage('login')">Anmelden</button>`}</span>`
 }
 const pageGroups={raid:'raids',topic:'forum',category:'forum',profile:'members',login:'dashboard',admin:'members'};
 const allPages=[...new Set(NAV.flatMap(g=>g[2].map(x=>x[0])))];
 for(const id of allPages.concat(Object.keys(pageGroups)))if(!tabs.some(t=>t[0]===id))tabs.push([id,'',NAV.flatMap(g=>g[2]).find(x=>x[0]===id)?.[1]||({raid:'Raid',topic:'Forum',category:'Forum',profile:'Charakterprofil',login:'Anmelden',admin:'Verwaltung'})[id]]);
 const oldRenderPlatform=render;
-render=function(){if(!P.user&&!['home','login'].includes(page))page='login';oldRenderPlatform();drawNav();drawProfile();if(page==='home'&&P.user)drawHomeExtras();const view=pageViews[page];if(view)openView(view)};
+render=function(){let redirected=false;if(P.booted&&!P.user&&!['home','login'].includes(page)){P.afterLogin={page,arg:P.arg};page='login';P.arg=null;redirected=true}oldRenderPlatform();drawNav();drawProfile();syncHistory(redirected);if(page==='home'&&P.user)drawHomeExtras();const view=pageViews[page];if(view)openView(view)};
+
+/* Browser history: every page gets a hash route (#forum, #topic/<id>), so Back/Forward and reloading stay inside the site. */
+const routeHash=()=>'#'+page+(P.arg!==null&&P.arg!==undefined&&P.arg!==''?'/'+encodeURIComponent(P.arg):'');
+function readHash(){const m=location.hash.slice(1).match(/^([\w-]+)(?:\/(.+))?$/);if(!m||!tabs.some(t=>t[0]===m[1])||m[1]==='calendar')return null;let arg=null;try{arg=m[2]?decodeURIComponent(m[2]):null}catch{return null}return{page:m[1],arg}}
+let restoringRoute=false;
+function syncHistory(replace){if(!P.booted)return;const hash=routeHash();if(hash===location.hash)return;const s={page,arg:P.arg};if(replace||restoringRoute||!location.hash)history.replaceState(s,'',hash);else history.pushState(s,'',hash)}
+// Called once user and data are loaded, right before the first real render.
+function applyStartRoute(){const r=readHash();if(r){page=r.page;P.arg=r.arg}P.booted=true}
+addEventListener('popstate',()=>{if(!P.booted)return;const r=readHash()||{page:'home',arg:null};closeNotes();restoringRoute=true;try{P.arg=r.arg;go(r.page)}finally{restoringRoute=false}});
 function drawProfile(){
  const linked=!!P.activeChar,cls=$('#classSelect'),race=$('#race'),allowed=Object.keys(RACE_CLASSES).filter(r=>RACE_CLASSES[r].includes(plannerClass()));
  cls.innerHTML=Object.entries(CLASS_INFO).map(([id,c])=>`<option value="${id}" ${+id===plannerClass()?'selected':''}>${c[0]}</option>`).join('');
@@ -60,18 +69,19 @@ function drawProfile(){
  cls.disabled=race.disabled=linked;cls.title=race.title=linked?'Klasse und Volk änderst du unter „Meine Charaktere“.':''
 }
 $('#classSelect').addEventListener('change',e=>{state.classId=+e.target.value;window.plannerLabel='';if(!RACE_CLASSES[state.race].includes(state.classId))state.race=Object.keys(RACE_CLASSES).find(r=>RACE_CLASSES[r].includes(state.classId));if(typeof talentPlan==='function')talentPlan().classId=state.classId;state.equipment={};save();render();toast('Klasse gewechselt. Die Ausrüstungsauswahl wurde geleert.')});
-async function openView(view){
- const target=$('#content');target.innerHTML=emptyBox('Wird geladen …');const opened=page;
- try{await view(P.arg)}catch(e){if(page!==opened)return;target.innerHTML=e.status===401?frame('Anmeldung erforderlich',`<p>Dieser Bereich ist für Gildenmitglieder.</p><button class="primary" onclick="openPage('login')">Zur Anmeldung</button>`):frame('Das hat nicht geklappt',`<p>${esc(e.message)}</p>`)}
+// quiet: live refresh, keeps the old content and the scroll position instead of flashing "Wird geladen".
+async function openView(view,{quiet=false}={}){
+ const target=$('#content'),opened=page,y=scrollY;if(!quiet)target.innerHTML=emptyBox('Wird geladen …');
+ try{await view(P.arg);if(quiet&&page===opened)scrollTo({top:y,behavior:'instant'})}catch(e){if(page!==opened||quiet)return;target.innerHTML=e.status===401?frame('Anmeldung erforderlich',`<p>Dieser Bereich ist für Gildenmitglieder.</p><button class="primary" onclick="openPage('login')">Zur Anmeldung</button>`):frame('Das hat nicht geklappt',`<p>${esc(e.message)}</p>`)}
 }
 const redraw=()=>{const view=pageViews[page];return view?openView(view):render()};
-async function refreshUser(){const{user}=await api('/api/me');P.user=user;P.activeChar=null;if(user){try{P.unread=(await api('/api/notifications')).notifications.filter(n=>!n.read_at).length;P.bonusOpen=(await api('/api/bonus')).rollsLeft>0;await loadActiveCharacter();loadCalendarEvents()}catch{}}}
+async function refreshUser(){const{user}=await api('/api/me');P.user=user;P.activeChar=null;if(user){try{P.notes=(await api('/api/notifications')).notifications;P.unread=P.notes.filter(n=>!n.read_at).length;P.bonusOpen=(await api('/api/bonus')).rollsLeft>0;await loadActiveCharacter();loadCalendarEvents()}catch{}}}
 const logout=act(async()=>{await api('/api/logout','POST');location.reload()});
 
 pageViews.login=async()=>{
  if(P.user)return openPage('dashboard');
  $('#content').innerHTML=head('Willkommen in der Gildenhalle','Melde dich an oder lege ein Konto an.')+`<div class="two-col">`+frame('Anmelden',`<form id="loginForm"><label>Benutzername<input name="username" required autocomplete="username" maxlength="24"></label><label>Passwort<input name="password" type="password" required autocomplete="current-password"></label><button class="primary">Anmelden</button></form>`)+frame('Konto anlegen',`<form id="registerForm"><label>Benutzername<input name="username" required minlength="3" maxlength="24" autocomplete="username"></label><label>Passwort (mindestens 10 Zeichen)<input name="password" type="password" required minlength="10" autocomplete="new-password"></label><button class="subtle">Registrieren</button><p><small class="muted">Ein Offizier schaltet neue Konten frei.</small></p></form>`)+`</div>`;
- $('#loginForm').onsubmit=act(async e=>{e.preventDefault();await api('/api/login','POST',formData(e.target));await refreshUser();openPage('dashboard')});
+ $('#loginForm').onsubmit=act(async e=>{e.preventDefault();await api('/api/login','POST',formData(e.target));await refreshUser();const next=P.afterLogin;P.afterLogin=null;next?openPage(next.page,next.arg):openPage('dashboard')});
  $('#registerForm').onsubmit=act(async e=>{e.preventDefault();const r=await api('/api/register','POST',formData(e.target));e.target.reset();toast(r.message)});
 };
 pageViews.settings=async()=>{
@@ -86,7 +96,44 @@ pageViews.notifications=async()=>{
 };
 const readAll=act(async()=>{await api('/api/notifications/read','POST',{});P.unread=0;redraw();drawNav()});
 const dropNote=act(async id=>{await api('/api/notifications/'+id,'DELETE');await refreshUser();redraw();drawNav()});
-const followLink=act(async(link,noteId)=>{if(noteId){await api('/api/notifications/read','POST',{id:noteId});P.unread=Math.max(0,(P.unread||1)-1)}const[target,arg]=link.split(':');openPage(target,arg)});
+const followLink=act(async(link,noteId)=>{closeNotes();if(noteId){await api('/api/notifications/read','POST',{id:noteId});await refreshUnread()}const[target,arg]=link.split(':');openPage(target,arg)});
+
+/* Bell in the header: unread counter, a drop-down with the latest notifications, mark as read and remove. */
+const noteDrop=document.createElement('div');noteDrop.id='noteDrop';noteDrop.className='note-drop';noteDrop.hidden=true;noteDrop.setAttribute('role','dialog');noteDrop.setAttribute('aria-label','Benachrichtigungen');document.body.append(noteDrop);
+async function refreshUnread(){try{const{notifications:n}=await api('/api/notifications');P.notes=n;P.unread=n.filter(x=>!x.read_at).length}catch{}drawNav();if(!noteDrop.hidden)drawNotes()}
+function placeNotes(){const b=$('#noteBell');if(!b)return closeNotes();const r=b.getBoundingClientRect(),w=Math.min(380,innerWidth-16);noteDrop.style.width=w+'px';noteDrop.style.left=Math.max(8,Math.min(innerWidth-w-8,r.right-w))+'px';noteDrop.style.top=(r.bottom+8)+'px'}
+function drawNotes(){
+ const n=(P.notes||[]).slice(0,15),unread=(P.notes||[]).filter(x=>!x.read_at).length;
+ noteDrop.innerHTML=`<div class="note-drop-head"><strong>Benachrichtigungen</strong>${unread?`<button class="link" onclick="readAllNotes()">Alle als gelesen markieren</button>`:''}</div><div class="note-drop-list">${n.map(x=>`<div class="note-item ${x.read_at?'':'unread'}"><button class="note-open" onclick="${x.link?`followLink('${esc(x.link)}','${esc(x.id)}')`:`markNote('${esc(x.id)}')`}"><span>${esc(x.message)}</span><small>${timeText(x.created_at)}</small></button>${x.read_at?'':`<button class="note-mark" title="Als gelesen markieren" aria-label="Als gelesen markieren" onclick="markNote('${esc(x.id)}')">●</button>`}<button class="note-del" title="Entfernen" aria-label="Entfernen" onclick="removeNote('${esc(x.id)}')">×</button></div>`).join('')||'<p class="muted note-empty">Keine Benachrichtigungen.</p>'}</div><button class="note-drop-all" onclick="closeNotes();openPage('notifications')">Alle anzeigen</button>`;
+ placeNotes()
+}
+async function toggleNotes(e){e?.stopPropagation();if(!noteDrop.hidden)return closeNotes();noteDrop.hidden=false;$('#noteBell')?.setAttribute('aria-expanded','true');drawNotes();await refreshUnread()}
+function closeNotes(){noteDrop.hidden=true;$('#noteBell')?.setAttribute('aria-expanded','false')}
+const markNote=act(async id=>{await api('/api/notifications/read','POST',{id});await refreshUnread();if(page==='notifications')redraw()});
+const removeNote=act(async id=>{await api('/api/notifications/'+id,'DELETE');await refreshUnread();if(page==='notifications')redraw()});
+const readAllNotes=act(async()=>{await api('/api/notifications/read','POST',{});await refreshUnread();if(page==='notifications')redraw()});
+document.addEventListener('pointerdown',e=>{if(!noteDrop.hidden&&!e.target.closest('#noteDrop,#noteBell'))closeNotes()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!noteDrop.hidden){closeNotes();$('#noteBell')?.focus()}});
+addEventListener('resize',()=>{if(!noteDrop.hidden)placeNotes()});addEventListener('scroll',()=>{if(!noteDrop.hidden)placeNotes()},{passive:true});
+
+/* Live updates: while the tab is visible, /api/pulse is asked every few seconds. When the area of the open page changed,
+   the page redraws itself quietly; never while someone is typing, has a dialog open or a menu up. */
+const LIVE_PAGES={dungeons:'dungeons',raids:'raids',raid:'raids',dashboard:'raids',board:'forum',forum:'forum',category:'forum',topic:'forum',notifications:'notes'};
+const LIVE_EVERY=6000;let liveSeen=null,liveTimer=null,liveBusy=false;
+function userBusy(){const a=document.activeElement;if(a&&a.closest('#content')&&a.matches('input,textarea,select,[contenteditable]'))return true;if(document.querySelector('dialog[open]')||!noteDrop.hidden||(typeof AK!=='undefined'&&AK.menu))return true;return [...document.querySelectorAll('#content textarea,#content input[type=text],#content input[type=number],#content input:not([type])')].some(x=>x.value!==x.defaultValue)}
+async function livePulse(){
+ if(liveBusy||!P.user||document.visibilityState!=='visible')return;liveBusy=true;
+ try{
+  const p=await api('/api/pulse'),before=liveSeen;liveSeen=p.areas;
+  if(p.unread!==P.unread||(before&&before.notes!==p.areas.notes))await refreshUnread();
+  const title=document.title.replace(/^\(\d+\) /,'');document.title=(p.unread?`(${p.unread}) `:'')+title;
+  const area=LIVE_PAGES[page];
+  if(before&&area&&before[area]!==p.areas[area]&&pageViews[page]){if(userBusy())liveSeen={...p.areas,[area]:before[area]};else await openView(pageViews[page],{quiet:true})}
+ }catch{}finally{liveBusy=false}
+}
+function startLive(){clearInterval(liveTimer);liveTimer=setInterval(livePulse,LIVE_EVERY);livePulse()}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')livePulse()});
+startLive();
 
 /* Characters and the link between the planner and the server */
 pageViews.characters=async()=>{
